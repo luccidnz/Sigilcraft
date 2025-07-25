@@ -29,62 +29,100 @@ def create_sigil(phrase, size=400):
 
     center = (size, size)  # Center for 2x size
 
-    # Create enhanced mystical gradient background based on numerology
+    # Create ultra-complex cosmic background with fractal noise
     numerology_colors = {
-        1: (40, 20, 80), 2: (80, 40, 120), 3: (60, 80, 40), 4: (120, 80, 40),
-        5: (80, 120, 40), 6: (40, 120, 80), 7: (120, 40, 80), 8: (80, 40, 120),
-        9: (120, 80, 120), 11: (200, 150, 255), 22: (255, 200, 150), 33: (150, 255, 200)
+        1: (60, 20, 120), 2: (120, 40, 180), 3: (80, 140, 60), 4: (180, 120, 60),
+        5: (120, 180, 60), 6: (60, 180, 120), 7: (180, 60, 120), 8: (120, 60, 180),
+        9: (180, 120, 180), 11: (255, 200, 255), 22: (255, 255, 200), 33: (200, 255, 255)
     }
 
-    base_colors = numerology_colors.get(numerology_value, (40, 20, 80))
+    base_colors = numerology_colors.get(numerology_value, (60, 20, 120))
 
+    # Create multi-dimensional background with fractal complexity
     for y in range(size * 2):
         for x in range(size * 2):
-            # Distance from center for radial gradient
+            # Multiple distance calculations for layered effects
             dist = math.sqrt((x - center[0])**2 + (y - center[1])**2)
             max_dist = math.sqrt(2) * size
-
-            # Multi-layered gradient with numerological influence
+            
+            # Fractal noise layers
+            fractal1 = math.sin(x * 0.02) * math.cos(y * 0.02)
+            fractal2 = math.sin(x * 0.05 + y * 0.03) * math.cos(x * 0.03 - y * 0.05)
+            fractal3 = math.sin(dist * 0.008) * math.cos(dist * 0.012)
+            
+            # Cosmic interference patterns
+            cosmic1 = math.sin(math.sqrt(x**2 + y**2) * 0.01 + numerology_value)
+            cosmic2 = math.cos(math.atan2(y - center[1], x - center[0]) * numerology_value)
+            cosmic3 = math.sin((x + y) * 0.015 + numerology_value * math.pi)
+            
+            # Energy vortex calculations
+            angle = math.atan2(y - center[1], x - center[0])
+            vortex_strength = 1.0 / (1.0 + dist / (size * 0.3))
+            vortex1 = math.sin(angle * numerology_value + dist * 0.01) * vortex_strength
+            vortex2 = math.cos(angle * (numerology_value + 3) - dist * 0.008) * vortex_strength
+            
+            # Multi-layered gradient with extreme complexity
             gradient_factor = 1 - (dist / max_dist)
-
-            # Sacred geometric wave influences
-            wave1 = math.sin(dist * 0.01 * numerology_value)
-            wave2 = math.cos(dist * 0.008 * numerology_value + math.pi/3)
-            wave3 = math.sin(dist * 0.012 * numerology_value + math.pi/2)
-
-            r = int(base_colors[0] + gradient_factor * 60 + 40 * wave1)
-            g = int(base_colors[1] + gradient_factor * 80 + 50 * wave2)
-            b = int(base_colors[2] + gradient_factor * 100 + 60 * wave3)
-
-            # Add numerology-based sparkle effect
-            noise = hash((x + numerology_value, y + numerology_value)) % 256
-            sparkle_threshold = 255 - (numerology_value * 8)
-            if noise > sparkle_threshold:
-                intensity = (noise - sparkle_threshold) * 4
-                r = min(255, r + intensity)
-                g = min(255, g + intensity)
-                b = min(255, b + intensity)
+            
+            # Combine all effects
+            total_r = base_colors[0] + gradient_factor * 100 + 80 * fractal1 + 60 * cosmic1 + 40 * vortex1
+            total_g = base_colors[1] + gradient_factor * 120 + 90 * fractal2 + 70 * cosmic2 + 50 * vortex2
+            total_b = base_colors[2] + gradient_factor * 140 + 100 * fractal3 + 80 * cosmic3 + 60 * (vortex1 + vortex2) * 0.5
+            
+            # Add cosmic sparkle with fractal distribution
+            cosmic_noise = hash((x * numerology_value, y * numerology_value, int(dist))) % 512
+            if cosmic_noise > 480:
+                sparkle_intensity = (cosmic_noise - 480) * 8
+                total_r += sparkle_intensity
+                total_g += sparkle_intensity * 1.2
+                total_b += sparkle_intensity * 1.5
+            
+            # Add aurora-like wave effects
+            aurora_wave = math.sin(y * 0.02 + x * 0.01 + numerology_value) * math.cos(x * 0.015 - y * 0.025)
+            if aurora_wave > 0.7:
+                aurora_intensity = (aurora_wave - 0.7) * 200
+                total_r += aurora_intensity * 0.8
+                total_g += aurora_intensity * 1.2
+                total_b += aurora_intensity * 0.6
+            
+            # Clamp and apply colors
+            r = max(0, min(255, int(total_r)))
+            g = max(0, min(255, int(total_g)))
+            b = max(0, min(255, int(total_b)))
 
             img.putpixel((x, y), (r, g, b, 255))
 
-    # Create sacred geometry foundation
+    # Add quantum energy fields
+    create_quantum_fields(draw, center, size, numerology_value, original_phrase)
+    
+    # Create dimensional portals
+    create_dimensional_portals(draw, center, size, numerology_value)
+
+    # Create sacred geometry foundation with fractal complexity
     create_sacred_geometry(draw, center, size, numerology_value)
 
     # Add chaos grid for raw energy
     create_chaos_grid(draw, center, size, original_phrase)
 
-    # Add spiral energy flows
+    # Add multi-dimensional spiral energy flows
     create_spiral_energy(draw, center, size, 1)  # Clockwise
     create_spiral_energy(draw, center, size, -1)  # Counter-clockwise
+    create_fractal_spirals(draw, center, size, numerology_value)
 
     # Add enhanced mystical circles and energy patterns
     draw_mystical_circles(draw, center, size, numerology_value)
 
     # Replace simple triangles with complex sacred geometry patterns
     draw_sacred_geometry(draw, center, size, numerology_value)
+    
+    # Add cosmic constellation patterns
+    draw_cosmic_constellations(draw, center, size, numerology_value, original_phrase)
 
     # Add central mystical mandala with numerological significance
     draw_central_mandala(draw, center, size, numerology_value)
+    
+    # Add energy vortex overlay
+    create_energy_vortex(draw, center, size, numerology_value)
 
     # Drawing the letters as before, but with scaled down size
     try:
@@ -348,6 +386,253 @@ def draw_sacred_geometry(draw, center, size, numerology_value):
                 color_shift = (layer * 40 + i * 30) % 255
                 poly_color = (100 + (color_shift * 3) % 155, 255, 150 + color_shift % 105, 105 + layer * 18)
                 draw.polygon(poly_points, fill=poly_color)
+
+def create_quantum_fields(draw, center, size, numerology_value, phrase):
+    """Create quantum energy field effects"""
+    field_intensity = len(phrase) % 5 + 3
+    
+    for field_layer in range(field_intensity):
+        field_radius = size * (0.9 - field_layer * 0.15)
+        
+        # Create quantum particle effects
+        particle_count = numerology_value * 8 + field_layer * 12
+        
+        for particle in range(particle_count):
+            # Quantum uncertainty in positioning
+            base_angle = (2 * math.pi * particle) / particle_count + field_layer * 0.3
+            uncertainty_x = (hash(phrase + str(particle)) % 40 - 20) * 0.01 * size
+            uncertainty_y = (hash(phrase + str(particle * 2)) % 40 - 20) * 0.01 * size
+            
+            x = center[0] + field_radius * math.cos(base_angle) + uncertainty_x
+            y = center[1] + field_radius * math.sin(base_angle) + uncertainty_y
+            
+            # Quantum energy visualization
+            energy_level = (particle + numerology_value + field_layer) % 7
+            
+            if energy_level >= 5:  # High energy particles
+                particle_size = 8 - field_layer
+                energy_color = (255, 200 + energy_level * 8, 100 + energy_level * 20, 180)
+                
+                # Create energy burst
+                for burst in range(6):
+                    burst_angle = base_angle + (burst * math.pi / 3)
+                    burst_x = x + particle_size * 2 * math.cos(burst_angle)
+                    burst_y = y + particle_size * 2 * math.sin(burst_angle)
+                    
+                    draw.line([x, y, burst_x, burst_y], fill=energy_color, width=2)
+                
+                draw.ellipse([x - particle_size, y - particle_size, 
+                            x + particle_size, y + particle_size], fill=energy_color)
+            
+            elif energy_level >= 3:  # Medium energy
+                particle_size = 5 - field_layer
+                energy_color = (150 + energy_level * 15, 255, 180 + energy_level * 10, 150)
+                draw.ellipse([x - particle_size, y - particle_size, 
+                            x + particle_size, y + particle_size], fill=energy_color)
+            
+            else:  # Low energy field distortion
+                distortion_size = 3
+                energy_color = (100 + energy_level * 25, 100 + energy_level * 30, 255, 100)
+                draw.ellipse([x - distortion_size, y - distortion_size, 
+                            x + distortion_size, y + distortion_size], fill=energy_color)
+
+def create_dimensional_portals(draw, center, size, numerology_value):
+    """Create dimensional portal effects"""
+    portal_count = min(4, max(2, numerology_value // 3))
+    
+    for portal_idx in range(portal_count):
+        # Position portals around the sigil
+        portal_angle = (2 * math.pi * portal_idx) / portal_count + (numerology_value * 0.1)
+        portal_distance = size * (0.6 + portal_idx * 0.1)
+        
+        portal_x = center[0] + portal_distance * math.cos(portal_angle)
+        portal_y = center[1] + portal_distance * math.sin(portal_angle)
+        
+        # Create portal layers
+        for layer in range(8):
+            layer_radius = size * (0.08 - layer * 0.008)
+            layer_alpha = 200 - layer * 20
+            
+            # Portal color shifts through dimensions
+            dimension_hue = (portal_idx * 90 + layer * 30 + numerology_value * 20) % 360
+            
+            portal_r = int(128 + 127 * math.sin(math.radians(dimension_hue)))
+            portal_g = int(128 + 127 * math.sin(math.radians(dimension_hue + 120)))
+            portal_b = int(128 + 127 * math.sin(math.radians(dimension_hue + 240)))
+            
+            portal_color = (portal_r, portal_g, portal_b, layer_alpha)
+            
+            # Draw portal ring
+            draw.ellipse([portal_x - layer_radius, portal_y - layer_radius,
+                         portal_x + layer_radius, portal_y + layer_radius], 
+                        outline=portal_color, width=max(1, 4 - layer // 2))
+            
+            # Add dimensional sparks
+            if layer % 2 == 0:
+                spark_count = 12 - layer
+                for spark in range(spark_count):
+                    spark_angle = (2 * math.pi * spark) / spark_count + layer * 0.5
+                    spark_x = portal_x + layer_radius * 1.2 * math.cos(spark_angle)
+                    spark_y = portal_y + layer_radius * 1.2 * math.sin(spark_angle)
+                    
+                    spark_size = 2 + layer // 2
+                    spark_color = (255, portal_g, portal_b, layer_alpha)
+                    
+                    draw.ellipse([spark_x - spark_size, spark_y - spark_size,
+                                spark_x + spark_size, spark_y + spark_size], fill=spark_color)
+
+def create_fractal_spirals(draw, center, size, numerology_value):
+    """Create fractal spiral patterns"""
+    spiral_count = numerology_value // 2 + 2
+    
+    for spiral_idx in range(spiral_count):
+        spiral_start_angle = (spiral_idx * 360 / spiral_count) + (numerology_value * 15)
+        spiral_direction = 1 if spiral_idx % 2 == 0 else -1
+        
+        # Create multi-level fractal spirals
+        for fractal_level in range(3):
+            spiral_radius = size * (0.1 + fractal_level * 0.15)
+            spiral_width = max(1, 4 - fractal_level)
+            
+            points = []
+            for angle_step in range(0, 720, 5):  # Two full rotations
+                current_angle = spiral_start_angle + (angle_step * spiral_direction)
+                
+                # Fractal modification to radius
+                fractal_modifier = 1 + 0.3 * math.sin(math.radians(angle_step * (fractal_level + 1)))
+                current_radius = spiral_radius * fractal_modifier
+                
+                x = center[0] + current_radius * math.cos(math.radians(current_angle))
+                y = center[1] + current_radius * math.sin(math.radians(current_angle))
+                
+                points.append((x, y))
+                
+                # Increase radius for spiral effect
+                spiral_radius += size * 0.0008
+            
+            # Draw fractal spiral
+            if len(points) > 1:
+                for i in range(len(points) - 1):
+                    color_shift = (i + fractal_level * 50 + spiral_idx * 30) % 255
+                    spiral_color = (
+                        150 + color_shift % 105,
+                        100 + (color_shift * 2) % 155,
+                        255,
+                        120 - fractal_level * 30
+                    )
+                    
+                    draw.line([points[i], points[i + 1]], fill=spiral_color, width=spiral_width)
+
+def draw_cosmic_constellations(draw, center, size, numerology_value, phrase):
+    """Draw cosmic constellation patterns based on phrase energy"""
+    constellation_count = len(phrase) // 3 + 2
+    
+    for constellation_idx in range(constellation_count):
+        # Create constellation anchor point
+        constellation_angle = (2 * math.pi * constellation_idx) / constellation_count
+        constellation_distance = size * (0.4 + (constellation_idx % 3) * 0.2)
+        
+        anchor_x = center[0] + constellation_distance * math.cos(constellation_angle)
+        anchor_y = center[1] + constellation_distance * math.sin(constellation_angle)
+        
+        # Generate star pattern based on phrase hash
+        star_count = (hash(phrase + str(constellation_idx)) % 8) + 5
+        star_positions = []
+        
+        for star_idx in range(star_count):
+            # Generate pseudo-random but deterministic star positions
+            star_hash = hash(phrase + str(constellation_idx) + str(star_idx))
+            
+            local_angle = (star_hash % 360) * math.pi / 180
+            local_distance = (star_hash % 50 + 20) * size * 0.002
+            
+            star_x = anchor_x + local_distance * math.cos(local_angle)
+            star_y = anchor_y + local_distance * math.sin(local_angle)
+            
+            star_positions.append((star_x, star_y))
+            
+            # Draw star
+            star_brightness = (star_hash % 3) + 2
+            star_size = star_brightness + 1
+            
+            star_color = (
+                200 + (star_hash % 55),
+                180 + ((star_hash >> 8) % 75),
+                255,
+                150 + star_brightness * 20
+            )
+            
+            # Draw star with radiating points
+            for ray in range(8):
+                ray_angle = ray * math.pi / 4
+                ray_length = star_size * 3
+                ray_x = star_x + ray_length * math.cos(ray_angle)
+                ray_y = star_y + ray_length * math.sin(ray_angle)
+                
+                draw.line([star_x, star_y, ray_x, ray_y], fill=star_color, width=1)
+            
+            draw.ellipse([star_x - star_size, star_y - star_size,
+                         star_x + star_size, star_y + star_size], fill=star_color)
+        
+        # Connect stars in constellation pattern
+        if len(star_positions) > 2:
+            for i in range(len(star_positions)):
+                next_star = (i + 2) % len(star_positions)  # Skip one star for interesting patterns
+                
+                connection_color = (
+                    100 + (constellation_idx * 30) % 155,
+                    150 + (constellation_idx * 20) % 105,
+                    200 + (constellation_idx * 40) % 55,
+                    80
+                )
+                
+                draw.line([star_positions[i], star_positions[next_star]], 
+                         fill=connection_color, width=1)
+
+def create_energy_vortex(draw, center, size, numerology_value):
+    """Create swirling energy vortex overlay"""
+    vortex_layers = 5
+    
+    for layer in range(vortex_layers):
+        layer_radius = size * (0.8 - layer * 0.12)
+        rotation_offset = layer * 30 + numerology_value * 10
+        
+        # Create vortex arms
+        arm_count = 3 + (numerology_value % 4)
+        
+        for arm in range(arm_count):
+            arm_angle = (360 / arm_count * arm) + rotation_offset
+            
+            # Create curved vortex arm
+            arm_points = []
+            for curve_step in range(20):
+                step_ratio = curve_step / 19.0
+                
+                # Logarithmic spiral for vortex effect
+                current_radius = layer_radius * (1 - step_ratio * 0.8)
+                current_angle = arm_angle + (step_ratio * 180 * (layer + 1))
+                
+                # Add turbulence
+                turbulence = math.sin(step_ratio * math.pi * 4) * size * 0.02
+                
+                x = center[0] + (current_radius + turbulence) * math.cos(math.radians(current_angle))
+                y = center[1] + (current_radius + turbulence) * math.sin(math.radians(current_angle))
+                
+                arm_points.append((x, y))
+            
+            # Draw vortex arm with gradient effect
+            for i in range(len(arm_points) - 1):
+                point_intensity = 1 - (i / len(arm_points))
+                
+                vortex_color = (
+                    int(255 * point_intensity),
+                    int((150 + layer * 20) * point_intensity),
+                    int((200 + numerology_value * 8) * point_intensity),
+                    int((120 - layer * 15) * point_intensity)
+                )
+                
+                line_width = max(1, int((6 - layer) * point_intensity))
+                draw.line([arm_points[i], arm_points[i + 1]], fill=vortex_color, width=line_width)
 
 def draw_central_mandala(draw, center, size, numerology_value):
     # Add central mystical mandala based on numerology
