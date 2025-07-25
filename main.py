@@ -24,6 +24,10 @@ def create_sigil(phrase, size=500):
 
     # Calculate numerological value
     numerology_value = calculate_numerology(original_phrase)
+    
+    # Create unique seed based on entire phrase for consistent but unique randomness
+    phrase_seed = abs(hash(original_phrase.lower())) % 2147483647
+    random.seed(phrase_seed)
 
     # Create image with anti-aliasing
     img = Image.new('RGBA', (size * 2, size * 2), color=(0, 0, 0, 255))
@@ -41,27 +45,42 @@ def create_sigil(phrase, size=500):
     base_colors = numerology_colors.get(numerology_value, (120, 40, 200))
 
     # Create multi-dimensional background with fractal complexity
+    # Generate unique frequencies based on phrase
+    freq1 = 0.01 + (phrase_seed % 100) * 0.0001
+    freq2 = 0.02 + ((phrase_seed >> 8) % 100) * 0.0002
+    freq3 = 0.008 + ((phrase_seed >> 16) % 50) * 0.0001
+    
     for y in range(size * 2):
         for x in range(size * 2):
             # Multiple distance calculations for layered effects
             dist = math.sqrt((x - center[0])**2 + (y - center[1])**2)
             max_dist = math.sqrt(2) * size
             
-            # Enhanced fractal noise layers
-            fractal1 = math.sin(x * 0.015) * math.cos(y * 0.018)
-            fractal2 = math.sin(x * 0.035 + y * 0.028) * math.cos(x * 0.025 - y * 0.032)
-            fractal3 = math.sin(dist * 0.012) * math.cos(dist * 0.008)
+            # Enhanced fractal noise layers with phrase-specific frequencies
+            fractal1 = math.sin(x * freq1) * math.cos(y * (freq1 * 1.2))
+            fractal2 = math.sin(x * freq2 + y * (freq2 * 0.8)) * math.cos(x * (freq2 * 0.7) - y * freq2)
+            fractal3 = math.sin(dist * freq3) * math.cos(dist * (freq3 * 0.6))
             
-            # Cosmic interference patterns
-            cosmic1 = math.sin(math.sqrt(x**2 + y**2) * 0.008 + numerology_value)
-            cosmic2 = math.cos(math.atan2(y - center[1], x - center[0]) * numerology_value * 1.5)
-            cosmic3 = math.sin((x + y) * 0.012 + numerology_value * math.pi)
+            # Cosmic interference patterns with phrase-specific parameters
+            cosmic_freq = 0.005 + (phrase_seed % 30) * 0.0003
+            cosmic_phase1 = (phrase_seed % 1000) * 0.01
+            cosmic_phase2 = ((phrase_seed >> 10) % 1000) * 0.01
+            cosmic_phase3 = ((phrase_seed >> 20) % 1000) * 0.01
             
-            # Energy vortex calculations
+            cosmic1 = math.sin(math.sqrt(x**2 + y**2) * cosmic_freq + cosmic_phase1)
+            cosmic2 = math.cos(math.atan2(y - center[1], x - center[0]) * (numerology_value + cosmic_phase2))
+            cosmic3 = math.sin((x + y) * (cosmic_freq * 1.5) + cosmic_phase3)
+            
+            # Energy vortex calculations with phrase-specific properties
             angle = math.atan2(y - center[1], x - center[0])
             vortex_strength = 1.0 / (1.0 + dist / (size * 0.4))
-            vortex1 = math.sin(angle * numerology_value * 2 + dist * 0.015) * vortex_strength
-            vortex2 = math.cos(angle * (numerology_value + 5) - dist * 0.012) * vortex_strength
+            vortex_mult1 = 1.5 + (phrase_seed % 20) * 0.1
+            vortex_mult2 = 1.0 + ((phrase_seed >> 5) % 25) * 0.08
+            vortex_freq1 = 0.01 + (phrase_seed % 15) * 0.001
+            vortex_freq2 = 0.008 + ((phrase_seed >> 8) % 20) * 0.001
+            
+            vortex1 = math.sin(angle * numerology_value * vortex_mult1 + dist * vortex_freq1) * vortex_strength
+            vortex2 = math.cos(angle * (numerology_value + vortex_mult2) - dist * vortex_freq2) * vortex_strength
             
             # Multi-layered gradient with extreme complexity
             gradient_factor = 1 - (dist / max_dist)
@@ -71,17 +90,25 @@ def create_sigil(phrase, size=500):
             total_g = base_colors[1] + gradient_factor * 180 + 140 * fractal2 + 110 * cosmic2 + 90 * vortex2
             total_b = base_colors[2] + gradient_factor * 200 + 160 * fractal3 + 130 * cosmic3 + 100 * (vortex1 + vortex2) * 0.5
             
-            # Add cosmic sparkle with fractal distribution
-            cosmic_noise = hash((x * numerology_value, y * numerology_value, int(dist))) % 1000
-            if cosmic_noise > 950:
-                sparkle_intensity = (cosmic_noise - 950) * 10
-                total_r += sparkle_intensity * 1.5
-                total_g += sparkle_intensity * 1.8
-                total_b += sparkle_intensity * 2.2
+            # Add cosmic sparkle with phrase-specific fractal distribution
+            sparkle_threshold = 940 + (phrase_seed % 40)  # Unique threshold per phrase
+            cosmic_noise = hash((x * phrase_seed, y * phrase_seed, int(dist))) % 1000
+            if cosmic_noise > sparkle_threshold:
+                sparkle_intensity = (cosmic_noise - sparkle_threshold) * (8 + phrase_seed % 8)
+                sparkle_r_mult = 1.2 + (phrase_seed % 8) * 0.1
+                sparkle_g_mult = 1.5 + ((phrase_seed >> 4) % 8) * 0.1
+                sparkle_b_mult = 1.8 + ((phrase_seed >> 8) % 8) * 0.1
+                total_r += sparkle_intensity * sparkle_r_mult
+                total_g += sparkle_intensity * sparkle_g_mult
+                total_b += sparkle_intensity * sparkle_b_mult
             
-            # Add aurora-like wave effects
-            aurora_wave = math.sin(y * 0.015 + x * 0.008 + numerology_value) * math.cos(x * 0.012 - y * 0.018)
-            if aurora_wave > 0.6:
+            # Add aurora-like wave effects with phrase-specific parameters
+            aurora_freq_x = 0.012 + (phrase_seed % 20) * 0.0005
+            aurora_freq_y = 0.015 + ((phrase_seed >> 6) % 25) * 0.0006
+            aurora_phase = (phrase_seed % 628) * 0.01  # 0 to 2π
+            aurora_wave = math.sin(y * aurora_freq_y + x * aurora_freq_x + aurora_phase) * math.cos(x * (aurora_freq_x * 0.8) - y * (aurora_freq_y * 1.2))
+            aurora_threshold = 0.5 + (phrase_seed % 30) * 0.01
+            if aurora_wave > aurora_threshold:
                 aurora_intensity = (aurora_wave - 0.6) * 300
                 total_r += aurora_intensity * 0.9
                 total_g += aurora_intensity * 1.4
@@ -208,12 +235,15 @@ def safe_ellipse(draw, coords, **kwargs):
         draw.ellipse([x1, y1, x2, y2], **kwargs)
 
 def create_sacred_geometry(draw, center, size, numerology_value):
-    # Draw complex sacred geometric patterns
-    pattern_layers = min(5, 3 + (numerology_value // 3))
+    # Draw complex sacred geometric patterns with phrase-specific variations
+    phrase_hash = random.randint(1, 1000000)
+    pattern_layers = min(5, 2 + (phrase_hash % 4) + (numerology_value // 3))
 
     for layer in range(pattern_layers):
-        layer_radius = size * (0.85 - layer * 0.12)
-        pattern_count = min(24, numerology_value + layer * 3)
+        layer_spacing = 0.10 + (phrase_hash % 30) * 0.002
+        layer_radius = size * (0.85 - layer * layer_spacing)
+        base_pattern_count = 8 + (phrase_hash % 16)
+        pattern_count = min(36, base_pattern_count + layer * ((phrase_hash >> 8) % 5))
 
         for i in range(pattern_count):
             angle = (2 * math.pi * i) / pattern_count + (layer * math.pi / 8)
@@ -361,13 +391,14 @@ def draw_mystical_circles(draw, center, size, numerology_value):
 
 def create_quantum_fields(draw, center, size, numerology_value, phrase):
     """Create quantum energy field effects with safe coordinates"""
-    field_intensity = min(8, len(phrase) % 6 + 4)
+    phrase_hash = abs(hash(phrase)) % 1000000
+    field_intensity = min(8, (phrase_hash % 6) + 4)
     
     for field_layer in range(field_intensity):
-        field_radius = size * max(0.1, 0.9 - field_layer * 0.12)
+        field_radius = size * max(0.1, 0.9 - field_layer * (0.08 + (phrase_hash % 20) * 0.002))
         
-        # Create quantum particle effects
-        particle_count = min(100, numerology_value * 6 + field_layer * 8)
+        # Create quantum particle effects with phrase-specific distribution
+        particle_count = min(100, (phrase_hash % 40) + 20 + field_layer * 8)
         
         for particle in range(particle_count):
             # Quantum uncertainty in positioning
@@ -407,12 +438,15 @@ def create_quantum_fields(draw, center, size, numerology_value, phrase):
 
 def create_dimensional_portals(draw, center, size, numerology_value):
     """Create dimensional portal effects with safe coordinates"""
-    portal_count = min(6, max(3, numerology_value // 2))
+    phrase_hash = random.randint(1, 1000000)
+    portal_count = min(8, max(2, (phrase_hash % 6) + 2))
     
     for portal_idx in range(portal_count):
-        # Position portals around the sigil
-        portal_angle = (2 * math.pi * portal_idx) / portal_count + (numerology_value * 0.15)
-        portal_distance = size * (0.5 + portal_idx * 0.08)
+        # Position portals around the sigil with phrase-specific positioning
+        angle_offset = (phrase_hash % 628) * 0.01  # Random offset 0-2π
+        portal_angle = (2 * math.pi * portal_idx) / portal_count + angle_offset
+        distance_variation = 0.4 + (phrase_hash % 40) * 0.01
+        portal_distance = size * (distance_variation + portal_idx * (0.06 + (phrase_hash % 20) * 0.001))
         
         portal_x = center[0] + portal_distance * math.cos(portal_angle)
         portal_y = center[1] + portal_distance * math.sin(portal_angle)
@@ -452,11 +486,14 @@ def create_dimensional_portals(draw, center, size, numerology_value):
 
 def create_fractal_spirals(draw, center, size, numerology_value):
     """Create fractal spiral patterns with safe coordinates"""
-    spiral_count = min(8, numerology_value // 2 + 3)
+    phrase_hash = random.randint(1, 1000000)
+    spiral_count = min(12, (phrase_hash % 6) + 3)
     
     for spiral_idx in range(spiral_count):
-        spiral_start_angle = (spiral_idx * 360 / spiral_count) + (numerology_value * 12)
-        spiral_direction = 1 if spiral_idx % 2 == 0 else -1
+        angle_distribution = 320 + (phrase_hash % 80)  # Variable angle distribution
+        spiral_start_angle = (spiral_idx * angle_distribution / spiral_count) + ((phrase_hash >> 8) % 360)
+        # Randomize spiral directions based on phrase
+        spiral_direction = 1 if (phrase_hash + spiral_idx) % 3 != 0 else -1
         
         # Create multi-level fractal spirals
         for fractal_level in range(4):
@@ -494,12 +531,16 @@ def create_fractal_spirals(draw, center, size, numerology_value):
 
 def draw_cosmic_constellations(draw, center, size, numerology_value, phrase):
     """Draw cosmic constellation patterns with safe coordinates"""
-    constellation_count = min(8, len(phrase) // 2 + 3)
+    phrase_hash = abs(hash(phrase)) % 1000000
+    constellation_count = min(12, (phrase_hash % 8) + 3)
     
     for constellation_idx in range(constellation_count):
-        # Create constellation anchor point
-        constellation_angle = (2 * math.pi * constellation_idx) / constellation_count
-        constellation_distance = size * (0.3 + (constellation_idx % 4) * 0.15)
+        # Create constellation anchor point with phrase-specific positioning
+        angle_spread = 300 + (phrase_hash % 120)  # Variable angle spread
+        constellation_angle = (angle_spread * constellation_idx / constellation_count) * (math.pi / 180)
+        distance_base = 0.25 + (phrase_hash % 30) * 0.01
+        distance_increment = 0.10 + ((phrase_hash >> 8) % 20) * 0.005
+        constellation_distance = size * (distance_base + (constellation_idx % 5) * distance_increment)
         
         anchor_x = center[0] + constellation_distance * math.cos(constellation_angle)
         anchor_y = center[1] + constellation_distance * math.sin(constellation_angle)
@@ -604,14 +645,18 @@ def create_energy_vortex(draw, center, size, numerology_value):
 
 def draw_central_mandala(draw, center, size, numerology_value):
     """Draw central mandala with safe coordinates"""
-    mandala_radius = size // 5
+    phrase_hash = random.randint(1, 1000000)
+    mandala_radius = size // (4 + (phrase_hash % 3))  # Variable mandala size
+    mandala_layers = min(8, 3 + (phrase_hash % 4))
 
     # Draw multiple concentric patterns
-    for mandala_layer in range(5):
-        layer_radius = max(10, mandala_radius * (1 - mandala_layer * 0.18))
+    for mandala_layer in range(mandala_layers):
+        layer_spacing = 0.15 + (phrase_hash % 20) * 0.005
+        layer_radius = max(10, mandala_radius * (1 - mandala_layer * layer_spacing))
 
-        # Sacred number-based pattern
-        pattern_points = min(24, numerology_value * 2 + mandala_layer * 3)
+        # Sacred number-based pattern with phrase variation
+        base_points = 6 + (phrase_hash % 12)
+        pattern_points = min(36, base_points + numerology_value + mandala_layer * ((phrase_hash >> 10) % 4))
         layer_points = []
 
         for i in range(pattern_points):
