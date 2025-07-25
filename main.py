@@ -1,7 +1,4 @@
 
-import os
-os.system("pip install flask pillow numpy")
-
 from flask import Flask, render_template, request, send_file, jsonify
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 import string
@@ -13,7 +10,7 @@ import numpy as np
 
 app = Flask(__name__)
 
-def create_sigil(phrase, size=800):
+def create_sigil(phrase, vibe="mystical", size=800):
     """Create a 3D sigil image and return it as base64 encoded string"""
     original_phrase = phrase
     phrase = phrase.upper()
@@ -37,7 +34,7 @@ def create_sigil(phrase, size=800):
     center = (size, size)  # Center for 2x size
 
     # Create 3D depth layers and lighting system
-    create_3d_background_layers(img, draw, center, size, numerology_value, original_phrase)
+    create_3d_background_layers(img, draw, center, size, numerology_value, original_phrase, vibe)
     
     # Add 3D quantum energy fields with depth
     create_3d_quantum_fields(draw, center, size, numerology_value, original_phrase)
@@ -110,7 +107,7 @@ def safe_ellipse(draw, coords, **kwargs):
     if x2 > x1 and y2 > y1:
         draw.ellipse([x1, y1, x2, y2], **kwargs)
 
-def create_3d_background_layers(img, draw, center, size, numerology_value, original_phrase):
+def create_3d_background_layers(img, draw, center, size, numerology_value, original_phrase, vibe="mystical"):
     """Create multi-layered 3D background with depth and atmospheric perspective"""
     phrase_seed = abs(hash(original_phrase.lower())) % 2147483647
     random.seed(phrase_seed)
@@ -158,10 +155,12 @@ def create_3d_background_layers(img, draw, center, size, numerology_value, origi
                 
                 # Color calculation with 3D depth
                 base_colors = get_numerology_colors(numerology_value)
+                vibe_colors = get_vibe_colors(vibe)
+                vibe_color = vibe_colors[depth % len(vibe_colors)]
                 
-                total_r = base_colors[0] * depth_factor + 180 * fractal_3d_1 * light_intensity * atmospheric_factor
-                total_g = base_colors[1] * depth_factor + 200 * fractal_3d_2 * light_intensity * atmospheric_factor  
-                total_b = base_colors[2] * depth_factor + 220 * fractal_3d_3 * light_intensity * atmospheric_factor
+                total_r = (base_colors[0] + vibe_color[0]) * 0.5 * depth_factor + 180 * fractal_3d_1 * light_intensity * atmospheric_factor
+                total_g = (base_colors[1] + vibe_color[1]) * 0.5 * depth_factor + 200 * fractal_3d_2 * light_intensity * atmospheric_factor  
+                total_b = (base_colors[2] + vibe_color[2]) * 0.5 * depth_factor + 220 * fractal_3d_3 * light_intensity * atmospheric_factor
                 
                 # Apply depth fog
                 fog_factor = max(0.1, atmospheric_factor)
@@ -191,6 +190,18 @@ def get_numerology_colors(numerology_value):
         9: (255, 200, 255), 11: (255, 240, 255), 22: (255, 255, 200), 33: (200, 255, 255)
     }
     return numerology_colors.get(numerology_value, (150, 60, 220))
+
+def get_vibe_colors(vibe):
+    """Get color palette based on selected vibe"""
+    vibe_palettes = {
+        'mystical': [(150, 60, 220), (255, 100, 255), (120, 200, 255)],
+        'cosmic': [(20, 20, 80), (100, 150, 255), (200, 100, 255), (255, 200, 100)],
+        'elemental': [(255, 100, 50), (50, 255, 100), (100, 150, 255), (200, 150, 100)],
+        'crystal': [(200, 255, 255), (150, 200, 255), (255, 200, 255), (200, 255, 200)],
+        'shadow': [(80, 20, 80), (120, 60, 120), (60, 20, 60), (100, 40, 100)],
+        'light': [(255, 255, 200), (255, 200, 150), (200, 255, 200), (255, 220, 255)]
+    }
+    return vibe_palettes.get(vibe, vibe_palettes['mystical'])
 
 def create_3d_quantum_fields(draw, center, size, numerology_value, phrase):
     """Create 3D quantum energy fields with depth and particle effects"""
@@ -1216,11 +1227,12 @@ def index():
 def generate():
     data = request.json
     phrase = data.get('phrase', '')
+    vibe = data.get('vibe', 'mystical')
 
     if not phrase.strip():
         return jsonify({'error': 'Please enter your intent or desire'})
 
-    img_base64, error = create_sigil(phrase.strip())
+    img_base64, error = create_sigil(phrase.strip(), vibe)
 
     if error:
         return jsonify({'error': error})

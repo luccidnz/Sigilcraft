@@ -268,3 +268,323 @@
     </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Mystical Sigil Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a0033, #330066, #000022);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(255, 107, 107, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            color: #cccccc;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+            color: #ffffff;
+        }
+        
+        input[type="text"], select {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+            border: 2px solid #4ecdc4;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #ff6b6b;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+        }
+        
+        select option {
+            background: #1a0033;
+            color: #ffffff;
+        }
+        
+        .generate-btn {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px 0;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+        }
+        
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .sigil-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 50px rgba(78, 205, 196, 0.3);
+            margin-bottom: 20px;
+        }
+        
+        .error {
+            color: #ff6b6b;
+            padding: 15px;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+        
+        .loading {
+            display: none;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(78, 205, 196, 0.3);
+            border-top: 4px solid #4ecdc4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .vibe-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .vibe-option {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .vibe-option:hover {
+            border-color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.1);
+        }
+        
+        .vibe-option.selected {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+        }
+        
+        .vibe-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #4ecdc4;
+        }
+        
+        .vibe-description {
+            font-size: 0.9em;
+            color: #cccccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>3D Mystical Sigil Generator</h1>
+        <p class="subtitle">Transform your intentions into powerful 3D mystical sigils</p>
+        
+        <form id="sigilForm">
+            <div class="input-group">
+                <label for="phrase">Enter your intent or desire:</label>
+                <input type="text" id="phrase" name="phrase" placeholder="I manifest abundance and success" required>
+            </div>
+            
+            <div class="input-group">
+                <label>Choose Sigil Vibe:</label>
+                <div class="vibe-grid">
+                    <div class="vibe-option selected" data-vibe="mystical">
+                        <div class="vibe-title">Mystical</div>
+                        <div class="vibe-description">Ethereal and magical energy</div>
+                    </div>
+                    <div class="vibe-option" data-vibe="cosmic">
+                        <div class="vibe-title">Cosmic</div>
+                        <div class="vibe-description">Stellar and galactic power</div>
+                    </div>
+                    <div class="vibe-option" data-vibe="elemental">
+                        <div class="vibe-title">Elemental</div>
+                        <div class="vibe-description">Earth, fire, water, air</div>
+                    </div>
+                    <div class="vibe-option" data-vibe="crystal">
+                        <div class="vibe-title">Crystal</div>
+                        <div class="vibe-description">Crystalline geometric energy</div>
+                    </div>
+                    <div class="vibe-option" data-vibe="shadow">
+                        <div class="vibe-title">Shadow</div>
+                        <div class="vibe-description">Dark and mysterious power</div>
+                    </div>
+                    <div class="vibe-option" data-vibe="light">
+                        <div class="vibe-title">Light</div>
+                        <div class="vibe-description">Radiant and healing energy</div>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="generate-btn">Generate 3D Sigil</button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Channeling cosmic energies...</p>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        let selectedVibe = 'mystical';
+        
+        // Handle vibe selection
+        document.querySelectorAll('.vibe-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.vibe-option').forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedVibe = this.getAttribute('data-vibe');
+            });
+        });
+        
+        // Handle form submission
+        document.getElementById('sigilForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const phrase = document.getElementById('phrase').value.trim();
+            if (!phrase) {
+                showError('Please enter your intent or desire');
+                return;
+            }
+            
+            showLoading(true);
+            clearResult();
+            
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        phrase: phrase,
+                        vibe: selectedVibe 
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showError(data.error);
+                } else if (data.image) {
+                    showResult(data.image);
+                } else {
+                    showError('Unknown error occurred');
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        });
+        
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+        
+        function showError(message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="error">${message}</div>`;
+        }
+        
+        function showResult(imageData) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <div class="result-container">
+                    <h3>Your 3D Mystical Sigil</h3>
+                    <img src="${imageData}" alt="Generated Sigil" class="sigil-image">
+                    <p>Your sigil has been created with ${selectedVibe} energy. Meditate on this symbol to manifest your intention.</p>
+                </div>
+            `;
+        }
+        
+        function clearResult() {
+            document.getElementById('result').innerHTML = '';
+        }
+    </script>
+</body>
+</html>
