@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 
 def create_sigil(phrase, vibe="mystical", size=400):
-    """Create a sigil image with proper vibe differentiation and return it as base64 encoded string"""
+    """Create a highly varied sigil with dramatic vibe differences"""
     print(f"🎨 Creating sigil for: '{phrase}' with vibe: '{vibe}' at size: {size}")
     
     original_phrase = phrase
@@ -26,58 +26,41 @@ def create_sigil(phrase, vibe="mystical", size=400):
 
     print(f"📝 Processed phrase: '{phrase}'")
 
-    # Calculate numerological value
-    numerology_value = calculate_numerology(original_phrase)
-    print(f"🔢 Numerology value: {numerology_value}")
-
-    # Create vibe-specific seed for different results per vibe
-    phrase_seed = abs(hash(original_phrase.lower() + vibe)) % 2147483647
-    random.seed(phrase_seed)
-    print(f"🌱 Using vibe-specific seed: {phrase_seed} for vibe: {vibe}")
-
-    # Create optimized image size for performance
-    img_size = size
-    print(f"🖼️ Creating image: {img_size}x{img_size}")
-    img = Image.new('RGBA', (img_size, img_size), color=(0, 0, 0, 255))
-    draw = ImageDraw.Draw(img)
-
-    center = (img_size // 2, img_size // 2)
-    effective_size = img_size // 2
-
-    # Get vibe-specific colors
-    vibe_colors = get_vibe_colors(vibe)
-    base_colors = get_numerology_colors(numerology_value)
+    # Calculate multiple seeds for maximum variation
+    text_seed = abs(hash(original_phrase.lower())) % 2147483647
+    vibe_seed = abs(hash(vibe)) % 2147483647
+    combined_seed = abs(hash(original_phrase.lower() + vibe + str(len(original_phrase)))) % 2147483647
     
-    print(f"🎨 Using vibe colors: {vibe_colors}")
+    print(f"🌱 Using seeds - Text: {text_seed}, Vibe: {vibe_seed}, Combined: {combined_seed}")
 
-    print("🎭 Creating background...")
-    create_background(img, draw, center, effective_size, vibe_colors, base_colors, phrase_seed)
+    # Create image
+    img = Image.new('RGBA', (size, size), color=(0, 0, 0, 255))
+    draw = ImageDraw.Draw(img)
+    center = (size // 2, size // 2)
 
-    print("⚡ Adding energy fields...")
-    create_energy_fields(draw, center, effective_size, vibe_colors, phrase_seed)
+    # Generate vibe-specific sigil
+    if vibe == 'mystical':
+        create_mystical_sigil(draw, img, center, size, phrase, text_seed, combined_seed)
+    elif vibe == 'cosmic':
+        create_cosmic_sigil(draw, img, center, size, phrase, text_seed, combined_seed)
+    elif vibe == 'elemental':
+        create_elemental_sigil(draw, img, center, size, phrase, text_seed, combined_seed)
+    elif vibe == 'crystal':
+        create_crystal_sigil(draw, img, center, size, phrase, text_seed, combined_seed)
+    elif vibe == 'shadow':
+        create_shadow_sigil(draw, img, center, size, phrase, text_seed, combined_seed)
+    elif vibe == 'light':
+        create_light_sigil(draw, img, center, size, phrase, text_seed, combined_seed)
+    else:
+        create_mystical_sigil(draw, img, center, size, phrase, text_seed, combined_seed)
 
-    print("📐 Adding sacred geometry...")
-    create_sacred_geometry(draw, center, effective_size, vibe_colors, numerology_value, phrase_seed)
-
-    print("🌀 Creating spirals...")
-    create_spirals(draw, center, effective_size, vibe_colors, phrase_seed)
-
-    print("⭕ Drawing mystical circles...")
-    draw_mystical_circles(draw, center, effective_size, vibe_colors, numerology_value)
-
-    print("🕉️ Creating central mandala...")
-    draw_central_mandala(draw, center, effective_size, vibe_colors, numerology_value, phrase_seed)
-
-    print("🔤 Drawing letters...")
-    draw_letters(draw, center, effective_size, phrase, vibe_colors)
-
-    print("🎨 Applying post-processing...")
-    img = apply_post_processing(img, vibe)
+    print("🎨 Applying final enhancements...")
+    img = apply_vibe_effects(img, vibe)
 
     print("💾 Converting to base64...")
     try:
         img_buffer = io.BytesIO()
-        img.save(img_buffer, format='PNG', quality=85, optimize=True)
+        img.save(img_buffer, format='PNG', quality=95, optimize=True)
         img_buffer.seek(0)
         img_data = img_buffer.getvalue()
         img_base64 = base64.b64encode(img_data).decode()
@@ -90,366 +73,705 @@ def create_sigil(phrase, vibe="mystical", size=400):
         return None, f"Error creating image: {str(e)}"
 
 
-def calculate_numerology(text):
-    text = text.upper()
-    total = 0
-    for char in text:
-        if 'A' <= char <= 'Z':
-            total += ord(char) - ord('A') + 1
-    while total > 9 and total not in [11, 22, 33]:
-        total = sum(int(digit) for digit in str(total))
-    return total
-
-
-def get_numerology_colors(numerology_value):
-    """Get base colors for numerological value"""
-    numerology_colors = {
-        1: (150, 60, 220),
-        2: (220, 80, 255),
-        3: (120, 255, 140),
-        4: (255, 200, 80),
-        5: (200, 255, 120),
-        6: (80, 255, 220),
-        7: (255, 80, 200),
-        8: (200, 80, 255),
-        9: (255, 200, 255),
-        11: (255, 240, 255),
-        22: (255, 255, 200),
-        33: (200, 255, 255)
-    }
-    return numerology_colors.get(numerology_value, (150, 60, 220))
-
-
-def get_vibe_colors(vibe):
-    """Get distinctly different color palette based on selected vibe"""
-    vibe_palettes = {
-        'mystical': [(150, 60, 220), (255, 100, 255), (120, 200, 255), (200, 150, 255)],
-        'cosmic': [(20, 20, 80), (100, 150, 255), (200, 100, 255), (255, 200, 100), (50, 255, 200)],
-        'elemental': [(255, 100, 50), (50, 255, 100), (100, 150, 255), (200, 150, 100), (255, 200, 50)],
-        'crystal': [(200, 255, 255), (150, 200, 255), (255, 200, 255), (200, 255, 200), (255, 255, 200)],
-        'shadow': [(80, 20, 80), (120, 60, 120), (60, 20, 60), (100, 40, 100), (40, 40, 80)],
-        'light': [(255, 255, 200), (255, 200, 150), (200, 255, 200), (255, 220, 255), (255, 255, 150)]
-    }
-    return vibe_palettes.get(vibe, vibe_palettes['mystical'])
-
-
-def create_background(img, draw, center, size, vibe_colors, base_colors, seed):
-    """Create background with vibe-specific patterns"""
-    random.seed(seed)
+def create_mystical_sigil(draw, img, center, size, phrase, text_seed, combined_seed):
+    """Create flowing, ethereal mystical sigil"""
+    random.seed(combined_seed)
     
-    # Create gradient background based on vibe
-    for y in range(size * 2):
-        for x in range(size * 2):
-            # Distance from center
-            dist = math.sqrt((x - center[0])**2 + (y - center[1])**2)
-            
-            # Vibe-specific noise pattern
-            noise_freq = 0.01 + (seed % 100) * 0.0001
-            noise1 = math.sin(x * noise_freq) * math.cos(y * noise_freq)
-            noise2 = math.sin(dist * noise_freq * 0.5)
-            
-            # Select vibe color based on position
-            color_index = int((noise1 + noise2 + 2) * len(vibe_colors) / 4) % len(vibe_colors)
-            vibe_color = vibe_colors[color_index]
-            
-            # Mix with base color
-            intensity = max(0.2, 0.8 - dist / (size * 1.5))
-            
-            r = int(vibe_color[0] * intensity + base_colors[0] * (1 - intensity) * 0.3)
-            g = int(vibe_color[1] * intensity + base_colors[1] * (1 - intensity) * 0.3)
-            b = int(vibe_color[2] * intensity + base_colors[2] * (1 - intensity) * 0.3)
-            
-            # Clamp values
-            r = max(0, min(255, r))
-            g = max(0, min(255, g))
-            b = max(0, min(255, b))
-            
-            img.putpixel((x, y), (r, g, b, 255))
-
-
-def create_energy_fields(draw, center, size, vibe_colors, seed):
-    """Create energy field patterns specific to each vibe"""
-    random.seed(seed)
+    # Mystical colors - purples, magentas, ethereal blues
+    colors = [(150, 60, 220), (255, 100, 255), (120, 200, 255), (200, 150, 255), (180, 120, 255)]
     
-    field_count = 8 + (seed % 6)
-    
-    for field in range(field_count):
-        radius = size * (0.3 + field * 0.08)
-        particles = 20 + field * 4
+    # Create flowing energy streams
+    for stream in range(8 + len(phrase)):
+        random.seed(combined_seed + stream + text_seed)
+        start_angle = random.uniform(0, 360)
+        stream_length = random.randint(100, size//2)
         
-        for particle in range(particles):
-            angle = (2 * math.pi * particle) / particles + field * 0.5
+        points = []
+        current_x, current_y = center
+        current_angle = start_angle
+        
+        for step in range(30):
+            current_angle += random.uniform(-30, 30)
+            step_size = stream_length / 30
+            current_x += step_size * math.cos(math.radians(current_angle))
+            current_y += step_size * math.sin(math.radians(current_angle))
+            points.append((current_x, current_y))
+        
+        # Draw flowing line
+        color = colors[stream % len(colors)]
+        for i in range(len(points) - 1):
+            try:
+                draw.line([points[i], points[i + 1]], fill=(*color, 180), width=3)
+            except:
+                pass
+    
+    # Add mystical symbols
+    create_mystical_symbols(draw, center, size, phrase, colors, text_seed)
+    
+    # Add ethereal particles
+    for i in range(50 + ord(phrase[0]) if phrase else 50):
+        random.seed(combined_seed + i)
+        x = random.randint(0, size)
+        y = random.randint(0, size)
+        radius = random.randint(2, 8)
+        color = colors[i % len(colors)]
+        alpha = random.randint(60, 150)
+        
+        try:
+            draw.ellipse([x-radius, y-radius, x+radius, y+radius], 
+                        fill=(*color, alpha))
+        except:
+            pass
+
+
+def create_cosmic_sigil(draw, img, center, size, phrase, text_seed, combined_seed):
+    """Create stellar, galactic cosmic sigil"""
+    random.seed(combined_seed)
+    
+    # Cosmic colors - deep space blues, stellar whites, nebula colors
+    colors = [(20, 20, 80), (100, 150, 255), (200, 100, 255), (255, 200, 100), (50, 255, 200)]
+    
+    # Create star field background
+    for star in range(200 + len(phrase) * 10):
+        random.seed(combined_seed + star + text_seed)
+        x = random.randint(0, size)
+        y = random.randint(0, size)
+        brightness = random.randint(100, 255)
+        star_size = random.randint(1, 4)
+        
+        try:
+            draw.ellipse([x-star_size, y-star_size, x+star_size, y+star_size], 
+                        fill=(brightness, brightness, brightness, 200))
+        except:
+            pass
+    
+    # Create galactic spiral
+    for spiral in range(3):
+        random.seed(combined_seed + spiral)
+        start_radius = size // 8
+        
+        points = []
+        for angle in range(0, 720, 5):
+            radius = start_radius + (angle / 720) * (size // 3)
+            actual_angle = angle + spiral * 120
+            x = center[0] + radius * math.cos(math.radians(actual_angle))
+            y = center[1] + radius * math.sin(math.radians(actual_angle))
+            points.append((x, y))
+        
+        # Draw spiral arms
+        color = colors[spiral % len(colors)]
+        for i in range(len(points) - 1):
+            try:
+                draw.line([points[i], points[i + 1]], fill=(*color, 150), width=4)
+            except:
+                pass
+    
+    # Add constellation based on phrase
+    create_constellation(draw, center, size, phrase, colors, text_seed)
+    
+    # Add nebula clouds
+    create_nebula_effect(img, colors, combined_seed)
+
+
+def create_elemental_sigil(draw, img, center, size, phrase, text_seed, combined_seed):
+    """Create elemental sigil with earth, fire, water, air patterns"""
+    random.seed(combined_seed)
+    
+    # Elemental colors
+    colors = [(255, 100, 50), (50, 255, 100), (100, 150, 255), (200, 150, 100), (255, 200, 50)]
+    
+    # Determine dominant element from phrase
+    element_value = sum(ord(c) for c in phrase) % 4
+    
+    if element_value == 0:  # Fire
+        create_fire_pattern(draw, center, size, phrase, colors, text_seed)
+    elif element_value == 1:  # Water
+        create_water_pattern(draw, center, size, phrase, colors, text_seed)
+    elif element_value == 2:  # Earth
+        create_earth_pattern(draw, center, size, phrase, colors, text_seed)
+    else:  # Air
+        create_air_pattern(draw, center, size, phrase, colors, text_seed)
+    
+    # Add elemental symbols
+    create_elemental_symbols(draw, center, size, phrase, colors, combined_seed)
+
+
+def create_crystal_sigil(draw, img, center, size, phrase, text_seed, combined_seed):
+    """Create geometric crystal sigil"""
+    random.seed(combined_seed)
+    
+    # Crystal colors - clear, bright, geometric
+    colors = [(200, 255, 255), (150, 200, 255), (255, 200, 255), (200, 255, 200), (255, 255, 200)]
+    
+    # Create crystal lattice structure
+    lattice_points = []
+    grid_size = 6 + len(phrase)
+    
+    for i in range(grid_size):
+        for j in range(grid_size):
+            x = (i / (grid_size - 1)) * size * 0.8 + size * 0.1
+            y = (j / (grid_size - 1)) * size * 0.8 + size * 0.1
+            lattice_points.append((x, y))
+    
+    # Connect lattice points in crystal patterns
+    random.seed(text_seed)
+    for i, point in enumerate(lattice_points):
+        connections = random.randint(2, 5)
+        for _ in range(connections):
+            target_idx = random.randint(0, len(lattice_points) - 1)
+            target_point = lattice_points[target_idx]
             
-            x = center[0] + radius * math.cos(angle)
-            y = center[1] + radius * math.sin(angle)
+            color = colors[i % len(colors)]
+            try:
+                draw.line([point, target_point], fill=(*color, 120), width=2)
+            except:
+                pass
+    
+    # Add crystal facets
+    create_crystal_facets(draw, center, size, phrase, colors, combined_seed)
+    
+    # Add geometric patterns
+    create_geometric_patterns(draw, center, size, phrase, colors, text_seed)
+
+
+def create_shadow_sigil(draw, img, center, size, phrase, text_seed, combined_seed):
+    """Create dark, mysterious shadow sigil"""
+    random.seed(combined_seed)
+    
+    # Shadow colors - deep purples, dark grays, mysterious blacks
+    colors = [(80, 20, 80), (120, 60, 120), (60, 20, 60), (100, 40, 100), (40, 40, 80)]
+    
+    # Create shadow tendrils
+    for tendril in range(12 + len(phrase)):
+        random.seed(combined_seed + tendril + text_seed)
+        start_angle = random.uniform(0, 360)
+        
+        points = []
+        current_x, current_y = center
+        
+        for step in range(25):
+            distance = step * (size // 50)
+            angle_variation = random.uniform(-45, 45)
+            actual_angle = start_angle + angle_variation
             
-            # Vibe-specific particle behavior
-            color_index = (field + particle) % len(vibe_colors)
-            color = vibe_colors[color_index]
+            x = current_x + distance * math.cos(math.radians(actual_angle))
+            y = current_y + distance * math.sin(math.radians(actual_angle))
+            points.append((x, y))
             
-            particle_size = max(2, 8 - field)
-            alpha = max(80, 200 - field * 20)
+            current_x, current_y = x, y
+        
+        # Draw tendril with varying thickness
+        color = colors[tendril % len(colors)]
+        for i in range(len(points) - 1):
+            thickness = max(1, 8 - i // 3)
+            try:
+                draw.line([points[i], points[i + 1]], fill=(*color, 160), width=thickness)
+            except:
+                pass
+    
+    # Add shadow runes
+    create_shadow_runes(draw, center, size, phrase, colors, text_seed)
+    
+    # Add void spaces
+    create_void_effect(draw, center, size, phrase, combined_seed)
+
+
+def create_light_sigil(draw, img, center, size, phrase, text_seed, combined_seed):
+    """Create radiant, healing light sigil"""
+    random.seed(combined_seed)
+    
+    # Light colors - brilliant whites, golds, radiant colors
+    colors = [(255, 255, 200), (255, 200, 150), (200, 255, 200), (255, 220, 255), (255, 255, 150)]
+    
+    # Create radial light beams
+    num_beams = 16 + len(phrase)
+    for beam in range(num_beams):
+        angle = (360 / num_beams) * beam
+        beam_length = size // 2 - 20
+        
+        # Create beam gradient
+        for intensity in range(10):
+            current_length = beam_length * (intensity + 1) / 10
+            x = center[0] + current_length * math.cos(math.radians(angle))
+            y = center[1] + current_length * math.sin(math.radians(angle))
             
-            particle_color = (*color, alpha)
+            alpha = 200 - intensity * 15
+            color = colors[beam % len(colors)]
+            width = max(1, 6 - intensity // 2)
             
             try:
-                draw.ellipse([x - particle_size, y - particle_size, 
-                            x + particle_size, y + particle_size], 
-                           fill=particle_color)
+                draw.line([center, (x, y)], fill=(*color, alpha), width=width)
+            except:
+                pass
+    
+    # Add light orbs
+    create_light_orbs(draw, center, size, phrase, colors, text_seed)
+    
+    # Add healing symbols
+    create_healing_symbols(draw, center, size, phrase, colors, combined_seed)
+    
+    # Add radiance effect
+    create_radiance_effect(img, center, size, colors)
+
+
+# Helper functions for specific pattern creation
+def create_mystical_symbols(draw, center, size, phrase, colors, seed):
+    """Create flowing mystical symbols"""
+    random.seed(seed)
+    
+    for i, letter in enumerate(phrase):
+        angle = (360 / len(phrase)) * i
+        distance = size // 4
+        x = center[0] + distance * math.cos(math.radians(angle))
+        y = center[1] + distance * math.sin(math.radians(angle))
+        
+        # Create mystical glyph
+        glyph_size = 20 + ord(letter) % 15
+        color = colors[i % len(colors)]
+        
+        # Draw complex mystical symbol
+        for symbol_part in range(5):
+            part_angle = angle + symbol_part * 72
+            inner_x = x + glyph_size * math.cos(math.radians(part_angle))
+            inner_y = y + glyph_size * math.sin(math.radians(part_angle))
+            
+            try:
+                draw.line([(x, y), (inner_x, inner_y)], fill=(*color, 200), width=3)
+                draw.ellipse([inner_x-3, inner_y-3, inner_x+3, inner_y+3], fill=(*color, 255))
             except:
                 pass
 
 
-def create_sacred_geometry(draw, center, size, vibe_colors, numerology_value, seed):
-    """Create sacred geometry patterns"""
+def create_constellation(draw, center, size, phrase, colors, seed):
+    """Create constellation pattern"""
     random.seed(seed)
     
-    geometry_layers = min(6, 3 + (seed % 4))
+    # Create star positions based on phrase
+    star_positions = []
+    for i, letter in enumerate(phrase):
+        angle = (360 / len(phrase)) * i + ord(letter) * 10
+        distance = (size // 6) + (ord(letter) % 100)
+        x = center[0] + distance * math.cos(math.radians(angle))
+        y = center[1] + distance * math.sin(math.radians(angle))
+        star_positions.append((x, y))
     
-    for layer in range(geometry_layers):
-        layer_radius = size * (0.6 - layer * 0.08)
-        pattern_count = 6 + layer * 3
+    # Connect stars in constellation pattern
+    for i in range(len(star_positions)):
+        for j in range(i + 1, len(star_positions)):
+            if (i + j) % 3 == 0:  # Connect every third combination
+                color = colors[(i + j) % len(colors)]
+                try:
+                    draw.line([star_positions[i], star_positions[j]], 
+                             fill=(*color, 120), width=2)
+                except:
+                    pass
         
-        for i in range(pattern_count):
-            angle = (2 * math.pi * i) / pattern_count + layer * 0.4
-            
-            x = center[0] + layer_radius * math.cos(angle)
-            y = center[1] + layer_radius * math.sin(angle)
-            
-            color_index = (layer + i) % len(vibe_colors)
-            color = vibe_colors[color_index]
-            
-            if numerology_value % 3 == 0:  # Triangles
-                size_factor = max(8, 20 - layer * 2)
-                points = []
-                for tri in range(3):
-                    tri_angle = angle + (tri * 2 * math.pi / 3)
-                    tri_x = x + size_factor * math.cos(tri_angle)
-                    tri_y = y + size_factor * math.sin(tri_angle)
-                    points.append((tri_x, tri_y))
-                
-                try:
-                    draw.polygon(points, fill=(*color, 150))
-                except:
-                    pass
-                    
-            elif numerology_value % 4 == 0:  # Squares
-                size_factor = max(6, 16 - layer * 2)
-                try:
-                    draw.rectangle([x - size_factor, y - size_factor,
-                                  x + size_factor, y + size_factor],
-                                 fill=(*color, 150))
-                except:
-                    pass
-            else:  # Circles
-                size_factor = max(4, 12 - layer)
-                try:
-                    draw.ellipse([x - size_factor, y - size_factor,
-                                x + size_factor, y + size_factor],
-                               fill=(*color, 150))
-                except:
-                    pass
+        # Draw bright star
+        pos = star_positions[i]
+        color = colors[i % len(colors)]
+        try:
+            draw.ellipse([pos[0]-6, pos[1]-6, pos[0]+6, pos[1]+6], 
+                        fill=(*color, 255))
+        except:
+            pass
 
 
-def create_spirals(draw, center, size, vibe_colors, seed):
-    """Create spiral energy patterns"""
+def create_fire_pattern(draw, center, size, phrase, colors, seed):
+    """Create fire elemental pattern"""
     random.seed(seed)
     
-    spiral_count = 3 + (seed % 3)
+    # Create flame tongues
+    for flame in range(8 + len(phrase)):
+        base_x = center[0] + random.randint(-size//4, size//4)
+        base_y = center[1] + size//3
+        
+        flame_height = random.randint(size//4, size//2)
+        flame_points = []
+        
+        for height in range(0, flame_height, 10):
+            flicker = random.randint(-20, 20)
+            x = base_x + flicker
+            y = base_y - height
+            flame_points.append((x, y))
+        
+        # Draw flame
+        color = colors[0]  # Fire color
+        for i in range(len(flame_points) - 1):
+            width = max(1, 8 - i)
+            alpha = max(100, 255 - i * 10)
+            try:
+                draw.line([flame_points[i], flame_points[i + 1]], 
+                         fill=(*color, alpha), width=width)
+            except:
+                pass
+
+
+def create_water_pattern(draw, center, size, phrase, colors, seed):
+    """Create water elemental pattern"""
+    random.seed(seed)
     
-    for spiral_idx in range(spiral_count):
-        direction = 1 if spiral_idx % 2 == 0 else -1
-        start_angle = spiral_idx * 120
+    # Create flowing water waves
+    for wave in range(6):
+        y_offset = center[1] - size//3 + wave * (size//6)
+        
+        wave_points = []
+        for x in range(0, size, 10):
+            wave_height = 30 * math.sin((x + wave * 50) * 0.02)
+            y = y_offset + wave_height
+            wave_points.append((x, y))
+        
+        # Draw wave
+        color = colors[2]  # Water color
+        for i in range(len(wave_points) - 1):
+            try:
+                draw.line([wave_points[i], wave_points[i + 1]], 
+                         fill=(*color, 150), width=3)
+            except:
+                pass
+
+
+def create_earth_pattern(draw, center, size, phrase, colors, seed):
+    """Create earth elemental pattern"""
+    random.seed(seed)
+    
+    # Create rock formation pattern
+    for rock in range(12 + len(phrase)):
+        x = random.randint(size//6, size - size//6)
+        y = random.randint(size//6, size - size//6)
+        rock_size = random.randint(15, 40)
+        
+        # Draw rock as polygon
+        points = []
+        for angle in range(0, 360, 45):
+            variation = random.randint(-5, 5)
+            radius = rock_size + variation
+            px = x + radius * math.cos(math.radians(angle))
+            py = y + radius * math.sin(math.radians(angle))
+            points.append((px, py))
+        
+        color = colors[3]  # Earth color
+        try:
+            draw.polygon(points, fill=(*color, 180))
+        except:
+            pass
+
+
+def create_air_pattern(draw, center, size, phrase, colors, seed):
+    """Create air elemental pattern"""
+    random.seed(seed)
+    
+    # Create wind spirals
+    for spiral in range(4):
+        spiral_center_x = center[0] + random.randint(-size//4, size//4)
+        spiral_center_y = center[1] + random.randint(-size//4, size//4)
         
         spiral_points = []
-        current_radius = size * 0.1
-        
-        for step in range(0, 720, 12):  # Reduced steps for performance
-            angle = start_angle + (step * direction)
-            
-            x = center[0] + current_radius * math.cos(math.radians(angle))
-            y = center[1] + current_radius * math.sin(math.radians(angle))
-            
+        for angle in range(0, 720, 15):
+            radius = (angle / 720) * (size // 6)
+            x = spiral_center_x + radius * math.cos(math.radians(angle))
+            y = spiral_center_y + radius * math.sin(math.radians(angle))
             spiral_points.append((x, y))
-            current_radius += size * 0.004
-            
-            if current_radius > size * 0.8:
-                break
         
         # Draw spiral
-        color_index = spiral_idx % len(vibe_colors)
-        color = vibe_colors[color_index]
-        
+        color = colors[4]  # Air color
         for i in range(len(spiral_points) - 1):
             try:
                 draw.line([spiral_points[i], spiral_points[i + 1]], 
-                         fill=(*color, 180), width=3)
+                         fill=(*color, 130), width=2)
             except:
                 pass
 
 
-def draw_mystical_circles(draw, center, size, vibe_colors, numerology_value):
-    """Draw mystical circles with vibe-specific styling"""
-    circle_count = min(12, max(6, numerology_value * 2))
+def create_elemental_symbols(draw, center, size, phrase, colors, seed):
+    """Create elemental symbols"""
+    symbols = ['▲', '▼', '◆', '○']  # Triangle up (fire), down (water), diamond (earth), circle (air)
     
-    for circle_idx in range(circle_count):
-        radius = size * (0.9 - circle_idx * 0.06)
-        if radius <= 4:
-            break
-            
-        color_index = circle_idx % len(vibe_colors)
-        color = vibe_colors[color_index]
+    for i, symbol in enumerate(symbols):
+        angle = i * 90
+        distance = size // 3
+        x = center[0] + distance * math.cos(math.radians(angle))
+        y = center[1] + distance * math.sin(math.radians(angle))
         
-        thickness = max(1, 6 - circle_idx // 2)
-        alpha = max(60, 180 - circle_idx * 12)
+        color = colors[i % len(colors)]
         
-        try:
-            draw.ellipse([center[0] - radius, center[1] - radius,
-                        center[0] + radius, center[1] + radius],
-                       outline=(*color, alpha), width=thickness)
-        except:
-            pass
+        # Draw elemental symbol as geometric shape
+        if symbol == '▲':  # Fire triangle
+            points = [(x, y-15), (x-13, y+10), (x+13, y+10)]
+            try:
+                draw.polygon(points, fill=(*color, 200))
+            except:
+                pass
+        elif symbol == '▼':  # Water triangle
+            points = [(x, y+15), (x-13, y-10), (x+13, y-10)]
+            try:
+                draw.polygon(points, fill=(*color, 200))
+            except:
+                pass
+        elif symbol == '◆':  # Earth diamond
+            points = [(x, y-15), (x+15, y), (x, y+15), (x-15, y)]
+            try:
+                draw.polygon(points, fill=(*color, 200))
+            except:
+                pass
+        else:  # Air circle
+            try:
+                draw.ellipse([x-15, y-15, x+15, y+15], outline=(*color, 200), width=3)
+            except:
+                pass
 
 
-def draw_central_mandala(draw, center, size, vibe_colors, numerology_value, seed):
-    """Draw central mandala pattern"""
+def create_crystal_facets(draw, center, size, phrase, colors, seed):
+    """Create crystal facet patterns"""
     random.seed(seed)
     
-    mandala_radius = size // 3
-    pattern_points = 8 + numerology_value
-    
-    # Create mandala points
-    mandala_points = []
-    for i in range(pattern_points):
-        angle = (2 * math.pi * i) / pattern_points
-        x = center[0] + mandala_radius * math.cos(angle)
-        y = center[1] + mandala_radius * math.sin(angle)
-        mandala_points.append((x, y))
-    
-    # Connect points in patterns
-    connection_step = max(1, pattern_points // numerology_value)
-    
-    for i in range(pattern_points):
-        start_point = mandala_points[i]
-        end_point = mandala_points[(i + connection_step) % pattern_points]
+    for facet in range(6 + len(phrase)):
+        # Create triangular facets
+        angle = random.uniform(0, 360)
+        distance = random.randint(size//6, size//3)
         
-        color_index = i % len(vibe_colors)
-        color = vibe_colors[color_index]
+        facet_x = center[0] + distance * math.cos(math.radians(angle))
+        facet_y = center[1] + distance * math.sin(math.radians(angle))
         
+        facet_size = random.randint(20, 50)
+        
+        # Create facet as triangle
+        points = []
+        for i in range(3):
+            point_angle = angle + i * 120
+            px = facet_x + facet_size * math.cos(math.radians(point_angle))
+            py = facet_y + facet_size * math.sin(math.radians(point_angle))
+            points.append((px, py))
+        
+        color = colors[facet % len(colors)]
         try:
-            draw.line([start_point, end_point], fill=(*color, 200), width=2)
-        except:
-            pass
-        
-        # Add nodes at connection points
-        try:
-            draw.ellipse([start_point[0] - 4, start_point[1] - 4,
-                        start_point[0] + 4, start_point[1] + 4],
-                       fill=(*color, 255))
+            draw.polygon(points, fill=(*color, 150), outline=(*color, 255))
         except:
             pass
 
 
-def draw_letters(draw, center, size, phrase, vibe_colors):
-    """Draw letters with vibe-specific styling"""
-    try:
-        font = ImageFont.truetype("arial.ttf", max(16, size // 15))
-    except:
-        font = ImageFont.load_default()
+def create_geometric_patterns(draw, center, size, phrase, colors, seed):
+    """Create geometric patterns"""
+    random.seed(seed)
+    
+    # Create geometric grid
+    for i in range(5):
+        for j in range(5):
+            x = size * 0.2 + i * size * 0.15
+            y = size * 0.2 + j * size * 0.15
+            
+            pattern_type = (i + j + ord(phrase[0]) if phrase else 0) % 4
+            color = colors[(i + j) % len(colors)]
+            
+            if pattern_type == 0:  # Square
+                try:
+                    draw.rectangle([x-10, y-10, x+10, y+10], outline=(*color, 200), width=2)
+                except:
+                    pass
+            elif pattern_type == 1:  # Circle
+                try:
+                    draw.ellipse([x-10, y-10, x+10, y+10], outline=(*color, 200), width=2)
+                except:
+                    pass
+            elif pattern_type == 2:  # Triangle
+                points = [(x, y-12), (x-10, y+8), (x+10, y+8)]
+                try:
+                    draw.polygon(points, outline=(*color, 200))
+                except:
+                    pass
+            else:  # Diamond
+                points = [(x, y-10), (x+10, y), (x, y+10), (x-10, y)]
+                try:
+                    draw.polygon(points, outline=(*color, 200))
+                except:
+                    pass
 
-    radius = size * 0.35
-    angle_step = 360 / len(phrase)
-    points = []
 
+def create_shadow_runes(draw, center, size, phrase, colors, seed):
+    """Create dark runic symbols"""
+    random.seed(seed)
+    
     for i, letter in enumerate(phrase):
-        angle = math.radians(i * angle_step - 90)
+        angle = (360 / len(phrase)) * i + 45
+        distance = size // 5
+        x = center[0] + distance * math.cos(math.radians(angle))
+        y = center[1] + distance * math.sin(math.radians(angle))
         
-        x = center[0] + radius * math.cos(angle)
-        y = center[1] + radius * math.sin(angle)
-
-        # Get text size for centering
-        bbox = draw.textbbox((0, 0), letter, font=font)
-        text_width = bbox[2] - bbox[0]
-        text_height = bbox[3] - bbox[1]
-
-        letter_x = x - text_width // 2
-        letter_y = y - text_height // 2
-
-        # Vibe-specific letter color
-        color_index = i % len(vibe_colors)
-        color = vibe_colors[color_index]
-
-        # Glow effect
-        for glow in range(3, 0, -1):
-            glow_alpha = 60 - glow * 15
-            glow_color = (*color, glow_alpha)
-            
-            for dx in range(-glow, glow + 1):
-                for dy in range(-glow, glow + 1):
-                    if dx != 0 or dy != 0:
-                        try:
-                            draw.text((letter_x + dx, letter_y + dy), 
-                                    letter, font=font, fill=glow_color)
-                        except:
-                            pass
-
-        # Main letter
-        try:
-            draw.text((letter_x, letter_y), letter, font=font, 
-                     fill=(*color, 255))
-        except:
-            pass
+        # Create complex rune based on letter
+        rune_complexity = ord(letter) % 5 + 3
+        color = colors[i % len(colors)]
         
-        points.append((x, y))
-
-    # Connect letters
-    if len(points) > 1:
-        for i in range(len(points)):
-            start_point = points[i]
-            end_point = points[(i + 1) % len(points)]
+        for rune_line in range(rune_complexity):
+            line_angle = angle + rune_line * 45
+            line_length = 15 + (ord(letter) % 10)
             
-            color_index = i % len(vibe_colors)
-            color = vibe_colors[color_index]
+            start_x = x + (line_length // 2) * math.cos(math.radians(line_angle))
+            start_y = y + (line_length // 2) * math.sin(math.radians(line_angle))
+            end_x = x - (line_length // 2) * math.cos(math.radians(line_angle))
+            end_y = y - (line_length // 2) * math.sin(math.radians(line_angle))
             
             try:
-                draw.line([start_point, end_point], fill=(*color, 150), width=2)
+                draw.line([(start_x, start_y), (end_x, end_y)], 
+                         fill=(*color, 220), width=3)
             except:
                 pass
 
 
-def apply_post_processing(img, vibe):
-    """Apply vibe-specific post-processing effects"""
+def create_void_effect(draw, center, size, phrase, seed):
+    """Create void spaces in shadow sigil"""
+    random.seed(seed)
+    
+    for void in range(3 + len(phrase)):
+        void_x = random.randint(size//4, size - size//4)
+        void_y = random.randint(size//4, size - size//4)
+        void_radius = random.randint(10, 30)
+        
+        # Create void as black circle with dark outline
+        try:
+            draw.ellipse([void_x-void_radius, void_y-void_radius, 
+                         void_x+void_radius, void_y+void_radius], 
+                        fill=(0, 0, 0, 255), outline=(40, 40, 40, 200))
+        except:
+            pass
+
+
+def create_light_orbs(draw, center, size, phrase, colors, seed):
+    """Create radiant light orbs"""
+    random.seed(seed)
+    
+    for orb in range(8 + len(phrase)):
+        orb_x = random.randint(size//6, size - size//6)
+        orb_y = random.randint(size//6, size - size//6)
+        orb_radius = random.randint(8, 25)
+        
+        color = colors[orb % len(colors)]
+        
+        # Create orb with gradient effect
+        for radius_step in range(orb_radius, 0, -2):
+            alpha = int(255 * (radius_step / orb_radius) * 0.6)
+            try:
+                draw.ellipse([orb_x-radius_step, orb_y-radius_step, 
+                             orb_x+radius_step, orb_y+radius_step], 
+                            fill=(*color, alpha))
+            except:
+                pass
+
+
+def create_healing_symbols(draw, center, size, phrase, colors, seed):
+    """Create healing light symbols"""
+    random.seed(seed)
+    
+    # Create cross/plus symbols for healing
+    for i in range(4 + len(phrase)):
+        angle = (360 / (4 + len(phrase))) * i
+        distance = size // 4
+        x = center[0] + distance * math.cos(math.radians(angle))
+        y = center[1] + distance * math.sin(math.radians(angle))
+        
+        color = colors[i % len(colors)]
+        cross_size = 15
+        
+        # Draw healing cross
+        try:
+            # Vertical line
+            draw.line([(x, y-cross_size), (x, y+cross_size)], 
+                     fill=(*color, 255), width=4)
+            # Horizontal line
+            draw.line([(x-cross_size, y), (x+cross_size, y)], 
+                     fill=(*color, 255), width=4)
+        except:
+            pass
+
+
+def create_radiance_effect(img, center, size, colors):
+    """Create radiance effect for light sigil"""
+    # Create radial gradient overlay
+    for y in range(size):
+        for x in range(size):
+            distance = math.sqrt((x - center[0])**2 + (y - center[1])**2)
+            max_distance = size / 2
+            
+            if distance < max_distance:
+                intensity = 1 - (distance / max_distance)
+                current_pixel = img.getpixel((x, y))
+                
+                # Add golden radiance
+                if len(current_pixel) == 4:  # RGBA
+                    r, g, b, a = current_pixel
+                    radiance_boost = int(intensity * 30)
+                    new_r = min(255, r + radiance_boost)
+                    new_g = min(255, g + radiance_boost)
+                    new_b = min(255, b + radiance_boost // 2)
+                    img.putpixel((x, y), (new_r, new_g, new_b, a))
+
+
+def create_nebula_effect(img, colors, seed):
+    """Create nebula cloud effect for cosmic sigil"""
+    random.seed(seed)
+    
+    # Create cloudy nebula regions
+    for cloud in range(5):
+        cloud_x = random.randint(0, img.width)
+        cloud_y = random.randint(0, img.height)
+        cloud_size = random.randint(50, 120)
+        color = colors[cloud % len(colors)]
+        
+        for radius in range(cloud_size, 0, -5):
+            alpha = int(60 * (radius / cloud_size))
+            
+            # Create soft circular gradient
+            for angle in range(0, 360, 10):
+                x = cloud_x + radius * math.cos(math.radians(angle))
+                y = cloud_y + radius * math.sin(math.radians(angle))
+                
+                if 0 <= x < img.width and 0 <= y < img.height:
+                    current_pixel = img.getpixel((int(x), int(y)))
+                    if len(current_pixel) == 4:
+                        r, g, b, a = current_pixel
+                        blend_r = min(255, r + color[0] * alpha // 255)
+                        blend_g = min(255, g + color[1] * alpha // 255)
+                        blend_b = min(255, b + color[2] * alpha // 255)
+                        img.putpixel((int(x), int(y)), (blend_r, blend_g, blend_b, a))
+
+
+def apply_vibe_effects(img, vibe):
+    """Apply final vibe-specific effects"""
     try:
         if vibe == 'shadow':
-            # Darker, more mysterious
+            # Very dark and mysterious
             enhancer = ImageEnhance.Brightness(img)
-            img = enhancer.enhance(0.8)
+            img = enhancer.enhance(0.6)
             enhancer = ImageEnhance.Contrast(img)
-            img = enhancer.enhance(1.4)
+            img = enhancer.enhance(1.8)
         elif vibe == 'light':
-            # Brighter, more radiant
+            # Very bright and radiant
             enhancer = ImageEnhance.Brightness(img)
-            img = enhancer.enhance(1.3)
+            img = enhancer.enhance(1.4)
             enhancer = ImageEnhance.Color(img)
-            img = enhancer.enhance(1.2)
+            img = enhancer.enhance(1.3)
         elif vibe == 'cosmic':
-            # Enhanced contrast and saturation
+            # Deep space contrast
+            enhancer = ImageEnhance.Contrast(img)
+            img = enhancer.enhance(1.5)
+            enhancer = ImageEnhance.Color(img)
+            img = enhancer.enhance(1.6)
+        elif vibe == 'crystal':
+            # Sharp and brilliant
+            enhancer = ImageEnhance.Sharpness(img)
+            img = enhancer.enhance(2.0)
+            enhancer = ImageEnhance.Brightness(img)
+            img = enhancer.enhance(1.2)
+        elif vibe == 'elemental':
+            # Natural and vivid
+            enhancer = ImageEnhance.Color(img)
+            img = enhancer.enhance(1.5)
             enhancer = ImageEnhance.Contrast(img)
             img = enhancer.enhance(1.3)
+        else:  # mystical
+            # Ethereal and flowing
             enhancer = ImageEnhance.Color(img)
             img = enhancer.enhance(1.4)
-        elif vibe == 'crystal':
-            # Sharp and clear
-            enhancer = ImageEnhance.Sharpness(img)
-            img = enhancer.enhance(1.5)
             enhancer = ImageEnhance.Brightness(img)
             img = enhancer.enhance(1.1)
-        else:
-            # Standard enhancement
-            enhancer = ImageEnhance.Contrast(img)
-            img = enhancer.enhance(1.2)
-            enhancer = ImageEnhance.Color(img)
-            img = enhancer.enhance(1.3)
     except Exception as e:
         print(f"Post-processing warning: {e}")
     
@@ -484,8 +806,8 @@ def status():
     return jsonify({
         'status': 'operational',
         'server': 'Flask Sigil Generator',
-        'version': '3.1',
-        'features': ['Fast rendering', 'Vibe differentiation', 'Optimized performance'],
+        'version': '4.0',
+        'features': ['Dramatically different vibes', 'Unique patterns per input', 'Fixed download'],
         'available_vibes': ['mystical', 'cosmic', 'elemental', 'crystal', 'shadow', 'light'],
         'endpoints': ['/generate', '/test', '/health', '/status']
     })
@@ -496,91 +818,45 @@ def generate():
     try:
         print("=== GENERATE REQUEST RECEIVED ===")
         
-        # Validate request
         if not request.is_json:
-            print("ERROR: Request is not JSON")
-            return jsonify({
-                'success': False,
-                'error': 'Request must be JSON'
-            }), 400
+            return jsonify({'success': False, 'error': 'Request must be JSON'}), 400
             
         data = request.json
         if not data:
-            print("ERROR: No data provided")
-            return jsonify({
-                'success': False,
-                'error': 'No data provided'
-            }), 400
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
             
         phrase = data.get('phrase', '').strip()
         vibe = data.get('vibe', 'mystical').strip().lower()
 
-        print(f"Received phrase: '{phrase}'")
-        print(f"Received vibe: '{vibe}'")
+        print(f"Received phrase: '{phrase}' with vibe: '{vibe}'")
 
-        # Validate phrase
         if not phrase:
-            print("ERROR: No phrase provided")
-            return jsonify({
-                'success': False,
-                'error': 'Please enter your intent or desire'
-            })
+            return jsonify({'success': False, 'error': 'Please enter your intent or desire'})
             
         if len(phrase) > 200:
-            print(f"ERROR: Phrase too long ({len(phrase)} characters)")
-            return jsonify({
-                'success': False,
-                'error': 'Phrase too long (max 200 characters)'
-            })
+            return jsonify({'success': False, 'error': 'Phrase too long (max 200 characters)'})
 
-        # Validate vibe
         valid_vibes = ['mystical', 'cosmic', 'elemental', 'crystal', 'shadow', 'light']
         if vibe not in valid_vibes:
-            print(f"WARNING: Invalid vibe '{vibe}', defaulting to 'mystical'")
             vibe = 'mystical'
 
         print(f"✅ GENERATING SIGIL: '{phrase}' with vibe: '{vibe}'")
-        print("🎨 Starting optimized image generation...")
         
-        # Generate sigil with optimized performance
         try:
-            img_base64, error = create_sigil(phrase, vibe, size=400)  # Optimized size
+            img_base64, error = create_sigil(phrase, vibe, size=400)
             
             if error:
-                print(f"ERROR: Sigil creation failed: {error}")
-                return jsonify({
-                    'success': False,
-                    'error': error
-                })
+                return jsonify({'success': False, 'error': error})
 
             if not img_base64:
-                print("ERROR: No image data generated")
-                return jsonify({
-                    'success': False,
-                    'error': 'Failed to generate sigil image'
-                })
+                return jsonify({'success': False, 'error': 'Failed to generate sigil image'})
                 
-            print(f"✅ IMAGE GENERATED: {len(img_base64)} bytes")
+            print(f"✅ SIGIL GENERATED SUCCESSFULLY")
                 
-        except MemoryError as me:
-            print(f"MEMORY ERROR: {str(me)}")
-            return jsonify({
-                'success': False,
-                'error': 'Insufficient memory to generate sigil. Please try a shorter phrase.'
-            })
-            
         except Exception as generation_error:
             print(f"GENERATION ERROR: {str(generation_error)}")
-            import traceback
-            traceback.print_exc()
-            return jsonify({
-                'success': False,
-                'error': 'Sigil generation failed. Please try again.'
-            })
+            return jsonify({'success': False, 'error': 'Sigil generation failed. Please try again.'})
 
-        print("✅ SIGIL GENERATED SUCCESSFULLY")
-        
-        # Return response with success flag
         response_data = {
             'success': True,
             'image': f'data:image/png;base64,{img_base64}',
@@ -589,18 +865,11 @@ def generate():
             'timestamp': str(datetime.now())
         }
         
-        print("✅ RESPONSE PREPARED, SENDING...")
-        print(f"📊 Response size: ~{len(str(response_data))} characters")
         return jsonify(response_data)
     
     except Exception as e:
         print(f"CRITICAL ERROR in generate endpoint: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({
-            'success': False,
-            'error': f'Server error: Please try again'
-        }), 500
+        return jsonify({'success': False, 'error': f'Server error: Please try again'}), 500
 
 
 if __name__ == "__main__":
