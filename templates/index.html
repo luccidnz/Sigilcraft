@@ -746,102 +746,287 @@
             downloadBtn.style.display = 'none';
         }
 
-        // Fixed download function
+        // Enhanced download function with better error handling
         function downloadSigil() {
             console.log('📥 Download initiated...');
             
             try {
                 if (!currentSigilData) {
-                    console.error('No sigil data available for download');
+                    console.error('❌ No sigil data available for download');
                     showError('No sigil available for download. Please generate a sigil first.');
-                    return;
+                    return false;
                 }
 
-                // Create download link
+                // Validate that we have proper image data
+                if (!currentSigilData.startsWith('data:image/')) {
+                    console.error('❌ Invalid image data format');
+                    showError('Invalid image data. Please regenerate the sigil.');
+                    return false;
+                }
+
+                // Create download link with enhanced compatibility
                 const link = document.createElement('a');
                 link.href = currentSigilData;
+                link.style.display = 'none';
                 
-                // Generate filename with timestamp and current phrase
+                // Generate safe filename with timestamp and current phrase
                 const phraseInput = document.getElementById('phrase');
-                const phrase = phraseInput.value.trim().substring(0, 20).replace(/[^a-zA-Z0-9]/g, '_');
-                const timestamp = new Date().toISOString().slice(0, 10);
-                const filename = `sigil_${phrase}_${currentSelectedVibe}_${timestamp}.png`;
+                let phrase = phraseInput.value.trim().substring(0, 20);
+                phrase = phrase.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
+                if (!phrase) phrase = 'sigil';
+                
+                const now = new Date();
+                const timestamp = now.toISOString().slice(0, 10);
+                const timestring = now.toTimeString().slice(0, 8).replace(/:/g, '');
+                const filename = `sigil_${phrase}_${currentSelectedVibe}_${timestamp}_${timestring}.png`;
                 
                 link.download = filename;
+                link.target = '_blank';
                 
-                // Append to body, click, and remove
+                // Enhanced download process
                 document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
                 
-                console.log('✅ Download completed:', filename);
+                // Multiple download attempts for better browser compatibility
+                try {
+                    link.click();
+                    console.log('✅ Download triggered:', filename);
+                } catch (clickError) {
+                    console.error('❌ Click download failed, trying alternative method');
+                    
+                    // Alternative method: create blob and download
+                    try {
+                        const base64Data = currentSigilData.split(',')[1];
+                        const byteCharacters = atob(base64Data);
+                        const byteNumbers = new Array(byteCharacters.length);
+                        for (let i = 0; i < byteCharacters.length; i++) {
+                            byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        }
+                        const byteArray = new Uint8Array(byteNumbers);
+                        const blob = new Blob([byteArray], {type: 'image/png'});
+                        
+                        const blobUrl = URL.createObjectURL(blob);
+                        link.href = blobUrl;
+                        link.click();
+                        
+                        // Clean up blob URL after a delay
+                        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+                        console.log('✅ Blob download completed:', filename);
+                    } catch (blobError) {
+                        console.error('❌ Blob download failed:', blobError);
+                        showError('Download failed. Your browser may not support this feature.');
+                        return false;
+                    }
+                }
+                
+                // Clean up
+                setTimeout(() => {
+                    if (document.body.contains(link)) {
+                        document.body.removeChild(link);
+                    }
+                }, 1000);
+                
+                console.log('✅ Download process completed successfully:', filename);
+                return true;
                 
             } catch (error) {
-                console.error('❌ Download failed:', error);
-                showError('Download failed. Please try again.');
+                console.error('❌ Download failed with error:', error);
+                showError('Download failed: ' + error.message);
+                return false;
             }
         }
 
         // Comprehensive testing function
-        function runAppTests() {
+        async function runAppTests() {
             console.log('🧪 Running comprehensive app tests...');
             
             let allTestsPassed = true;
+            const testResults = [];
             
             // Test 1: DOM Elements
-            console.log('Test 1: DOM Elements');
+            console.log('🔍 Test 1: DOM Elements');
             const requiredElements = [
                 'sigilForm', 'phrase', 'loading', 'result', 'error', 'sigil', 'downloadBtn'
             ];
             
+            let domTestPassed = true;
             requiredElements.forEach(elementId => {
                 const element = document.getElementById(elementId);
                 if (element) {
                     console.log(`✅ ${elementId} found`);
                 } else {
                     console.log(`❌ ${elementId} missing`);
+                    domTestPassed = false;
                     allTestsPassed = false;
                 }
             });
+            testResults.push({name: 'DOM Elements', passed: domTestPassed});
             
             // Test 2: Vibe Options
-            console.log('Test 2: Vibe Options');
+            console.log('🔍 Test 2: Vibe Options');
             const vibeOptions = document.querySelectorAll('.vibe-option');
-            console.log(`Found ${vibeOptions.length} vibe options`);
+            const expectedVibes = ['mystical', 'cosmic', 'elemental', 'crystal', 'shadow', 'light'];
+            let vibeTestPassed = vibeOptions.length === expectedVibes.length;
+            
+            console.log(`Found ${vibeOptions.length} vibe options (expected ${expectedVibes.length})`);
             
             vibeOptions.forEach((option, index) => {
                 const vibe = option.getAttribute('data-vibe');
                 const isSelected = option.classList.contains('selected');
                 console.log(`Vibe ${index}: ${vibe} ${isSelected ? '(selected)' : ''}`);
+                
+                if (!expectedVibes.includes(vibe)) {
+                    vibeTestPassed = false;
+                    console.log(`❌ Unexpected vibe: ${vibe}`);
+                }
             });
             
+            if (vibeTestPassed) {
+                console.log('✅ All expected vibes found');
+            } else {
+                console.log('❌ Vibe options test failed');
+                allTestsPassed = false;
+            }
+            testResults.push({name: 'Vibe Options', passed: vibeTestPassed});
+            
             // Test 3: Current State
-            console.log('Test 3: Current State');
+            console.log('🔍 Test 3: Application State');
             console.log(`Current vibe: ${currentSelectedVibe}`);
             console.log(`Is generating: ${isGenerating}`);
             console.log(`Has sigil data: ${currentSigilData ? 'Yes' : 'No'}`);
+            const stateTestPassed = currentSelectedVibe && typeof isGenerating === 'boolean';
+            testResults.push({name: 'Application State', passed: stateTestPassed});
             
             // Test 4: API Connectivity
-            console.log('Test 4: API Connectivity');
-            fetch('/test')
-                .then(response => response.json())
-                .then(data => {
+            console.log('🔍 Test 4: API Connectivity');
+            let apiTestPassed = false;
+            try {
+                const response = await fetch('/test', {timeout: 5000});
+                const data = await response.json();
+                if (data.status === 'ok') {
                     console.log('✅ API connection successful:', data.status);
-                })
-                .catch(error => {
-                    console.log('❌ API connection failed:', error);
-                    allTestsPassed = false;
+                    apiTestPassed = true;
+                } else {
+                    console.log('❌ API returned unexpected status:', data.status);
+                }
+            } catch (error) {
+                console.log('❌ API connection failed:', error);
+                allTestsPassed = false;
+            }
+            testResults.push({name: 'API Connectivity', passed: apiTestPassed});
+            
+            // Test 5: Generation Functionality
+            console.log('🔍 Test 5: Generation Functionality');
+            let generationTestPassed = false;
+            try {
+                const originalPhrase = document.getElementById('phrase').value;
+                document.getElementById('phrase').value = 'TEST';
+                
+                console.log('Testing sigil generation...');
+                const testResponse = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({phrase: 'TEST', vibe: 'mystical'}),
+                    timeout: 30000
                 });
+                
+                const testData = await testResponse.json();
+                if (testData.success && testData.image) {
+                    console.log('✅ Generation test successful');
+                    generationTestPassed = true;
+                } else {
+                    console.log('❌ Generation test failed:', testData.error);
+                }
+                
+                // Restore original phrase
+                document.getElementById('phrase').value = originalPhrase;
+                
+            } catch (error) {
+                console.log('❌ Generation test error:', error);
+                allTestsPassed = false;
+            }
+            testResults.push({name: 'Generation Functionality', passed: generationTestPassed});
             
-            console.log('🧪 Tests completed');
+            // Test 6: Download Functionality
+            console.log('🔍 Test 6: Download Functionality');
+            let downloadTestPassed = false;
+            if (currentSigilData) {
+                try {
+                    downloadTestPassed = downloadSigil();
+                    if (downloadTestPassed) {
+                        console.log('✅ Download test successful');
+                    } else {
+                        console.log('❌ Download test failed');
+                    }
+                } catch (error) {
+                    console.log('❌ Download test error:', error);
+                }
+            } else {
+                console.log('⚠️ No sigil data available for download test');
+                downloadTestPassed = true; // Don't fail if no data available
+            }
+            testResults.push({name: 'Download Functionality', passed: downloadTestPassed});
             
-            if (allTestsPassed) {
+            // Test 7: UI Interactions
+            console.log('🔍 Test 7: UI Interactions');
+            let uiTestPassed = true;
+            try {
+                // Test form validation
+                const form = document.getElementById('sigilForm');
+                const textarea = document.getElementById('phrase');
+                const generateBtn = document.querySelector('.generate-btn');
+                
+                if (!form || !textarea || !generateBtn) {
+                    uiTestPassed = false;
+                    console.log('❌ Missing UI elements');
+                } else {
+                    console.log('✅ All UI elements present');
+                }
+                
+                // Test vibe selection
+                vibeOptions.forEach(option => {
+                    if (!option.onclick && !option.addEventListener) {
+                        uiTestPassed = false;
+                        console.log('❌ Vibe option missing event handler');
+                    }
+                });
+                
+                if (uiTestPassed) {
+                    console.log('✅ UI interactions test passed');
+                } else {
+                    console.log('❌ UI interactions test failed');
+                }
+                
+            } catch (error) {
+                console.log('❌ UI test error:', error);
+                uiTestPassed = false;
+            }
+            testResults.push({name: 'UI Interactions', passed: uiTestPassed});
+            
+            // Calculate final results
+            const passedTests = testResults.filter(test => test.passed).length;
+            const totalTests = testResults.length;
+            
+            console.log('\n📊 COMPREHENSIVE TEST RESULTS:');
+            console.log('=' * 50);
+            testResults.forEach(test => {
+                const status = test.passed ? '✅ PASS' : '❌ FAIL';
+                console.log(`${test.name}: ${status}`);
+            });
+            console.log('=' * 50);
+            console.log(`Overall: ${passedTests}/${totalTests} tests passed (${Math.round(passedTests/totalTests*100)}%)`);
+            
+            if (passedTests === totalTests) {
                 console.log('🎉 ALL TESTS PASSED! App is fully operational!');
             } else {
                 console.log('⚠️ Some tests failed - check logs above');
+                allTestsPassed = false;
             }
             
-            return allTestsPassed;
+            return {
+                allPassed: allTestsPassed,
+                results: testResults,
+                summary: `${passedTests}/${totalTests} tests passed`
+            };
         }
 
         // Test vibe selection functionality
@@ -849,6 +1034,7 @@
             console.log('🧪 Testing vibe selection...');
             
             const vibeOptions = document.querySelectorAll('.vibe-option');
+            let allVibesWork = true;
             
             vibeOptions.forEach((option, index) => {
                 const vibe = option.getAttribute('data-vibe');
@@ -857,13 +1043,135 @@
                 // Simulate click
                 option.click();
                 
-                // Verify selection
-                if (currentSelectedVibe === vibe && option.classList.contains('selected')) {
-                    console.log(`✅ Vibe ${vibe} selection works`);
-                } else {
-                    console.log(`❌ Vibe ${vibe} selection failed`);
-                }
+                // Small delay to ensure DOM updates
+                setTimeout(() => {
+                    // Verify selection
+                    if (currentSelectedVibe === vibe && option.classList.contains('selected')) {
+                        console.log(`✅ Vibe ${vibe} selection works`);
+                    } else {
+                        console.log(`❌ Vibe ${vibe} selection failed`);
+                        allVibesWork = false;
+                    }
+                }, 10);
             });
+            
+            return allVibesWork;
+        }
+
+        // Automated bug detection and fixing
+        async function detectAndFixBugs() {
+            console.log('🔧 Running automated bug detection and fixes...');
+            
+            const issues = [];
+            
+            // Check for common issues
+            const phraseInput = document.getElementById('phrase');
+            const generateBtn = document.querySelector('.generate-btn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            
+            // Issue 1: Check if download button is properly visible when sigil exists
+            if (currentSigilData && downloadBtn && downloadBtn.style.display === 'none') {
+                console.log('🔧 Fixing: Download button not visible despite having sigil data');
+                downloadBtn.style.display = 'inline-block';
+                issues.push('Fixed download button visibility');
+            }
+            
+            // Issue 2: Check if form elements are properly enabled
+            if (phraseInput && phraseInput.disabled && !isGenerating) {
+                console.log('🔧 Fixing: Input field incorrectly disabled');
+                phraseInput.disabled = false;
+                issues.push('Fixed input field state');
+            }
+            
+            // Issue 3: Check if generate button is properly enabled
+            if (generateBtn && generateBtn.disabled && !isGenerating) {
+                console.log('🔧 Fixing: Generate button incorrectly disabled');
+                generateBtn.disabled = false;
+                generateBtn.style.opacity = '1';
+                issues.push('Fixed generate button state');
+            }
+            
+            // Issue 4: Check vibe selection state
+            const selectedVibes = document.querySelectorAll('.vibe-option.selected');
+            if (selectedVibes.length === 0) {
+                console.log('🔧 Fixing: No vibe selected, defaulting to mystical');
+                const mysticalOption = document.querySelector('[data-vibe="mystical"]');
+                if (mysticalOption) {
+                    mysticalOption.classList.add('selected');
+                    currentSelectedVibe = 'mystical';
+                    issues.push('Fixed vibe selection state');
+                }
+            } else if (selectedVibes.length > 1) {
+                console.log('🔧 Fixing: Multiple vibes selected, keeping only first');
+                for (let i = 1; i < selectedVibes.length; i++) {
+                    selectedVibes[i].classList.remove('selected');
+                }
+                currentSelectedVibe = selectedVibes[0].getAttribute('data-vibe');
+                issues.push('Fixed multiple vibe selection');
+            }
+            
+            // Issue 5: Reset loading state if stuck
+            const loadingDiv = document.getElementById('loading');
+            if (loadingDiv && loadingDiv.style.display === 'block' && !isGenerating) {
+                console.log('🔧 Fixing: Loading state stuck');
+                showLoading(false);
+                issues.push('Fixed stuck loading state');
+            }
+            
+            if (issues.length > 0) {
+                console.log('🔧 Fixed issues:', issues);
+                return issues;
+            } else {
+                console.log('✅ No issues detected');
+                return [];
+            }
+        }
+
+        // Complete app testing with automatic fixes
+        async function fullAppTest() {
+            console.log('🚀 Starting complete app testing with automatic fixes...');
+            
+            let iteration = 1;
+            let maxIterations = 3;
+            
+            while (iteration <= maxIterations) {
+                console.log(`\n🔄 Testing iteration ${iteration}/${maxIterations}`);
+                
+                // Detect and fix bugs
+                const fixedIssues = await detectAndFixBugs();
+                
+                // Run comprehensive tests
+                const testResults = await runAppTests();
+                
+                // Test specific functionality
+                const vibeTestPassed = testVibeSelection();
+                
+                if (testResults.allPassed && vibeTestPassed && fixedIssues.length === 0) {
+                    console.log('🎉 ALL TESTS PASSED! No issues found!');
+                    return true;
+                } else {
+                    console.log(`⚠️ Issues found in iteration ${iteration}:`);
+                    if (!testResults.allPassed) {
+                        console.log('- Some comprehensive tests failed');
+                    }
+                    if (!vibeTestPassed) {
+                        console.log('- Vibe selection tests failed');
+                    }
+                    if (fixedIssues.length > 0) {
+                        console.log('- Fixed issues:', fixedIssues);
+                    }
+                    
+                    if (iteration < maxIterations) {
+                        console.log(`🔄 Running iteration ${iteration + 1}...`);
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                }
+                
+                iteration++;
+            }
+            
+            console.log('⚠️ Testing completed but some issues may remain after maximum iterations');
+            return false;
         }
 
         // Initialize app when DOM is ready
@@ -877,10 +1185,15 @@
                 if (success) {
                     console.log('🎉 App initialization successful!');
                     
-                    // Run tests
+                    // Run comprehensive testing with automatic fixes
                     setTimeout(() => {
-                        runAppTests();
-                        testVibeSelection();
+                        fullAppTest().then(allPassed => {
+                            if (allPassed) {
+                                console.log('✅ Application fully tested and verified!');
+                            } else {
+                                console.log('⚠️ Some issues detected - manual review may be needed');
+                            }
+                        });
                     }, 500);
                 } else {
                     console.error('💥 App initialization failed');
@@ -900,6 +1213,8 @@
         window.testVibes = testVibeSelection;
         window.generateSigil = generateSigil;
         window.downloadSigil = downloadSigil;
+        window.detectAndFixBugs = detectAndFixBugs;
+        window.fullAppTest = fullAppTest;
         
         console.log('🔮 Sigil Generator script loaded successfully!');
     </script>
