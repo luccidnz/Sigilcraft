@@ -1591,64 +1591,108 @@ def status():
 @app.route('/generate', methods=['POST'])
 def generate():
     try:
+        print("=== GENERATE REQUEST RECEIVED ===")
+        
         # Validate request
         if not request.is_json:
-            return jsonify({'error': 'Request must be JSON'}), 400
+            print("ERROR: Request is not JSON")
+            return jsonify({
+                'success': False,
+                'error': 'Request must be JSON'
+            }), 400
             
         data = request.json
         if not data:
-            return jsonify({'error': 'No data provided'}), 400
+            print("ERROR: No data provided")
+            return jsonify({
+                'success': False,
+                'error': 'No data provided'
+            }), 400
             
         phrase = data.get('phrase', '').strip()
         vibe = data.get('vibe', 'mystical').strip().lower()
 
+        print(f"Received phrase: '{phrase}'")
+        print(f"Received vibe: '{vibe}'")
+
         # Validate phrase
         if not phrase:
-            return jsonify({'error': 'Please enter your intent or desire'})
+            print("ERROR: No phrase provided")
+            return jsonify({
+                'success': False,
+                'error': 'Please enter your intent or desire'
+            })
             
         if len(phrase) > 200:
-            return jsonify({'error': 'Phrase too long (max 200 characters)'})
+            print(f"ERROR: Phrase too long ({len(phrase)} characters)")
+            return jsonify({
+                'success': False,
+                'error': 'Phrase too long (max 200 characters)'
+            })
 
         # Validate vibe
         valid_vibes = ['mystical', 'cosmic', 'elemental', 'crystal', 'shadow', 'light']
         if vibe not in valid_vibes:
-            print(f"Invalid vibe '{vibe}', defaulting to 'mystical'")
+            print(f"WARNING: Invalid vibe '{vibe}', defaulting to 'mystical'")
             vibe = 'mystical'
 
-        print(f"Generating sigil for phrase: '{phrase}' with vibe: '{vibe}'")
+        print(f"✅ GENERATING SIGIL: '{phrase}' with vibe: '{vibe}'")
         
-        # Generate sigil with timeout protection
+        # Generate sigil with comprehensive error handling
         try:
             img_base64, error = create_sigil(phrase, vibe)
+            
+            if error:
+                print(f"ERROR: Sigil creation failed: {error}")
+                return jsonify({
+                    'success': False,
+                    'error': error
+                })
+
+            if not img_base64:
+                print("ERROR: No image data generated")
+                return jsonify({
+                    'success': False,
+                    'error': 'Failed to generate sigil image'
+                })
+                
+        except MemoryError as me:
+            print(f"MEMORY ERROR: {str(me)}")
+            return jsonify({
+                'success': False,
+                'error': 'Insufficient memory to generate sigil. Please try a shorter phrase.'
+            })
+            
         except Exception as generation_error:
-            print(f"Sigil generation failed: {str(generation_error)}")
-            return jsonify({'error': 'Sigil generation failed. Please try again.'})
+            print(f"GENERATION ERROR: {str(generation_error)}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({
+                'success': False,
+                'error': 'Sigil generation failed. Please try again.'
+            })
 
-        if error:
-            print(f"Error creating sigil: {error}")
-            return jsonify({'error': error})
-
-        if not img_base64:
-            print("No image data generated")
-            return jsonify({'error': 'Failed to generate sigil image'})
-
-        print("Sigil generated successfully")
+        print("✅ SIGIL GENERATED SUCCESSFULLY")
         
         # Return response with success flag
-        return jsonify({
+        response_data = {
             'success': True,
             'image': f'data:image/png;base64,{img_base64}',
             'phrase': phrase,
-            'vibe': vibe
-        })
+            'vibe': vibe,
+            'timestamp': str(datetime.now())
+        }
+        
+        print("✅ RESPONSE SENT SUCCESSFULLY")
+        return jsonify(response_data)
     
     except Exception as e:
-        print(f"Exception in generate endpoint: {str(e)}")
+        print(f"CRITICAL ERROR in generate endpoint: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({
             'success': False,
-            'error': f'Server error: {str(e)}'
+            'error': f'Server error: Please try again'
         }), 500
 
 

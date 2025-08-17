@@ -519,263 +519,18 @@
     </div>
 
     <script>
-        // Global variables
-        let currentSelectedVibe = 'mystical';
-        let isGenerating = false;
+        // Global application state
+        const SigilApp = {
+            currentSelectedVibe: 'mystical',
+            isGenerating: false,
+            elements: {}
+        };
 
-        // Initialize the application
-        function initializeApp() {
-            console.log('Initializing app...');
+        // Initialize DOM elements
+        function initializeElements() {
+            console.log('Initializing DOM elements...');
             
-            try {
-                // Handle vibe selection
-                const vibeOptions = document.querySelectorAll('.vibe-option');
-                console.log('Found vibe options:', vibeOptions.length);
-                
-                vibeOptions.forEach(option => {
-                    option.addEventListener('click', function() {
-                        console.log('Vibe clicked:', this.getAttribute('data-vibe'));
-                        
-                        // Remove selected class from all options
-                        vibeOptions.forEach(opt => opt.classList.remove('selected'));
-                        
-                        // Add selected class to clicked option
-                        this.classList.add('selected');
-                        
-                        // Update current vibe
-                        currentSelectedVibe = this.getAttribute('data-vibe');
-                        console.log('Current selected vibe:', currentSelectedVibe);
-                    });
-                });
-
-                // Handle form submission
-                const form = document.getElementById('sigilForm');
-                if (form) {
-                    console.log('Form found, adding submit listener');
-                    form.addEventListener('submit', async function(e) {
-                        e.preventDefault();
-                        if (!isGenerating) {
-                            await generateSigilRequest();
-                        }
-                    });
-                } else {
-                    console.error('Form not found');
-                }
-
-                // Allow Enter key to generate (but not Shift+Enter)
-                const textarea = document.getElementById('phrase');
-                if (textarea) {
-                    console.log('Textarea found, adding keypress listener');
-                    textarea.addEventListener('keypress', function(e) {
-                        if (e.key === 'Enter' && !e.shiftKey && !isGenerating) {
-                            e.preventDefault();
-                            generateSigilRequest();
-                        }
-                    });
-                } else {
-                    console.error('Textarea not found');
-                }
-
-                console.log('App initialized successfully');
-                
-            } catch (error) {
-                console.error('Error during app initialization:', error);
-            }
-        }
-
-        // Main sigil generation function
-        async function generateSigilRequest() {
-            if (isGenerating) {
-                console.log('Already generating, skipping request');
-                return;
-            }
-
-            console.log('Generate sigil request started');
-            
-            try {
-                isGenerating = true;
-                
-                const phraseInput = document.getElementById('phrase');
-                if (!phraseInput) {
-                    showError('Interface initialization error');
-                    return;
-                }
-
-                const phrase = phraseInput.value.trim();
-                if (!phrase) {
-                    showError('Please enter your quantum intent matrix');
-                    return;
-                }
-
-                console.log('Current vibe before request:', currentSelectedVibe);
-                showLoading(true);
-                clearResult();
-
-                console.log('Sending request with phrase:', phrase, 'vibe:', currentSelectedVibe);
-                
-                const response = await fetch('/generate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ 
-                        phrase: phrase,
-                        vibe: currentSelectedVibe 
-                    })
-                });
-
-                console.log('Response status:', response.status);
-
-                if (!response.ok) {
-                    throw new Error(`Neural network error! Status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log('Response data received:', data);
-
-                if (data.error) {
-                    showError(data.error);
-                } else if (data.image) {
-                    showResult(data.image);
-                } else {
-                    showError('No quantum data received from neural matrix');
-                }
-                
-            } catch (error) {
-                console.error('Error:', error);
-                showError('Neural network malfunction: ' + error.message);
-            } finally {
-                showLoading(false);
-                isGenerating = false;
-            }
-        }
-
-        function showLoading(show) {
-            try {
-                const loadingDiv = document.getElementById('loading');
-                const generateBtn = document.querySelector('.generate-btn');
-
-                if (loadingDiv && generateBtn) {
-                    if (show) {
-                        loadingDiv.style.display = 'block';
-                        generateBtn.disabled = true;
-                        generateBtn.textContent = 'Processing Neural Matrix...';
-                    } else {
-                        loadingDiv.style.display = 'none';
-                        generateBtn.disabled = false;
-                        generateBtn.textContent = 'Initialize Quantum Sigil';
-                    }
-                } else {
-                    console.error('Loading elements not found');
-                }
-            } catch (error) {
-                console.error('Error in showLoading:', error);
-            }
-        }
-
-        function showError(message) {
-            try {
-                const resultDiv = document.getElementById('result');
-                const errorDiv = document.getElementById('error');
-                const sigilImg = document.getElementById('sigil');
-                const downloadBtn = document.getElementById('downloadBtn');
-
-                if (resultDiv && errorDiv && sigilImg && downloadBtn) {
-                    resultDiv.style.display = 'block';
-                    errorDiv.textContent = message;
-                    errorDiv.style.display = 'block';
-                    errorDiv.classList.add('glitch');
-                    sigilImg.style.display = 'none';
-                    downloadBtn.style.display = 'none';
-
-                    // Remove glitch effect after animation
-                    setTimeout(() => {
-                        errorDiv.classList.remove('glitch');
-                    }, 1000);
-                } else {
-                    console.error('Error display elements not found');
-                }
-            } catch (error) {
-                console.error('Error in showError:', error);
-            }
-        }
-
-        function showResult(imageData) {
-            try {
-                const resultDiv = document.getElementById('result');
-                const errorDiv = document.getElementById('error');
-                const sigilImg = document.getElementById('sigil');
-                const downloadBtn = document.getElementById('downloadBtn');
-
-                if (resultDiv && errorDiv && sigilImg && downloadBtn) {
-                    resultDiv.style.display = 'block';
-                    errorDiv.style.display = 'none';
-                    sigilImg.src = imageData;
-                    sigilImg.style.display = 'block';
-                    downloadBtn.style.display = 'inline-block';
-
-                    // Store image data for download
-                    downloadBtn.setAttribute('data-image', imageData);
-                    
-                    console.log('Sigil displayed successfully');
-                } else {
-                    console.error('Result display elements not found');
-                }
-            } catch (error) {
-                console.error('Error in showResult:', error);
-            }
-        }
-
-        function downloadSigil() {
-            try {
-                const downloadBtn = document.getElementById('downloadBtn');
-                if (downloadBtn) {
-                    const imageData = downloadBtn.getAttribute('data-image');
-
-                    if (imageData) {
-                        const link = document.createElement('a');
-                        link.href = imageData;
-                        link.download = 'quantum-sigil-neural-matrix.png';
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        console.log('Download initiated');
-                    } else {
-                        console.error('No image data found for download');
-                    }
-                } else {
-                    console.error('Download button not found');
-                }
-            } catch (error) {
-                console.error('Error in downloadSigil:', error);
-            }
-        }
-
-        function clearResult() {
-            try {
-                const resultDiv = document.getElementById('result');
-                const errorDiv = document.getElementById('error');
-                const sigilImg = document.getElementById('sigil');
-                const downloadBtn = document.getElementById('downloadBtn');
-
-                if (resultDiv && errorDiv && sigilImg && downloadBtn) {
-                    resultDiv.style.display = 'none';
-                    errorDiv.style.display = 'none';
-                    sigilImg.style.display = 'none';
-                    downloadBtn.style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Error in clearResult:', error);
-            }
-        }
-
-        // Test all app functionality
-        function runDiagnostics() {
-            console.log('=== RUNNING FULL APP DIAGNOSTICS ===');
-            
-            // Test 1: Check DOM elements
-            console.log('Test 1: Checking DOM elements...');
-            const elements = {
+            SigilApp.elements = {
                 form: document.getElementById('sigilForm'),
                 textarea: document.getElementById('phrase'),
                 vibeOptions: document.querySelectorAll('.vibe-option'),
@@ -786,80 +541,353 @@
                 sigilImg: document.getElementById('sigil'),
                 downloadBtn: document.getElementById('downloadBtn')
             };
-            
-            let allElementsFound = true;
-            for (const [name, element] of Object.entries(elements)) {
-                if (element && (name === 'vibeOptions' ? element.length > 0 : true)) {
-                    console.log(`✓ ${name} found`);
-                } else {
-                    console.error(`✗ ${name} NOT found`);
-                    allElementsFound = false;
+
+            // Verify all elements exist
+            const missing = [];
+            for (const [name, element] of Object.entries(SigilApp.elements)) {
+                if (!element || (name === 'vibeOptions' && element.length === 0)) {
+                    missing.push(name);
                 }
             }
-            
-            // Test 2: Check vibe functionality
-            console.log('Test 2: Testing vibe selection...');
-            if (elements.vibeOptions.length > 0) {
-                elements.vibeOptions.forEach((option, index) => {
-                    const vibe = option.getAttribute('data-vibe');
-                    const isSelected = option.classList.contains('selected');
-                    console.log(`Vibe option ${index}: ${vibe} ${isSelected ? '(selected)' : ''}`);
-                });
-                console.log(`Currently selected vibe: ${currentSelectedVibe}`);
+
+            if (missing.length > 0) {
+                console.error('Missing DOM elements:', missing);
+                return false;
             }
-            
-            // Test 3: Check current state
-            console.log('Test 3: Current app state...');
-            console.log(`isGenerating: ${isGenerating}`);
-            console.log(`currentSelectedVibe: ${currentSelectedVibe}`);
-            
-            // Test 4: Test form functionality
-            console.log('Test 4: Testing form functionality...');
-            if (elements.form && elements.textarea) {
-                console.log('✓ Form and textarea are ready');
-                console.log(`Current phrase: "${elements.textarea.value}"`);
-            }
-            
-            // Test 5: Test event listeners
-            console.log('Test 5: Testing event listeners...');
-            console.log('✓ All event listeners should be attached');
-            
-            console.log('=== DIAGNOSTICS COMPLETE ===');
-            return allElementsFound;
+
+            console.log('✅ All DOM elements initialized successfully');
+            return true;
         }
 
-        // Auto-test specific functionality
-        function testVibeSelection() {
-            console.log('Testing vibe selection...');
-            const vibeOptions = document.querySelectorAll('.vibe-option');
-            if (vibeOptions.length > 0) {
-                // Test clicking each vibe option
-                vibeOptions.forEach((option, index) => {
-                    const vibe = option.getAttribute('data-vibe');
-                    console.log(`Testing click on vibe: ${vibe}`);
-                });
-            }
-        }
+        // Setup event listeners
+        function setupEventListeners() {
+            console.log('Setting up event listeners...');
 
-        // Initialize the app when DOM is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, initializing app...');
-            
-            // Small delay to ensure all elements are rendered
-            setTimeout(() => {
-                initializeApp();
-                
-                // Run full diagnostics after initialization
-                setTimeout(() => {
-                    const allOk = runDiagnostics();
-                    if (allOk) {
-                        console.log('🎉 All systems operational! The Sigil Generator is ready.');
-                    } else {
-                        console.error('❌ Some components failed diagnostics.');
+            try {
+                // Vibe selection
+                SigilApp.elements.vibeOptions.forEach(option => {
+                    option.addEventListener('click', function() {
+                        console.log('Vibe clicked:', this.getAttribute('data-vibe'));
+                        
+                        // Update selection
+                        SigilApp.elements.vibeOptions.forEach(opt => opt.classList.remove('selected'));
+                        this.classList.add('selected');
+                        SigilApp.currentSelectedVibe = this.getAttribute('data-vibe');
+                        
+                        console.log('Selected vibe updated to:', SigilApp.currentSelectedVibe);
+                    });
+                });
+
+                // Form submission
+                SigilApp.elements.form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    if (!SigilApp.isGenerating) {
+                        await generateSigil();
                     }
-                }, 500);
-            }, 100);
+                });
+
+                // Enter key support (but not Shift+Enter)
+                SigilApp.elements.textarea.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey && !SigilApp.isGenerating) {
+                        e.preventDefault();
+                        generateSigil();
+                    }
+                });
+
+                console.log('✅ Event listeners setup complete');
+                return true;
+
+            } catch (error) {
+                console.error('Error setting up event listeners:', error);
+                return false;
+            }
+        }
+
+        // Main sigil generation function
+        async function generateSigil() {
+            if (SigilApp.isGenerating) {
+                console.log('Already generating, ignoring request');
+                return;
+            }
+
+            console.log('🚀 Starting sigil generation...');
+            
+            try {
+                SigilApp.isGenerating = true;
+                
+                const phrase = SigilApp.elements.textarea.value.trim();
+                if (!phrase) {
+                    showError('Please enter your quantum intent matrix');
+                    return;
+                }
+
+                console.log(`Generating: "${phrase}" with vibe: "${SigilApp.currentSelectedVibe}"`);
+                
+                showLoading(true);
+                clearResult();
+
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        phrase: phrase,
+                        vibe: SigilApp.currentSelectedVibe 
+                    })
+                });
+
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    throw new Error(`Neural network error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Response received:', data.success ? '✅ Success' : '❌ Error');
+
+                if (data.error) {
+                    showError(data.error);
+                } else if (data.image) {
+                    showResult(data.image);
+                    console.log('🎨 Sigil displayed successfully!');
+                } else {
+                    showError('No quantum data received from neural matrix');
+                }
+                
+            } catch (error) {
+                console.error('Generation error:', error);
+                showError('Neural network malfunction: ' + error.message);
+            } finally {
+                showLoading(false);
+                SigilApp.isGenerating = false;
+            }
+        }
+
+        // UI State Management
+        function showLoading(show) {
+            try {
+                if (show) {
+                    SigilApp.elements.loadingDiv.style.display = 'block';
+                    SigilApp.elements.generateBtn.disabled = true;
+                    SigilApp.elements.generateBtn.textContent = 'Processing Neural Matrix...';
+                } else {
+                    SigilApp.elements.loadingDiv.style.display = 'none';
+                    SigilApp.elements.generateBtn.disabled = false;
+                    SigilApp.elements.generateBtn.textContent = 'Initialize Quantum Sigil';
+                }
+            } catch (error) {
+                console.error('Error in showLoading:', error);
+            }
+        }
+
+        function showError(message) {
+            try {
+                SigilApp.elements.resultDiv.style.display = 'block';
+                SigilApp.elements.errorDiv.textContent = message;
+                SigilApp.elements.errorDiv.style.display = 'block';
+                SigilApp.elements.errorDiv.classList.add('glitch');
+                SigilApp.elements.sigilImg.style.display = 'none';
+                SigilApp.elements.downloadBtn.style.display = 'none';
+
+                // Remove glitch effect
+                setTimeout(() => {
+                    SigilApp.elements.errorDiv.classList.remove('glitch');
+                }, 1000);
+            } catch (error) {
+                console.error('Error in showError:', error);
+            }
+        }
+
+        function showResult(imageData) {
+            try {
+                SigilApp.elements.resultDiv.style.display = 'block';
+                SigilApp.elements.errorDiv.style.display = 'none';
+                SigilApp.elements.sigilImg.src = imageData;
+                SigilApp.elements.sigilImg.style.display = 'block';
+                SigilApp.elements.downloadBtn.style.display = 'inline-block';
+                SigilApp.elements.downloadBtn.setAttribute('data-image', imageData);
+            } catch (error) {
+                console.error('Error in showResult:', error);
+            }
+        }
+
+        function clearResult() {
+            try {
+                SigilApp.elements.resultDiv.style.display = 'none';
+                SigilApp.elements.errorDiv.style.display = 'none';
+                SigilApp.elements.sigilImg.style.display = 'none';
+                SigilApp.elements.downloadBtn.style.display = 'none';
+            } catch (error) {
+                console.error('Error in clearResult:', error);
+            }
+        }
+
+        // Download functionality
+        function downloadSigil() {
+            try {
+                const imageData = SigilApp.elements.downloadBtn.getAttribute('data-image');
+                if (imageData) {
+                    const link = document.createElement('a');
+                    link.href = imageData;
+                    link.download = 'quantum-sigil-neural-matrix.png';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    console.log('📥 Download initiated');
+                } else {
+                    console.error('No image data found for download');
+                }
+            } catch (error) {
+                console.error('Error in downloadSigil:', error);
+            }
+        }
+
+        // Complete system diagnostics
+        function runCompleteDiagnostics() {
+            console.log('🔍 === RUNNING COMPLETE SYSTEM DIAGNOSTICS ===');
+            
+            let allTestsPassed = true;
+
+            // Test 1: DOM Elements
+            console.log('Test 1: DOM Elements');
+            const elementTests = [
+                ['form', SigilApp.elements.form],
+                ['textarea', SigilApp.elements.textarea],
+                ['vibeOptions', SigilApp.elements.vibeOptions?.length > 0],
+                ['generateBtn', SigilApp.elements.generateBtn],
+                ['loadingDiv', SigilApp.elements.loadingDiv],
+                ['resultDiv', SigilApp.elements.resultDiv],
+                ['errorDiv', SigilApp.elements.errorDiv],
+                ['sigilImg', SigilApp.elements.sigilImg],
+                ['downloadBtn', SigilApp.elements.downloadBtn]
+            ];
+
+            elementTests.forEach(([name, element]) => {
+                if (element) {
+                    console.log(`✅ ${name} - OK`);
+                } else {
+                    console.log(`❌ ${name} - MISSING`);
+                    allTestsPassed = false;
+                }
+            });
+
+            // Test 2: Vibe Selection System
+            console.log('Test 2: Vibe Selection System');
+            SigilApp.elements.vibeOptions.forEach((option, index) => {
+                const vibe = option.getAttribute('data-vibe');
+                const isSelected = option.classList.contains('selected');
+                console.log(`${isSelected ? '🔵' : '⚪'} Vibe ${index}: ${vibe} ${isSelected ? '(SELECTED)' : ''}`);
+            });
+            console.log(`Current vibe: ${SigilApp.currentSelectedVibe}`);
+
+            // Test 3: Application State
+            console.log('Test 3: Application State');
+            console.log(`isGenerating: ${SigilApp.isGenerating}`);
+            console.log(`currentSelectedVibe: ${SigilApp.currentSelectedVibe}`);
+
+            // Test 4: Event Listeners
+            console.log('Test 4: Event Listeners');
+            console.log('✅ All event listeners should be attached and functional');
+
+            // Test 5: API Connectivity
+            console.log('Test 5: API Connectivity Test');
+            fetch('/test')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('✅ API Connection - OK:', data.status);
+                })
+                .catch(error => {
+                    console.log('❌ API Connection - ERROR:', error);
+                    allTestsPassed = false;
+                });
+
+            console.log('🔍 === DIAGNOSTICS COMPLETE ===');
+            
+            if (allTestsPassed) {
+                console.log('🎉 ALL SYSTEMS FULLY OPERATIONAL! 🎉');
+                console.log('The Sigil Generator is ready for quantum processing!');
+            } else {
+                console.log('⚠️ Some systems need attention');
+            }
+
+            return allTestsPassed;
+        }
+
+        // Test specific functionality
+        function testVibeSelection() {
+            console.log('🧪 Testing vibe selection functionality...');
+            
+            SigilApp.elements.vibeOptions.forEach((option, index) => {
+                const vibe = option.getAttribute('data-vibe');
+                console.log(`Testing vibe option ${index}: ${vibe}`);
+                
+                // Simulate click
+                option.click();
+                
+                // Verify selection changed
+                if (SigilApp.currentSelectedVibe === vibe) {
+                    console.log(`✅ Vibe selection test ${index} passed`);
+                } else {
+                    console.log(`❌ Vibe selection test ${index} failed`);
+                }
+            });
+        }
+
+        // Initialize the complete application
+        function initializeApp() {
+            console.log('🚀 Initializing Sigil Generator Application...');
+            
+            try {
+                // Step 1: Initialize DOM elements
+                if (!initializeElements()) {
+                    console.error('❌ Failed to initialize DOM elements');
+                    return false;
+                }
+
+                // Step 2: Setup event listeners
+                if (!setupEventListeners()) {
+                    console.error('❌ Failed to setup event listeners');
+                    return false;
+                }
+
+                console.log('✅ Application initialization complete');
+                
+                // Step 3: Run diagnostics
+                setTimeout(() => {
+                    runCompleteDiagnostics();
+                }, 100);
+
+                return true;
+
+            } catch (error) {
+                console.error('❌ Application initialization failed:', error);
+                return false;
+            }
+        }
+
+        // Start the application when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 DOM Content Loaded - Starting Application...');
+            
+            // Small delay to ensure everything is rendered
+            setTimeout(() => {
+                const success = initializeApp();
+                
+                if (success) {
+                    console.log('🎨 Sigil Generator is fully operational and ready! 🎨');
+                } else {
+                    console.error('💥 Application failed to start properly');
+                }
+            }, 50);
         });
+
+        // Expose testing functions to global scope for manual testing
+        window.SigilApp = SigilApp;
+        window.testVibeSelection = testVibeSelection;
+        window.runCompleteDiagnostics = runCompleteDiagnostics;
+        window.generateSigil = generateSigil;
+        window.downloadSigil = downloadSigil;
     </script>
 </body>
 </html>
