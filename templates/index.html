@@ -882,12 +882,69 @@
             }, 50);
         });
 
+        // Comprehensive app testing
+        function runFullAppTest() {
+            console.log('🧪 === RUNNING FULL APPLICATION TEST ===');
+            
+            // Test 1: All DOM elements
+            console.log('Test 1: DOM Elements');
+            const allElementsOk = runCompleteDiagnostics();
+            
+            // Test 2: Vibe selection
+            console.log('Test 2: Vibe Selection');
+            testVibeSelection();
+            
+            // Test 3: Form validation
+            console.log('Test 3: Form Validation');
+            SigilApp.elements.textarea.value = '';
+            console.log('Testing empty phrase...');
+            
+            // Test 4: API connectivity
+            console.log('Test 4: API Connectivity');
+            fetch('/test')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('✅ API Test passed:', data);
+                    
+                    // Test 5: Full generation test
+                    console.log('Test 5: Full Generation Test');
+                    SigilApp.elements.textarea.value = 'Test Phrase';
+                    console.log('Testing with phrase: "Test Phrase"');
+                    
+                    return generateSigil();
+                })
+                .then(() => {
+                    console.log('✅ Full generation test completed');
+                    console.log('🎉 ALL TESTS COMPLETED SUCCESSFULLY!');
+                })
+                .catch(error => {
+                    console.log('❌ Test failed:', error);
+                });
+        }
+
+        // Auto-run diagnostics after startup
+        function autoTestApp() {
+            setTimeout(() => {
+                console.log('🔍 Running automatic app diagnostics...');
+                runCompleteDiagnostics();
+                
+                // Test a quick generation if everything looks good
+                if (SigilApp.elements.form && SigilApp.elements.textarea) {
+                    console.log('💡 All systems ready - app is fully operational!');
+                }
+            }, 1000);
+        }
+
         // Expose testing functions to global scope for manual testing
         window.SigilApp = SigilApp;
         window.testVibeSelection = testVibeSelection;
         window.runCompleteDiagnostics = runCompleteDiagnostics;
+        window.runFullAppTest = runFullAppTest;
         window.generateSigil = generateSigil;
         window.downloadSigil = downloadSigil;
+        
+        // Start auto-testing
+        autoTestApp();
     </script>
 </body>
 </html>

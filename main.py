@@ -11,8 +11,10 @@ import numpy as np
 app = Flask(__name__)
 
 
-def create_sigil(phrase, vibe="mystical", size=800):
+def create_sigil(phrase, vibe="mystical", size=600):
     """Create a 3D sigil image and return it as base64 encoded string"""
+    print(f"🎨 Creating sigil for: '{phrase}' with vibe: '{vibe}' at size: {size}")
+    
     original_phrase = phrase
     phrase = phrase.upper()
     phrase = ''.join([c for c in phrase if c in string.ascii_uppercase])
@@ -21,80 +23,111 @@ def create_sigil(phrase, vibe="mystical", size=800):
     if not phrase:
         return None, "Please enter text with at least one letter"
 
+    print(f"📝 Processed phrase: '{phrase}'")
+
     # Calculate numerological value
     numerology_value = calculate_numerology(original_phrase)
+    print(f"🔢 Numerology value: {numerology_value}")
 
     # Create unique seed based on entire phrase for consistent but unique randomness
     phrase_seed = abs(hash(original_phrase.lower())) % 2147483647
     random.seed(phrase_seed)
+    print(f"🌱 Using seed: {phrase_seed}")
 
-    # Create high-resolution image for 3D effects
-    img = Image.new('RGBA', (size * 2, size * 2), color=(0, 0, 0, 255))
+    # Create optimized image for better performance
+    img_size = min(size * 2, 1200)  # Cap max size for stability
+    print(f"🖼️ Creating image: {img_size}x{img_size}")
+    img = Image.new('RGBA', (img_size, img_size), color=(0, 0, 0, 255))
     draw = ImageDraw.Draw(img)
 
-    center = (size, size)  # Center for 2x size
+    center = (img_size // 2, img_size // 2)  # Center for optimized size
+    effective_size = img_size // 2
 
+    print("🎭 Creating background layers...")
     # Create 3D depth layers and lighting system
-    create_3d_background_layers(img, draw, center, size, numerology_value,
+    create_3d_background_layers(img, draw, center, effective_size, numerology_value,
                                 original_phrase, vibe)
 
+    print("⚡ Adding quantum energy fields...")
     # Add 3D quantum energy fields with depth
-    create_3d_quantum_fields(draw, center, size, numerology_value,
+    create_3d_quantum_fields(draw, center, effective_size, numerology_value,
                              original_phrase)
 
+    print("🌀 Creating dimensional portals...")
     # Create 3D dimensional portals with perspective
-    create_3d_dimensional_portals(draw, center, size, numerology_value)
+    create_3d_dimensional_portals(draw, center, effective_size, numerology_value)
 
+    print("📐 Adding sacred geometry...")
     # Create 3D sacred geometry with depth and shadows
-    create_3d_sacred_geometry(draw, center, size, numerology_value)
+    create_3d_sacred_geometry(draw, center, effective_size, numerology_value)
 
+    print("🔲 Generating chaos grid...")
     # Add 3D chaos grid for raw energy with depth
-    create_3d_chaos_grid(draw, center, size, original_phrase)
+    create_3d_chaos_grid(draw, center, effective_size, original_phrase)
 
+    print("🌪️ Creating spiral energy flows...")
     # Add multi-dimensional 3D spiral energy flows
-    create_3d_spiral_energy(draw, center, size, 1)  # Clockwise
-    create_3d_spiral_energy(draw, center, size, -1)  # Counter-clockwise
-    create_3d_fractal_spirals(draw, center, size, numerology_value)
+    create_3d_spiral_energy(draw, center, effective_size, 1)  # Clockwise
+    create_3d_spiral_energy(draw, center, effective_size, -1)  # Counter-clockwise
+    create_3d_fractal_spirals(draw, center, effective_size, numerology_value)
 
+    print("⭕ Drawing mystical circles...")
     # Add enhanced 3D mystical circles with depth
-    draw_3d_mystical_circles(draw, center, size, numerology_value)
+    draw_3d_mystical_circles(draw, center, effective_size, numerology_value)
 
+    print("✨ Adding cosmic constellations...")
     # Add 3D cosmic constellation patterns with perspective
-    draw_3d_cosmic_constellations(draw, center, size, numerology_value,
+    draw_3d_cosmic_constellations(draw, center, effective_size, numerology_value,
                                   original_phrase)
 
+    print("🕉️ Creating central mandala...")
     # Add central 3D mystical mandala with depth and lighting
-    draw_3d_central_mandala(draw, center, size, numerology_value)
+    draw_3d_central_mandala(draw, center, effective_size, numerology_value)
 
+    print("🌀 Adding energy vortex...")
     # Add 3D energy vortex with perspective
-    create_3d_energy_vortex(draw, center, size, numerology_value)
+    create_3d_energy_vortex(draw, center, effective_size, numerology_value)
 
+    print("💎 Creating crystalline matrix...")
     # Add 3D crystalline matrix with depth and refraction
-    create_3d_crystalline_matrix(draw, center, size, numerology_value)
+    create_3d_crystalline_matrix(draw, center, effective_size, numerology_value)
 
+    print("⚡ Adding plasma effects...")
     # Add 3D plasma energy effects with volume
-    create_3d_plasma_effects(draw, center, size, numerology_value,
+    create_3d_plasma_effects(draw, center, effective_size, numerology_value,
                              original_phrase)
 
+    print("💡 Creating atmospheric lighting...")
     # Add atmospheric 3D lighting effects
-    create_3d_atmospheric_lighting(draw, center, size, numerology_value)
+    create_3d_atmospheric_lighting(draw, center, effective_size, numerology_value)
 
+    print("🔤 Drawing letters...")
     # Drawing the letters with 3D styling and depth
-    draw_3d_letters(draw, center, size, phrase, numerology_value)
+    draw_3d_letters(draw, center, effective_size, phrase, numerology_value)
 
+    print("🎨 Applying post-processing...")
     # Apply 3D post-processing effects
-    img = apply_3d_post_processing(img, size, numerology_value)
+    img = apply_3d_post_processing(img, effective_size, numerology_value)
 
-    # Crop the image
-    cropped_img = img.crop((0, 0, size * 2, size * 2))
+    print("✂️ Finalizing image...")
+    # Use the optimized image as-is (no cropping needed)
+    cropped_img = img
 
-    # Convert to base64
-    img_buffer = io.BytesIO()
-    cropped_img.save(img_buffer, format='PNG', quality=95)
-    img_buffer.seek(0)
-    img_base64 = base64.b64encode(img_buffer.getvalue()).decode()
-
-    return img_base64, None
+    print("💾 Converting to base64...")
+    # Convert to base64 with error handling
+    try:
+        img_buffer = io.BytesIO()
+        cropped_img.save(img_buffer, format='PNG', quality=85, optimize=True)
+        img_buffer.seek(0)
+        img_data = img_buffer.getvalue()
+        img_base64 = base64.b64encode(img_data).decode()
+        
+        print(f"✅ Image created successfully: {len(img_base64)} characters")
+        return img_base64, None
+        
+    except Exception as e:
+        print(f"❌ Error converting image: {str(e)}")
+        return None, f"Error creating image: {str(e)}"
 
 
 def calculate_numerology(text):
@@ -1637,10 +1670,11 @@ def generate():
             vibe = 'mystical'
 
         print(f"✅ GENERATING SIGIL: '{phrase}' with vibe: '{vibe}'")
+        print("🎨 Starting image generation process...")
         
         # Generate sigil with comprehensive error handling
         try:
-            img_base64, error = create_sigil(phrase, vibe)
+            img_base64, error = create_sigil(phrase, vibe, size=600)  # Reduced size for stability
             
             if error:
                 print(f"ERROR: Sigil creation failed: {error}")
@@ -1655,6 +1689,8 @@ def generate():
                     'success': False,
                     'error': 'Failed to generate sigil image'
                 })
+                
+            print(f"✅ IMAGE GENERATED: {len(img_base64)} bytes")
                 
         except MemoryError as me:
             print(f"MEMORY ERROR: {str(me)}")
@@ -1683,7 +1719,8 @@ def generate():
             'timestamp': str(datetime.now())
         }
         
-        print("✅ RESPONSE SENT SUCCESSFULLY")
+        print("✅ RESPONSE PREPARED, SENDING...")
+        print(f"📊 Response size: ~{len(str(response_data))} characters")
         return jsonify(response_data)
     
     except Exception as e:
