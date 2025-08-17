@@ -524,12 +524,16 @@
 
         // Initialize the application
         function initializeApp() {
+            console.log('Initializing app...');
+            
             // Handle vibe selection
             document.querySelectorAll('.vibe-option').forEach(option => {
                 option.addEventListener('click', function() {
+                    console.log('Vibe clicked:', this.getAttribute('data-vibe'));
                     document.querySelectorAll('.vibe-option').forEach(opt => opt.classList.remove('selected'));
                     this.classList.add('selected');
                     currentSelectedVibe = this.getAttribute('data-vibe');
+                    console.log('Current selected vibe:', currentSelectedVibe);
                 });
             });
 
@@ -540,6 +544,8 @@
                     e.preventDefault();
                     await generateSigilRequest();
                 });
+            } else {
+                console.error('Form not found');
             }
 
             // Allow Enter key to generate
@@ -551,11 +557,16 @@
                         generateSigilRequest();
                     }
                 });
+            } else {
+                console.error('Textarea not found');
             }
+
+            console.log('App initialized successfully');
         }
 
         // Main sigil generation function
         async function generateSigilRequest() {
+            console.log('Generate sigil request started');
             const phraseInput = document.getElementById('phrase');
             if (!phraseInput) {
                 showError('Interface initialization error');
@@ -568,6 +579,7 @@
                 return;
             }
 
+            console.log('Current vibe before request:', currentSelectedVibe);
             showLoading(true);
             clearResult();
 
@@ -592,7 +604,7 @@
                 }
 
                 const data = await response.json();
-                console.log('Response data received');
+                console.log('Response data received:', data);
 
                 if (data.error) {
                     showError(data.error);
@@ -698,7 +710,9 @@
         // Initialize the app when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM loaded, initializing app...');
-            initializeApp();
+            setTimeout(() => {
+                initializeApp();
+            }, 100); // Small delay to ensure all elements are rendered
         });
     </script>
 </body>
