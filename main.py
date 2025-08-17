@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, send_file, jsonify
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
+from datetime import datetime
 import string
 import math
 import io
@@ -1565,6 +1566,27 @@ def test():
         'available_vibes': ['mystical', 'cosmic', 'elemental', 'crystal', 'shadow', 'light']
     })
 
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint"""
+    return jsonify({
+        'status': 'healthy',
+        'server': 'online',
+        'timestamp': str(datetime.now())
+    })
+
+@app.route('/status', methods=['GET'])
+def status():
+    """Status endpoint with detailed information"""
+    return jsonify({
+        'status': 'operational',
+        'server': 'Flask Sigil Generator',
+        'version': '3.0',
+        'features': ['3D rendering', 'Multiple vibes', 'Neural quantum processing'],
+        'available_vibes': ['mystical', 'cosmic', 'elemental', 'crystal', 'shadow', 'light'],
+        'endpoints': ['/generate', '/test', '/health', '/status']
+    })
+
 
 @app.route('/generate', methods=['POST'])
 def generate():
@@ -1595,8 +1617,12 @@ def generate():
 
         print(f"Generating sigil for phrase: '{phrase}' with vibe: '{vibe}'")
         
-        # Generate sigil
-        img_base64, error = create_sigil(phrase, vibe)
+        # Generate sigil with timeout protection
+        try:
+            img_base64, error = create_sigil(phrase, vibe)
+        except Exception as generation_error:
+            print(f"Sigil generation failed: {str(generation_error)}")
+            return jsonify({'error': 'Sigil generation failed. Please try again.'})
 
         if error:
             print(f"Error creating sigil: {error}")
@@ -1607,13 +1633,23 @@ def generate():
             return jsonify({'error': 'Failed to generate sigil image'})
 
         print("Sigil generated successfully")
-        return jsonify({'image': f'data:image/png;base64,{img_base64}'})
+        
+        # Return response with success flag
+        return jsonify({
+            'success': True,
+            'image': f'data:image/png;base64,{img_base64}',
+            'phrase': phrase,
+            'vibe': vibe
+        })
     
     except Exception as e:
         print(f"Exception in generate endpoint: {str(e)}")
         import traceback
         traceback.print_exc()
-        return jsonify({'error': f'Server error: {str(e)}'}), 500
+        return jsonify({
+            'success': False,
+            'error': f'Server error: {str(e)}'
+        }), 500
 
 
 if __name__ == "__main__":

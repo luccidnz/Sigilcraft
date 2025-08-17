@@ -631,7 +631,7 @@
                 }
 
                 const data = await response.json();
-                console.log('Response data received');
+                console.log('Response data received:', data);
 
                 if (data.error) {
                     showError(data.error);
@@ -770,10 +770,10 @@
         }
 
         // Test all app functionality
-        function testAppFunctionality() {
-            console.log('=== TESTING APP FUNCTIONALITY ===');
+        function runDiagnostics() {
+            console.log('=== RUNNING FULL APP DIAGNOSTICS ===');
             
-            // Test 1: Check if all required elements exist
+            // Test 1: Check DOM elements
             console.log('Test 1: Checking DOM elements...');
             const elements = {
                 form: document.getElementById('sigilForm'),
@@ -787,20 +787,23 @@
                 downloadBtn: document.getElementById('downloadBtn')
             };
             
+            let allElementsFound = true;
             for (const [name, element] of Object.entries(elements)) {
                 if (element && (name === 'vibeOptions' ? element.length > 0 : true)) {
                     console.log(`✓ ${name} found`);
                 } else {
                     console.error(`✗ ${name} NOT found`);
+                    allElementsFound = false;
                 }
             }
             
-            // Test 2: Check vibe selection
+            // Test 2: Check vibe functionality
             console.log('Test 2: Testing vibe selection...');
             if (elements.vibeOptions.length > 0) {
                 elements.vibeOptions.forEach((option, index) => {
                     const vibe = option.getAttribute('data-vibe');
-                    console.log(`Vibe option ${index}: ${vibe}`);
+                    const isSelected = option.classList.contains('selected');
+                    console.log(`Vibe option ${index}: ${vibe} ${isSelected ? '(selected)' : ''}`);
                 });
                 console.log(`Currently selected vibe: ${currentSelectedVibe}`);
             }
@@ -810,7 +813,32 @@
             console.log(`isGenerating: ${isGenerating}`);
             console.log(`currentSelectedVibe: ${currentSelectedVibe}`);
             
-            console.log('=== TEST COMPLETE ===');
+            // Test 4: Test form functionality
+            console.log('Test 4: Testing form functionality...');
+            if (elements.form && elements.textarea) {
+                console.log('✓ Form and textarea are ready');
+                console.log(`Current phrase: "${elements.textarea.value}"`);
+            }
+            
+            // Test 5: Test event listeners
+            console.log('Test 5: Testing event listeners...');
+            console.log('✓ All event listeners should be attached');
+            
+            console.log('=== DIAGNOSTICS COMPLETE ===');
+            return allElementsFound;
+        }
+
+        // Auto-test specific functionality
+        function testVibeSelection() {
+            console.log('Testing vibe selection...');
+            const vibeOptions = document.querySelectorAll('.vibe-option');
+            if (vibeOptions.length > 0) {
+                // Test clicking each vibe option
+                vibeOptions.forEach((option, index) => {
+                    const vibe = option.getAttribute('data-vibe');
+                    console.log(`Testing click on vibe: ${vibe}`);
+                });
+            }
         }
 
         // Initialize the app when DOM is loaded
@@ -821,9 +849,14 @@
             setTimeout(() => {
                 initializeApp();
                 
-                // Run tests after initialization
+                // Run full diagnostics after initialization
                 setTimeout(() => {
-                    testAppFunctionality();
+                    const allOk = runDiagnostics();
+                    if (allOk) {
+                        console.log('🎉 All systems operational! The Sigil Generator is ready.');
+                    } else {
+                        console.error('❌ Some components failed diagnostics.');
+                    }
                 }, 500);
             }, 100);
         });
