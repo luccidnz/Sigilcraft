@@ -1,9 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🔮 Sigil Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -11,159 +13,366 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --neon-cyan: #00ffff;
+            --neon-pink: #ff00ff;
+            --neon-green: #00ff41;
+            --neon-purple: #8a2be2;
+            --neon-orange: #ff4500;
+            --dark-bg: #0a0a0f;
+            --darker-bg: #050508;
+            --card-bg: rgba(10, 20, 30, 0.8);
+            --border-glow: rgba(0, 255, 255, 0.5);
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
-            color: white;
+            font-family: 'Exo 2', sans-serif;
+            background: linear-gradient(135deg, var(--dark-bg), var(--darker-bg), #1a0033);
+            color: var(--text-primary);
             min-height: 100vh;
             padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background grid */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* Floating particles */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 80%, rgba(0, 255, 65, 0.1) 0%, transparent 50%);
+            animation: floatParticles 15s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes floatParticles {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
         }
 
         .container {
-            max-width: 500px;
+            max-width: 600px;
             margin: 0 auto;
             text-align: center;
+            position: relative;
+            z-index: 1;
         }
 
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 2rem;
-            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            font-family: 'Orbitron', monospace;
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 3rem;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink), var(--neon-green));
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 3s ease-in-out infinite;
+            text-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            position: relative;
+        }
+
+        h1::before {
+            content: '🔮 Sigil Generator';
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: blur(10px);
+            z-index: -1;
+            animation: pulseGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        @keyframes pulseGlow {
+            0% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .form-container {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--border-glow);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 
+                0 0 50px rgba(0, 255, 255, 0.2),
+                inset 0 0 50px rgba(0, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink), var(--neon-green), var(--neon-purple));
+            border-radius: 20px;
+            z-index: -1;
+            animation: borderRotate 4s linear infinite;
+        }
+
+        @keyframes borderRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .input-group {
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
+            text-align: left;
         }
 
         label {
             display: block;
-            margin-bottom: 8px;
-            font-size: 1.1em;
-            color: #ffffff;
+            margin-bottom: 12px;
+            font-size: 1.2em;
+            font-weight: 600;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'Orbitron', monospace;
         }
 
         textarea {
             width: 100%;
-            padding: 15px;
+            padding: 20px;
             font-size: 1.1rem;
-            border: 2px solid #444;
+            font-family: 'Exo 2', sans-serif;
+            border: 2px solid var(--neon-cyan);
             border-radius: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
+            background: rgba(0, 20, 40, 0.8);
+            color: var(--text-primary);
             resize: vertical;
-            min-height: 100px;
+            min-height: 120px;
             backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
         }
 
         textarea::placeholder {
-            color: #aaa;
+            color: var(--text-secondary);
+            font-style: italic;
         }
 
         textarea:focus {
             outline: none;
-            border-color: #ff6b6b;
-            box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+            border-color: var(--neon-pink);
+            box-shadow: 
+                0 0 30px rgba(255, 0, 255, 0.4),
+                inset 0 0 20px rgba(255, 0, 255, 0.1);
+            transform: scale(1.02);
+        }
+
+        .vibe-section {
+            margin-bottom: 2.5rem;
         }
 
         .vibe-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 15px;
-            margin-bottom: 20px;
+            margin-top: 20px;
         }
 
         .vibe-option {
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            background: rgba(0, 20, 40, 0.6);
             border: 2px solid transparent;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .vibe-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .vibe-option:hover::before {
+            left: 100%;
         }
 
         .vibe-option:hover {
-            border-color: #4ecdc4;
-            background: rgba(78, 205, 196, 0.1);
+            border-color: var(--neon-cyan);
+            background: rgba(0, 255, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 255, 255, 0.2);
         }
 
         .vibe-option.selected {
-            border-color: #ff6b6b;
-            background: rgba(255, 107, 107, 0.1);
+            border-color: var(--neon-pink);
+            background: rgba(255, 0, 255, 0.15);
+            box-shadow: 0 0 25px rgba(255, 0, 255, 0.4);
         }
 
         .vibe-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #4ecdc4;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--neon-green);
+            font-family: 'Orbitron', monospace;
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .vibe-description {
             font-size: 0.9em;
-            color: #cccccc;
+            color: var(--text-secondary);
+            line-height: 1.4;
         }
 
         .generate-btn {
             width: 100%;
-            padding: 15px;
-            font-size: 1.2rem;
-            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
-            color: white;
+            padding: 20px;
+            font-size: 1.3rem;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink));
+            color: var(--dark-bg);
             border: none;
             border-radius: 15px;
             cursor: pointer;
             transition: all 0.3s ease;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: bold;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.4);
+        }
+
+        .generate-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .generate-btn:hover::before {
+            left: 100%;
         }
 
         .generate-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 255, 255, 0.6);
+            background: linear-gradient(45deg, var(--neon-pink), var(--neon-cyan));
         }
 
         .generate-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
+            background: linear-gradient(45deg, #666, #888);
         }
 
         .result {
-            margin-top: 2rem;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
+            margin-top: 3rem;
+            padding: 30px;
+            background: var(--card-bg);
+            border: 2px solid var(--neon-green);
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 0 40px rgba(0, 255, 65, 0.2);
             display: none;
+            position: relative;
         }
 
         .sigil-image {
             max-width: 100%;
             height: auto;
-            border-radius: 10px;
+            border-radius: 15px;
             margin: 20px 0;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 
+                0 0 50px rgba(0, 255, 255, 0.3),
+                0 20px 40px rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--neon-cyan);
         }
 
         .error {
-            color: #ff6b6b;
-            font-size: 1.1rem;
+            color: var(--neon-orange);
+            font-size: 1.2rem;
             margin-top: 1rem;
+            font-family: 'Orbitron', monospace;
+            text-shadow: 0 0 10px var(--neon-orange);
         }
 
         .loading {
             display: none;
-            margin: 20px 0;
+            margin: 30px 0;
+            text-align: center;
         }
 
         .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(78, 205, 196, 0.3);
-            border-top: 4px solid #4ecdc4;
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(0, 255, 255, 0.2);
+            border-top: 4px solid var(--neon-cyan);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
+            margin: 0 auto 20px;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.4);
+        }
+
+        .loading-text {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.1rem;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: pulse 2s ease-in-out infinite;
         }
 
         @keyframes spin {
@@ -171,41 +380,75 @@
             100% { transform: rotate(360deg); }
         }
 
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
         .download-btn {
-            padding: 10px 20px;
-            background: #27ae60;
-            color: white;
+            padding: 15px 30px;
+            background: linear-gradient(45deg, var(--neon-green), var(--neon-cyan));
+            color: var(--dark-bg);
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: 1rem;
-            margin-top: 15px;
+            font-size: 1.1rem;
+            font-family: 'Orbitron', monospace;
+            font-weight: 600;
+            margin-top: 20px;
             transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
         }
 
         .download-btn:hover {
-            background: #2ecc71;
-            transform: translateY(-1px);
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-green));
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 255, 65, 0.4);
         }
 
+        /* Responsive design */
         @media (max-width: 600px) {
             body {
                 padding: 15px;
             }
 
             h1 {
-                font-size: 2rem;
+                font-size: 2.5rem;
+            }
+
+            .form-container {
+                padding: 20px;
             }
 
             textarea {
-                padding: 12px;
+                padding: 15px;
                 font-size: 1rem;
             }
 
             .generate-btn {
-                padding: 12px;
+                padding: 15px;
                 font-size: 1.1rem;
             }
+
+            .vibe-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Glitch effect for errors */
+        .glitch {
+            animation: glitch 0.3s ease-in-out infinite;
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
         }
     </style>
 </head>
@@ -213,85 +456,109 @@
     <div class="container">
         <h1>🔮 Sigil Generator</h1>
 
-        <form id="sigilForm">
-            <div class="input-group">
-                <label for="phrase">Enter your intent or desire:</label>
-                <textarea 
-                    id="phrase" 
-                    name="phrase"
-                    placeholder="Enter your intent or desire..."
-                    maxlength="200"
-                    required
-                ></textarea>
-            </div>
+        <div class="form-container">
+            <form id="sigilForm">
+                <div class="input-group">
+                    <label for="phrase">Neural Intent Interface:</label>
+                    <textarea 
+                        id="phrase" 
+                        name="phrase"
+                        placeholder="Upload your quantum desire matrix..."
+                        maxlength="200"
+                        required
+                    ></textarea>
+                </div>
 
-            <div class="input-group">
-                <label>Choose Sigil Vibe:</label>
-                <div class="vibe-grid">
-                    <div class="vibe-option selected" data-vibe="mystical">
-                        <div class="vibe-title">Mystical</div>
-                        <div class="vibe-description">Ethereal and magical energy</div>
-                    </div>
-                    <div class="vibe-option" data-vibe="cosmic">
-                        <div class="vibe-title">Cosmic</div>
-                        <div class="vibe-description">Stellar and galactic power</div>
-                    </div>
-                    <div class="vibe-option" data-vibe="elemental">
-                        <div class="vibe-title">Elemental</div>
-                        <div class="vibe-description">Earth, fire, water, air</div>
-                    </div>
-                    <div class="vibe-option" data-vibe="crystal">
-                        <div class="vibe-title">Crystal</div>
-                        <div class="vibe-description">Crystalline geometric energy</div>
-                    </div>
-                    <div class="vibe-option" data-vibe="shadow">
-                        <div class="vibe-title">Shadow</div>
-                        <div class="vibe-description">Dark and mysterious power</div>
-                    </div>
-                    <div class="vibe-option" data-vibe="light">
-                        <div class="vibe-title">Light</div>
-                        <div class="vibe-description">Radiant and healing energy</div>
+                <div class="input-group vibe-section">
+                    <label>Dimensional Energy Protocol:</label>
+                    <div class="vibe-grid">
+                        <div class="vibe-option selected" data-vibe="mystical">
+                            <div class="vibe-title">Mystical</div>
+                            <div class="vibe-description">Ethereal and magical energy</div>
+                        </div>
+                        <div class="vibe-option" data-vibe="cosmic">
+                            <div class="vibe-title">Cosmic</div>
+                            <div class="vibe-description">Stellar and galactic power</div>
+                        </div>
+                        <div class="vibe-option" data-vibe="elemental">
+                            <div class="vibe-title">Elemental</div>
+                            <div class="vibe-description">Earth, fire, water, air</div>
+                        </div>
+                        <div class="vibe-option" data-vibe="crystal">
+                            <div class="vibe-title">Crystal</div>
+                            <div class="vibe-description">Crystalline geometric energy</div>
+                        </div>
+                        <div class="vibe-option" data-vibe="shadow">
+                            <div class="vibe-title">Shadow</div>
+                            <div class="vibe-description">Dark and mysterious power</div>
+                        </div>
+                        <div class="vibe-option" data-vibe="light">
+                            <div class="vibe-title">Light</div>
+                            <div class="vibe-description">Radiant and healing energy</div>
+                        </div>
                     </div>
                 </div>
+
+                <button type="submit" class="generate-btn">Initialize Quantum Sigil</button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <div class="loading-text">Quantum processing neural matrix...</div>
             </div>
 
-            <button type="submit" class="generate-btn">Generate Sigil</button>
-        </form>
-
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>Channeling cosmic energies...</p>
-        </div>
-
-        <div id="result" class="result">
-            <div id="error" class="error"></div>
-            <img id="sigil" class="sigil-image" alt="Generated Sigil">
-            <br>
-            <button class="download-btn" onclick="downloadSigil()" style="display: none;" id="downloadBtn">
-                📥 Download Sigil
-            </button>
+            <div id="result" class="result">
+                <div id="error" class="error"></div>
+                <img id="sigil" class="sigil-image" alt="Generated Sigil">
+                <br>
+                <button class="download-btn" onclick="downloadSigil()" style="display: none;" id="downloadBtn">
+                    ⬇ Download Neural Sigil
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
-        let selectedVibe = 'mystical';
+        // Initialize variables properly
+        let currentSelectedVibe = 'mystical';
 
-        // Handle vibe selection
-        document.querySelectorAll('.vibe-option').forEach(option => {
-            option.addEventListener('click', function() {
-                document.querySelectorAll('.vibe-option').forEach(opt => opt.classList.remove('selected'));
-                this.classList.add('selected');
-                selectedVibe = this.getAttribute('data-vibe');
+        // Initialize the application
+        function initializeApp() {
+            // Handle vibe selection
+            document.querySelectorAll('.vibe-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.vibe-option').forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                    currentSelectedVibe = this.getAttribute('data-vibe');
+                });
             });
-        });
 
-        // Handle form submission
-        document.getElementById('sigilForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+            // Handle form submission
+            const form = document.getElementById('sigilForm');
+            if (form) {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    await generateSigilRequest();
+                });
+            }
 
+            // Allow Enter key to generate
+            const textarea = document.getElementById('phrase');
+            if (textarea) {
+                textarea.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        generateSigilRequest();
+                    }
+                });
+            }
+        }
+
+        // Main sigil generation function
+        async function generateSigilRequest() {
             const phrase = document.getElementById('phrase').value.trim();
             if (!phrase) {
-                showError('Please enter your intent or desire');
+                showError('Please enter your quantum intent matrix');
                 return;
             }
 
@@ -299,6 +566,8 @@
             clearResult();
 
             try {
+                console.log('Sending request with phrase:', phrase, 'vibe:', currentSelectedVibe);
+                
                 const response = await fetch('/generate', {
                     method: 'POST',
                     headers: {
@@ -306,30 +575,33 @@
                     },
                     body: JSON.stringify({ 
                         phrase: phrase,
-                        vibe: selectedVibe 
+                        vibe: currentSelectedVibe 
                     })
                 });
 
+                console.log('Response status:', response.status);
+
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`Neural network error! Status: ${response.status}`);
                 }
 
                 const data = await response.json();
+                console.log('Response data:', data);
 
                 if (data.error) {
                     showError(data.error);
                 } else if (data.image) {
                     showResult(data.image);
                 } else {
-                    showError('No image data received from server');
+                    showError('No quantum data received from neural matrix');
                 }
             } catch (error) {
-                console.error('Error:', error);
-                showError('Network error: ' + error.message);
+                console.error('Generation error:', error);
+                showError('Neural network malfunction: ' + error.message);
             } finally {
                 showLoading(false);
             }
-        });
+        }
 
         function showLoading(show) {
             const loadingDiv = document.getElementById('loading');
@@ -338,11 +610,11 @@
             if (show) {
                 loadingDiv.style.display = 'block';
                 generateBtn.disabled = true;
-                generateBtn.textContent = 'Generating...';
+                generateBtn.textContent = 'Processing Neural Matrix...';
             } else {
                 loadingDiv.style.display = 'none';
                 generateBtn.disabled = false;
-                generateBtn.textContent = 'Generate Sigil';
+                generateBtn.textContent = 'Initialize Quantum Sigil';
             }
         }
 
@@ -355,8 +627,14 @@
             resultDiv.style.display = 'block';
             errorDiv.textContent = message;
             errorDiv.style.display = 'block';
+            errorDiv.classList.add('glitch');
             sigilImg.style.display = 'none';
             downloadBtn.style.display = 'none';
+
+            // Remove glitch effect after animation
+            setTimeout(() => {
+                errorDiv.classList.remove('glitch');
+            }, 1000);
         }
 
         function showResult(imageData) {
@@ -382,7 +660,7 @@
             if (imageData) {
                 const link = document.createElement('a');
                 link.href = imageData;
-                link.download = 'mystical-sigil.png';
+                link.download = 'quantum-sigil-neural-matrix.png';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -401,12 +679,9 @@
             downloadBtn.style.display = 'none';
         }
 
-        // Allow Enter key to generate
-        document.getElementById('phrase').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                document.getElementById('sigilForm').dispatchEvent(new Event('submit'));
-            }
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
         });
     </script>
 </body>
