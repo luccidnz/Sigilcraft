@@ -556,7 +556,13 @@
 
         // Main sigil generation function
         async function generateSigilRequest() {
-            const phrase = document.getElementById('phrase').value.trim();
+            const phraseInput = document.getElementById('phrase');
+            if (!phraseInput) {
+                showError('Interface initialization error');
+                return;
+            }
+
+            const phrase = phraseInput.value.trim();
             if (!phrase) {
                 showError('Please enter your quantum intent matrix');
                 return;
@@ -586,7 +592,7 @@
                 }
 
                 const data = await response.json();
-                console.log('Response data:', data);
+                console.log('Response data received');
 
                 if (data.error) {
                     showError(data.error);
@@ -596,7 +602,7 @@
                     showError('No quantum data received from neural matrix');
                 }
             } catch (error) {
-                console.error('Generation error:', error);
+                console.error('Error:', error);
                 showError('Neural network malfunction: ' + error.message);
             } finally {
                 showLoading(false);
@@ -607,14 +613,16 @@
             const loadingDiv = document.getElementById('loading');
             const generateBtn = document.querySelector('.generate-btn');
 
-            if (show) {
-                loadingDiv.style.display = 'block';
-                generateBtn.disabled = true;
-                generateBtn.textContent = 'Processing Neural Matrix...';
-            } else {
-                loadingDiv.style.display = 'none';
-                generateBtn.disabled = false;
-                generateBtn.textContent = 'Initialize Quantum Sigil';
+            if (loadingDiv && generateBtn) {
+                if (show) {
+                    loadingDiv.style.display = 'block';
+                    generateBtn.disabled = true;
+                    generateBtn.textContent = 'Processing Neural Matrix...';
+                } else {
+                    loadingDiv.style.display = 'none';
+                    generateBtn.disabled = false;
+                    generateBtn.textContent = 'Initialize Quantum Sigil';
+                }
             }
         }
 
@@ -624,17 +632,19 @@
             const sigilImg = document.getElementById('sigil');
             const downloadBtn = document.getElementById('downloadBtn');
 
-            resultDiv.style.display = 'block';
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-            errorDiv.classList.add('glitch');
-            sigilImg.style.display = 'none';
-            downloadBtn.style.display = 'none';
+            if (resultDiv && errorDiv && sigilImg && downloadBtn) {
+                resultDiv.style.display = 'block';
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+                errorDiv.classList.add('glitch');
+                sigilImg.style.display = 'none';
+                downloadBtn.style.display = 'none';
 
-            // Remove glitch effect after animation
-            setTimeout(() => {
-                errorDiv.classList.remove('glitch');
-            }, 1000);
+                // Remove glitch effect after animation
+                setTimeout(() => {
+                    errorDiv.classList.remove('glitch');
+                }, 1000);
+            }
         }
 
         function showResult(imageData) {
@@ -643,27 +653,31 @@
             const sigilImg = document.getElementById('sigil');
             const downloadBtn = document.getElementById('downloadBtn');
 
-            resultDiv.style.display = 'block';
-            errorDiv.style.display = 'none';
-            sigilImg.src = imageData;
-            sigilImg.style.display = 'block';
-            downloadBtn.style.display = 'inline-block';
+            if (resultDiv && errorDiv && sigilImg && downloadBtn) {
+                resultDiv.style.display = 'block';
+                errorDiv.style.display = 'none';
+                sigilImg.src = imageData;
+                sigilImg.style.display = 'block';
+                downloadBtn.style.display = 'inline-block';
 
-            // Store image data for download
-            downloadBtn.setAttribute('data-image', imageData);
+                // Store image data for download
+                downloadBtn.setAttribute('data-image', imageData);
+            }
         }
 
         function downloadSigil() {
             const downloadBtn = document.getElementById('downloadBtn');
-            const imageData = downloadBtn.getAttribute('data-image');
+            if (downloadBtn) {
+                const imageData = downloadBtn.getAttribute('data-image');
 
-            if (imageData) {
-                const link = document.createElement('a');
-                link.href = imageData;
-                link.download = 'quantum-sigil-neural-matrix.png';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                if (imageData) {
+                    const link = document.createElement('a');
+                    link.href = imageData;
+                    link.download = 'quantum-sigil-neural-matrix.png';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
             }
         }
 
@@ -673,14 +687,17 @@
             const sigilImg = document.getElementById('sigil');
             const downloadBtn = document.getElementById('downloadBtn');
 
-            resultDiv.style.display = 'none';
-            errorDiv.style.display = 'none';
-            sigilImg.style.display = 'none';
-            downloadBtn.style.display = 'none';
+            if (resultDiv && errorDiv && sigilImg && downloadBtn) {
+                resultDiv.style.display = 'none';
+                errorDiv.style.display = 'none';
+                sigilImg.style.display = 'none';
+                downloadBtn.style.display = 'none';
+            }
         }
 
         // Initialize the app when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing app...');
             initializeApp();
         });
     </script>
