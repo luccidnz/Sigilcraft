@@ -1556,30 +1556,64 @@ def apply_3d_post_processing(img, size, numerology_value):
 def index():
     return render_template('index.html')
 
+@app.route('/test', methods=['GET'])
+def test():
+    """Test endpoint to verify server is working"""
+    return jsonify({
+        'status': 'ok',
+        'message': 'Server is working',
+        'available_vibes': ['mystical', 'cosmic', 'elemental', 'crystal', 'shadow', 'light']
+    })
+
 
 @app.route('/generate', methods=['POST'])
 def generate():
     try:
+        # Validate request
+        if not request.is_json:
+            return jsonify({'error': 'Request must be JSON'}), 400
+            
         data = request.json
-        phrase = data.get('phrase', '')
-        vibe = data.get('vibe', 'mystical')
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+            
+        phrase = data.get('phrase', '').strip()
+        vibe = data.get('vibe', 'mystical').strip().lower()
 
-        if not phrase.strip():
+        # Validate phrase
+        if not phrase:
             return jsonify({'error': 'Please enter your intent or desire'})
+            
+        if len(phrase) > 200:
+            return jsonify({'error': 'Phrase too long (max 200 characters)'})
+
+        # Validate vibe
+        valid_vibes = ['mystical', 'cosmic', 'elemental', 'crystal', 'shadow', 'light']
+        if vibe not in valid_vibes:
+            print(f"Invalid vibe '{vibe}', defaulting to 'mystical'")
+            vibe = 'mystical'
 
         print(f"Generating sigil for phrase: '{phrase}' with vibe: '{vibe}'")
-        img_base64, error = create_sigil(phrase.strip(), vibe)
+        
+        # Generate sigil
+        img_base64, error = create_sigil(phrase, vibe)
 
         if error:
             print(f"Error creating sigil: {error}")
             return jsonify({'error': error})
+
+        if not img_base64:
+            print("No image data generated")
+            return jsonify({'error': 'Failed to generate sigil image'})
 
         print("Sigil generated successfully")
         return jsonify({'image': f'data:image/png;base64,{img_base64}'})
     
     except Exception as e:
         print(f"Exception in generate endpoint: {str(e)}")
-        return jsonify({'error': f'Server error: {str(e)}'})
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Server error: {str(e)}'}), 500
 
 
 if __name__ == "__main__":
