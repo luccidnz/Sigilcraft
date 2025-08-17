@@ -1,6 +1,3 @@
-import os
-
-os.system("pip install flask pillow")
 from flask import Flask, render_template, request, send_file, jsonify
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 import string
@@ -1562,19 +1559,27 @@ def index():
 
 @app.route('/generate', methods=['POST'])
 def generate():
-    data = request.json
-    phrase = data.get('phrase', '')
-    vibe = data.get('vibe', 'mystical')
+    try:
+        data = request.json
+        phrase = data.get('phrase', '')
+        vibe = data.get('vibe', 'mystical')
 
-    if not phrase.strip():
-        return jsonify({'error': 'Please enter your intent or desire'})
+        if not phrase.strip():
+            return jsonify({'error': 'Please enter your intent or desire'})
 
-    img_base64, error = create_sigil(phrase.strip(), vibe)
+        print(f"Generating sigil for phrase: '{phrase}' with vibe: '{vibe}'")
+        img_base64, error = create_sigil(phrase.strip(), vibe)
 
-    if error:
-        return jsonify({'error': error})
+        if error:
+            print(f"Error creating sigil: {error}")
+            return jsonify({'error': error})
 
-    return jsonify({'image': f'data:image/png;base64,{img_base64}'})
+        print("Sigil generated successfully")
+        return jsonify({'image': f'data:image/png;base64,{img_base64}'})
+    
+    except Exception as e:
+        print(f"Exception in generate endpoint: {str(e)}")
+        return jsonify({'error': f'Server error: {str(e)}'})
 
 
 if __name__ == "__main__":
