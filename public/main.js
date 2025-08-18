@@ -1,7 +1,7 @@
 
 // ---- simple state ----
-const FREE_ENERGIES = ["Mystical","Elemental","Light"];
-const ALL_ENERGIES  = ["Mystical","Ethereal","Cosmic","Elemental","Crystal","Shadow","Light"]; // adjust names to your list
+const FREE_ENERGIES = ["mystical","elemental","light"];
+const ALL_ENERGIES  = ["mystical","cosmic","elemental","crystal","shadow","light"];
 let selectedEnergies = [FREE_ENERGIES[0]];
 let lastGenAt = 0;
 
@@ -156,22 +156,47 @@ function drawWatermarkIfFree() {
   ctx.globalAlpha = 1;
 }
 
-// TODO: Replace this placeholder geometry with YOUR existing sigil-generation logic.
-// Respect: selectedEnergies, seedInput.value, canvas size.
-function renderSigil(seed = 0) {
+// Generate sigil using backend
+async function renderSigil(phrase = "default", vibe = "mystical") {
   clearCanvas();
-  // simple seeded lines demo:
-  const r = mulberry32(seed || 1);
-  const n = 120;
-  ctx.strokeStyle = "#9ad0ff"; ctx.lineWidth = Math.max(2, canvas.width * 0.004);
-  ctx.beginPath();
-  for (let i=0;i<n;i++){
-    const x = canvas.width  * r();
-    const y = canvas.height * r();
-    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  
+  try {
+    const response = await fetch("/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phrase, vibe })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success && data.image) {
+      const img = new Image();
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        if (!localIsPro()) drawWatermarkIfFree();
+      };
+      img.src = data.image;
+      return data;
+    } else {
+      throw new Error(data.error || "Generation failed");
+    }
+  } catch (error) {
+    console.error("Sigil generation error:", error);
+    // Fallback to placeholder on error
+    const r = mulberry32(Date.now());
+    const n = 120;
+    ctx.strokeStyle = "#9ad0ff"; 
+    ctx.lineWidth = Math.max(2, canvas.width * 0.004);
+    ctx.beginPath();
+    for (let i=0;i<n;i++){
+      const x = canvas.width  * r();
+      const y = canvas.height * r();
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    drawWatermarkIfFree();
+    throw error;
   }
-  ctx.stroke();
-  drawWatermarkIfFree();
 }
 
 // seeded RNG
@@ -192,36 +217,57 @@ function buildSvg(seed = 0, size = 2048) {
 
 // --- generation + download ---
 genBtn.onclick = async () => {
+  if (!selectedEnergies.length) {
+    toast("Select at least one energy type");
+    return;
+  }
+  
   const pro = await isPro();
-  const seed = Number(seedInput.value) || 0;
+  const phrase = document.getElementById("intentInput")?.value?.trim() || "Default Intent";
+  const vibe = selectedEnergies[0]; // Use first selected energy for now
   const size = pro ? 2048 : 512;
 
-  canvas.width = size; canvas.height = size;
-
-  if (pro && batchToggle.checked) {
-    // batch create zip of 5
-    const zip = new JSZip();
-    for (let i=0;i<5;i++){
-      const s = seed ? seed + i : Math.floor(Math.random()*1e9);
-      if (exportType.value === "svg") {
-        const svg = buildSvg(s, size);
-        zip.file(`sigil_${i+1}.svg`, svg);
-      } else {
-        renderSigil(s);
-        const png = canvas.toDataURL("image/png").split(",")[1];
-        zip.file(`sigil_${i+1}.png`, png, {base64:true});
-      }
-    }
-    const blob = await zip.generateAsync({type:"blob"});
-    triggerDownload(blob, "sigils.zip");
-    toast("Batch ready");
-  } else {
-    // single
-    renderSigil(seed);
-    toast("Sigil generated");
+  if (!phrase) {
+    toast("Enter your intent or phrase");
+    return;
   }
 
-  startCooldownIfNeeded();
+  canvas.width = size; canvas.height = size;
+  genBtn.disabled = true;
+  genBtn.textContent = "Generating...";
+
+  try {
+    if (pro && batchToggle.checked) {
+      // batch create zip of 5
+      if (typeof JSZip === 'undefined') {
+        toast("JSZip library not loaded");
+        return;
+      }
+      
+      const zip = new JSZip();
+      for (let i = 0; i < 5; i++){
+        const batchPhrase = `${phrase} variant ${i + 1}`;
+        const data = await renderSigil(batchPhrase, vibe);
+        if (data && data.image) {
+          const base64Data = data.image.split(",")[1];
+          zip.file(`sigil_${i+1}.png`, base64Data, {base64: true});
+        }
+      }
+      const blob = await zip.generateAsync({type:"blob"});
+      triggerDownload(blob, "sigils.zip");
+      toast("Batch ready");
+    } else {
+      // single
+      await renderSigil(phrase, vibe);
+      toast("Sigil generated");
+    }
+  } catch (error) {
+    toast(`Generation failed: ${error.message}`);
+  } finally {
+    genBtn.disabled = false;
+    genBtn.textContent = "Initialize Quantum Sigil";
+    startCooldownIfNeeded();
+  }
 };
 
 downloadBtn.onclick = async () => {
