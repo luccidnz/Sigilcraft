@@ -29,8 +29,10 @@ app.post("/api/verify-pro", (req, res) => {
   req.on("end", () => {
     try {
       const { key } = JSON.parse(body || "{}");
+      console.log(`Pro key verification: received="${key}", expected="${process.env.PRO_KEY}"`);
       const ok = key && process.env.PRO_KEY && key === process.env.PRO_KEY;
       if (ok) {
+        console.log("Pro key verified successfully");
         res.cookie("sigil_pro", "1", {
           httpOnly: true,
           sameSite: "lax",
@@ -38,8 +40,10 @@ app.post("/api/verify-pro", (req, res) => {
         });
         return res.json({ ok: true });
       }
+      console.log("Pro key verification failed");
       return res.json({ ok: false });
-    } catch {
+    } catch (error) {
+      console.log("Pro key verification error:", error);
       return res.json({ ok: false });
     }
   });
