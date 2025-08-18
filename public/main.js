@@ -60,10 +60,17 @@ async function renderEnergies() {
     div.textContent = name;
     div.onclick = () => {
       if (!allowed.includes(name)) { toast("Pro feature"); return; }
-      if (!comboToggle.checked) selectedEnergies = [name];
-      else {
+      if (!comboToggle.checked) {
+        // Single selection mode
+        selectedEnergies = [name];
+      } else {
+        // Combo mode - allow multiple selections
         if (selectedEnergies.includes(name)) {
           selectedEnergies = selectedEnergies.filter(e => e !== name);
+          // Ensure at least one energy is always selected
+          if (selectedEnergies.length === 0) {
+            selectedEnergies = [FREE_ENERGIES[0]]; // Default to mystical
+          }
         } else {
           selectedEnergies.push(name);
         }
@@ -236,7 +243,8 @@ genBtn.onclick = async () => {
   }
   
   const pro = await isPro();
-  const vibe = selectedEnergies[0]; // Use first selected energy for now
+  // Handle multiple vibes by combining them or using combo mode
+  const vibe = selectedEnergies.length > 1 ? selectedEnergies.join("+") : selectedEnergies[0];
   const size = pro ? 2048 : 512;
 
   canvas.width = size; canvas.height = size;

@@ -41,20 +41,61 @@ def create_sigil(phrase, vibe="mystical", size=400):
     center = (size // 2, size // 2)
 
     # Generate vibe-specific sigil with phrase-specific variations
-    if vibe == 'mystical':
-        create_mystical_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
-    elif vibe == 'cosmic':
-        create_cosmic_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
-    elif vibe == 'elemental':
-        create_elemental_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
-    elif vibe == 'crystal':
-        create_crystal_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
-    elif vibe == 'shadow':
-        create_shadow_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
-    elif vibe == 'light':
-        create_light_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
+    if '+' in vibe:
+        # Handle combined vibes by layering effects
+        vibe_parts = vibe.split('+')
+        for i, individual_vibe in enumerate(vibe_parts):
+            # Adjust opacity for layering multiple vibes
+            if i > 0:
+                # Create a semi-transparent overlay for additional vibes
+                overlay = Image.new('RGBA', (size, size), color=(0, 0, 0, 0))
+                overlay_draw = ImageDraw.Draw(overlay)
+                
+                if individual_vibe == 'mystical':
+                    create_mystical_sigil(overlay_draw, overlay, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
+                elif individual_vibe == 'cosmic':
+                    create_cosmic_sigil(overlay_draw, overlay, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
+                elif individual_vibe == 'elemental':
+                    create_elemental_sigil(overlay_draw, overlay, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
+                elif individual_vibe == 'crystal':
+                    create_crystal_sigil(overlay_draw, overlay, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
+                elif individual_vibe == 'shadow':
+                    create_shadow_sigil(overlay_draw, overlay, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
+                elif individual_vibe == 'light':
+                    create_light_sigil(overlay_draw, overlay, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
+                
+                # Blend the overlay with reduced opacity
+                img = Image.alpha_composite(img, overlay)
+            else:
+                # First vibe at full opacity
+                if individual_vibe == 'mystical':
+                    create_mystical_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
+                elif individual_vibe == 'cosmic':
+                    create_cosmic_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
+                elif individual_vibe == 'elemental':
+                    create_elemental_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
+                elif individual_vibe == 'crystal':
+                    create_crystal_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
+                elif individual_vibe == 'shadow':
+                    create_shadow_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
+                elif individual_vibe == 'light':
+                    create_light_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
     else:
-        create_mystical_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
+        # Single vibe
+        if vibe == 'mystical':
+            create_mystical_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
+        elif vibe == 'cosmic':
+            create_cosmic_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
+        elif vibe == 'elemental':
+            create_elemental_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
+        elif vibe == 'crystal':
+            create_crystal_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
+        elif vibe == 'shadow':
+            create_shadow_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
+        elif vibe == 'light':
+            create_light_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
+        else:
+            create_mystical_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
 
     print("🎨 Applying final enhancements...")
     img = apply_vibe_effects(img, vibe, original_phrase)
@@ -998,7 +1039,17 @@ def generate():
             return jsonify({'success': False, 'error': 'Phrase too long (max 200 characters)'})
 
         valid_vibes = ['mystical', 'cosmic', 'elemental', 'crystal', 'shadow', 'light']
-        if vibe not in valid_vibes:
+        
+        # Handle combined vibes (e.g., "mystical+cosmic")
+        if '+' in vibe:
+            vibe_parts = vibe.split('+')
+            # Validate each part and filter to valid vibes only
+            valid_parts = [v.strip() for v in vibe_parts if v.strip() in valid_vibes]
+            if valid_parts:
+                vibe = '+'.join(valid_parts)
+            else:
+                vibe = 'mystical'
+        elif vibe not in valid_vibes:
             vibe = 'mystical'
 
         print(f"✅ GENERATING SIGIL: '{phrase}' with vibe: '{vibe}'")
