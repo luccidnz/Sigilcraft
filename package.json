@@ -1,18 +1,16 @@
 
 {
-  "name": "sigil-generator-pro",
+  "name": "sigilcraft",
   "version": "1.0.0",
-  "description": "Mystical Sigil Generator with Pro Features",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "cookie-parser": "^1.4.6"
-  },
-  "keywords": ["sigil", "generator", "mystical"],
-  "author": "",
-  "license": "MIT"
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
 }

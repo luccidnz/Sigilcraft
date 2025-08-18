@@ -1,0 +1,67 @@
+
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sigilcraft</title>
+  <link rel="stylesheet" href="./style.css" />
+  <!-- JSZip for Pro batch export -->
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <h1>Sigilcraft <span id="proBadge" class="pro-badge hidden">PRO</span></h1>
+    <div class="actions">
+      <a class="btn btn-ghost" id="upgradeBtn" href="https://buy.stripe.com/test_XXXXXXXX" target="_blank">Upgrade to Pro</a>
+      <button class="btn" id="enterKeyBtn">Enter Pro Key</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="panel">
+      <h2>Neural Intent Interface</h2>
+      <div id="energyList" class="energies"></div>
+
+      <div id="proControls" class="pro-only hidden">
+        <label><input type="checkbox" id="comboToggle"> Combo mode</label>
+        <label>Seed <input type="number" id="seedInput" value="0" step="1" /></label>
+        <label><input type="checkbox" id="batchToggle"> Batch x5</label>
+        <label>Export: 
+          <select id="exportType">
+            <option value="png">PNG</option>
+            <option value="svg">SVG (Pro)</option>
+          </select>
+        </label>
+      </div>
+
+      <button id="genBtn" class="btn primary">Initialize Quantum Sigil</button>
+      <div id="cooldown" class="cooldown hidden"></div>
+
+      <div class="downloads">
+        <button id="downloadBtn" class="btn">⬇ Download Neural Sigil</button>
+      </div>
+
+      <canvas id="sigilCanvas" width="512" height="512"></canvas>
+      <div id="previewSvg" class="hidden"></div>
+    </section>
+  </main>
+
+  <!-- Enter Key Modal -->
+  <dialog id="keyModal">
+    <form method="dialog" class="modal">
+      <h3>Enter Pro Key</h3>
+      <input id="proKeyInput" placeholder="Paste your key" />
+      <div class="row">
+        <button id="unlockBtn" class="btn primary" type="button">Unlock</button>
+        <button class="btn" value="cancel">Cancel</button>
+      </div>
+      <small>Buy a key via Upgrade to Pro.</small>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="./main.js" type="module"></script>
+</body>
+</html>
