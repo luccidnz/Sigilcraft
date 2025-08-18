@@ -24,35 +24,42 @@ app.use(express.static(path.join(__dirname, "public"), {
 
 // verify-pro: compare against env var
 app.post("/api/verify-pro", (req, res) => {
-  let body = "";
-  req.on("data", chunk => body += chunk);
-  req.on("end", () => {
-    try {
-      const { key } = JSON.parse(body || "{}");
-      console.log(`Pro key verification: received="${key}", expected="${process.env.PRO_KEY}"`);
-      const ok = key && process.env.PRO_KEY && key === process.env.PRO_KEY;
-      if (ok) {
-        console.log("Pro key verified successfully");
-        res.cookie("sigil_pro", "1", {
-          httpOnly: true,
-          sameSite: "lax",
-          maxAge: 1000 * 60 * 60 * 24 * 365
-        });
-        return res.json({ ok: true });
-      }
-      console.log("Pro key verification failed");
-      return res.json({ ok: false });
-    } catch (error) {
-      console.log("Pro key verification error:", error);
-      return res.json({ ok: false });
+  try {
+    const { key } = req.body;
+    console.log(`Pro key verification: received="${key}", expected="${process.env.PRO_KEY}"`);
+    const ok = key && process.env.PRO_KEY && key === process.env.PRO_KEY;
+    if (ok) {
+      console.log("Pro key verified successfully");
+      res.cookie("sigil_pro", "1", {
+        httpOnly: true,
+        sameSite: "lax",
+        maxAge: 1000 * 60 * 60 * 24 * 365
+      });
+      return res.json({ ok: true });
     }
-  });
+    console.log("Pro key verification failed");
+    return res.json({ ok: false });
+  } catch (error) {
+    console.log("Pro key verification error:", error);
+    return res.json({ ok: false });
+  }
 });
 
 // is-pro: read cookie
 app.get("/api/is-pro", (req, res) => {
   const pro = req.cookies && req.cookies.sigil_pro === "1";
+  console.log("Pro status check:", pro, "Cookies:", req.cookies);
   res.json({ pro });
+});
+
+// Test endpoint for debugging
+app.get("/api/test", (req, res) => {
+  res.json({ 
+    status: "ok", 
+    port: PORT,
+    proKey: process.env.PRO_KEY ? "configured" : "missing",
+    timestamp: new Date().toISOString()
+  });
 });
 
 // fallback to index
@@ -77,4 +84,7 @@ app.post("/generate", async (req, res) => {
   }
 });
 
-app.listen(PORT, "0.0.0.0", () => console.log("Sigilcraft running on", PORT));
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Sigilcraft Node server running on http://0.0.0.0:${PORT}`);
+  console.log(`Pro key configured: ${process.env.PRO_KEY ? 'Yes' : 'No'}`);
+});

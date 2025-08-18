@@ -145,8 +145,9 @@ function startCooldownIfNeeded() {
 function clearCanvas() {
   ctx.fillStyle = "#0a0b0f"; ctx.fillRect(0,0,canvas.width,canvas.height);
 }
-function drawWatermarkIfFree() {
-  if (localIsPro()) return;
+async function drawWatermarkIfFree() {
+  const pro = await isPro();
+  if (pro) return;
   ctx.globalAlpha = 0.6;
   ctx.fillStyle = "#ffffff";
   ctx.font = `${Math.max(14, Math.floor(canvas.width * 0.04))}px monospace`;
@@ -171,9 +172,9 @@ async function renderSigil(phrase = "default", vibe = "mystical") {
     
     if (data.success && data.image) {
       const img = new Image();
-      img.onload = () => {
+      img.onload = async () => {
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        if (!localIsPro()) drawWatermarkIfFree();
+        await drawWatermarkIfFree();
       };
       img.src = data.image;
       return data;
@@ -194,7 +195,7 @@ async function renderSigil(phrase = "default", vibe = "mystical") {
       i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
     }
     ctx.stroke();
-    drawWatermarkIfFree();
+    await drawWatermarkIfFree();
     throw error;
   }
 }
@@ -222,15 +223,21 @@ genBtn.onclick = async () => {
     return;
   }
   
-  const pro = await isPro();
-  const phrase = document.getElementById("intentInput")?.value?.trim() || "Default Intent";
-  const vibe = selectedEnergies[0]; // Use first selected energy for now
-  const size = pro ? 2048 : 512;
-
-  if (!phrase) {
-    toast("Enter your intent or phrase");
+  const intentInput = document.getElementById("intentInput");
+  if (!intentInput) {
+    toast("Intent input field not found");
     return;
   }
+  
+  const phrase = intentInput.value?.trim();
+  if (!phrase) {
+    toast("Please enter your intent or desire");
+    return;
+  }
+  
+  const pro = await isPro();
+  const vibe = selectedEnergies[0]; // Use first selected energy for now
+  const size = pro ? 2048 : 512;
 
   canvas.width = size; canvas.height = size;
   genBtn.disabled = true;
