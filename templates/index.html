@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🔮 Sigil Generator</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -19,6 +20,7 @@
             --neon-green: #00ff41;
             --neon-purple: #8a2be2;
             --neon-orange: #ff4500;
+            --neon-gold: #ffd700;
             --dark-bg: #0a0a0f;
             --darker-bg: #050508;
             --card-bg: rgba(10, 20, 30, 0.8);
@@ -88,11 +90,18 @@
             z-index: 1;
         }
 
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 2rem;
+        }
+
         h1 {
             font-family: 'Orbitron', monospace;
             font-size: 3.5rem;
             font-weight: 900;
-            margin-bottom: 3rem;
             background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink), var(--neon-green));
             background-size: 300% 300%;
             -webkit-background-clip: text;
@@ -103,18 +112,59 @@
             position: relative;
         }
 
-        h1::before {
-            content: '🔮 Sigil Generator';
-            position: absolute;
-            top: 0;
-            left: 0;
-            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: blur(10px);
-            z-index: -1;
-            animation: pulseGlow 2s ease-in-out infinite alternate;
+        .pro-badge {
+            display: none;
+            background: linear-gradient(45deg, var(--neon-gold), #ffaa00);
+            color: var(--dark-bg);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            animation: pulseGold 2s ease-in-out infinite alternate;
+        }
+
+        .pro-badge.visible {
+            display: inline-block;
+        }
+
+        @keyframes pulseGold {
+            0% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+            100% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.8); }
+        }
+
+        .pro-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .pro-button {
+            padding: 10px 20px;
+            background: linear-gradient(45deg, var(--neon-purple), var(--neon-pink));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Orbitron', monospace;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 0.9rem;
+        }
+
+        .pro-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(138, 43, 226, 0.4);
+        }
+
+        .pro-button.hidden {
+            display: none;
         }
 
         @keyframes gradientShift {
@@ -204,6 +254,28 @@
             transform: scale(1.02);
         }
 
+        .seed-input {
+            width: 100px;
+            padding: 10px;
+            font-size: 1rem;
+            font-family: 'Exo 2', sans-serif;
+            border: 2px solid var(--neon-green);
+            border-radius: 8px;
+            background: rgba(0, 20, 40, 0.8);
+            color: var(--text-primary);
+            margin-left: 10px;
+        }
+
+        .seed-group {
+            display: none;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .seed-group.visible {
+            display: flex;
+        }
+
         .vibe-section {
             margin-bottom: 2.5rem;
         }
@@ -227,6 +299,12 @@
             backdrop-filter: blur(10px);
         }
 
+        .vibe-option.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: rgba(20, 20, 20, 0.6);
+        }
+
         .vibe-option::before {
             content: '';
             position: absolute;
@@ -238,11 +316,11 @@
             transition: left 0.5s ease;
         }
 
-        .vibe-option:hover::before {
+        .vibe-option:not(.disabled):hover::before {
             left: 100%;
         }
 
-        .vibe-option:hover {
+        .vibe-option:not(.disabled):hover {
             border-color: var(--neon-cyan);
             background: rgba(0, 255, 255, 0.1);
             transform: translateY(-2px);
@@ -263,12 +341,54 @@
             font-size: 1.1em;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .lock-icon {
+            font-size: 0.9em;
+            color: var(--neon-orange);
         }
 
         .vibe-description {
             font-size: 0.9em;
             color: var(--text-secondary);
             line-height: 1.4;
+        }
+
+        .combo-section {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid var(--neon-gold);
+            border-radius: 10px;
+        }
+
+        .combo-section.visible {
+            display: block;
+        }
+
+        .combo-checkbox {
+            margin-right: 10px;
+        }
+
+        .pro-features {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid var(--neon-gold);
+            border-radius: 15px;
+        }
+
+        .pro-features.visible {
+            display: block;
+        }
+
+        .pro-toggle {
+            margin: 10px 0;
         }
 
         .generate-btn {
@@ -341,6 +461,39 @@
             border: 2px solid var(--neon-cyan);
         }
 
+        .export-options {
+            display: none;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .export-options.visible {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .export-btn {
+            padding: 12px 24px;
+            background: linear-gradient(45deg, var(--neon-green), var(--neon-cyan));
+            color: var(--dark-bg);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-family: 'Orbitron', monospace;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .export-btn:hover {
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-green));
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 255, 65, 0.4);
+        }
+
         .error {
             color: var(--neon-orange);
             font-size: 1.2rem;
@@ -385,27 +538,116 @@
             50% { opacity: 1; }
         }
 
-        .download-btn {
-            padding: 15px 30px;
-            background: linear-gradient(45deg, var(--neon-green), var(--neon-cyan));
-            color: var(--dark-bg);
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            font-family: 'Orbitron', monospace;
-            font-weight: 600;
-            margin-top: 20px;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
         }
 
-        .download-btn:hover {
-            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-green));
+        .modal.visible {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.3);
+        }
+
+        .modal-title {
+            font-family: 'Orbitron', monospace;
+            color: var(--neon-cyan);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1rem;
+            border: 2px solid var(--neon-cyan);
+            border-radius: 10px;
+            background: rgba(0, 20, 40, 0.8);
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Orbitron', monospace;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn.primary {
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink));
+            color: var(--dark-bg);
+        }
+
+        .modal-btn.secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 2px solid var(--text-secondary);
+        }
+
+        .modal-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 255, 65, 0.4);
+        }
+
+        /* Toast Styles */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-family: 'Orbitron', monospace;
+            font-weight: 600;
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+        }
+
+        .toast.success {
+            background: linear-gradient(45deg, var(--neon-green), #00aa41);
+            border: 2px solid var(--neon-green);
+        }
+
+        .toast.error {
+            background: linear-gradient(45deg, var(--neon-orange), #cc3300);
+            border: 2px solid var(--neon-orange);
+        }
+
+        .toast.visible {
+            transform: translateX(0);
         }
 
         /* Responsive design */
@@ -435,6 +677,11 @@
             .vibe-grid {
                 grid-template-columns: 1fr;
             }
+
+            .pro-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
         }
 
         /* Glitch effect for errors */
@@ -454,7 +701,17 @@
 </head>
 <body>
     <div class="container">
-        <h1>🔮 Sigil Generator</h1>
+        <div class="header">
+            <h1>🔮 Sigil Generator</h1>
+            <div class="pro-badge" id="proBadge">✨ PRO</div>
+        </div>
+
+        <div class="pro-buttons" id="proButtons">
+            <a href="https://buy.stripe.com/test_xyz" target="_blank" class="pro-button" id="upgradeBtn">
+                ⚡ Upgrade to Pro
+            </a>
+            <button class="pro-button" id="proKeyBtn">🔑 Enter Pro Key</button>
+        </div>
 
         <div class="form-container">
             <form id="sigilForm">
@@ -467,6 +724,10 @@
                         maxlength="200"
                         required
                     ></textarea>
+                    <div class="seed-group" id="seedGroup">
+                        <label for="seed">Quantum Seed:</label>
+                        <input type="number" id="seed" class="seed-input" placeholder="0" min="0" max="999999">
+                    </div>
                 </div>
 
                 <div class="input-group vibe-section">
@@ -477,7 +738,7 @@
                             <div class="vibe-description">Ethereal and magical energy</div>
                         </div>
                         <div class="vibe-option" data-vibe="cosmic">
-                            <div class="vibe-title">Cosmic</div>
+                            <div class="vibe-title">Cosmic <span class="lock-icon">🔒</span></div>
                             <div class="vibe-description">Stellar and galactic power</div>
                         </div>
                         <div class="vibe-option" data-vibe="elemental">
@@ -485,11 +746,11 @@
                             <div class="vibe-description">Earth, fire, water, air</div>
                         </div>
                         <div class="vibe-option" data-vibe="crystal">
-                            <div class="vibe-title">Crystal</div>
+                            <div class="vibe-title">Crystal <span class="lock-icon">🔒</span></div>
                             <div class="vibe-description">Crystalline geometric energy</div>
                         </div>
                         <div class="vibe-option" data-vibe="shadow">
-                            <div class="vibe-title">Shadow</div>
+                            <div class="vibe-title">Shadow <span class="lock-icon">🔒</span></div>
                             <div class="vibe-description">Dark and mysterious power</div>
                         </div>
                         <div class="vibe-option" data-vibe="light">
@@ -497,9 +758,25 @@
                             <div class="vibe-description">Radiant and healing energy</div>
                         </div>
                     </div>
+                    
+                    <div class="combo-section" id="comboSection">
+                        <label>
+                            <input type="checkbox" id="comboMode" class="combo-checkbox">
+                            🌟 Combo Mode (Mix Multiple Energies)
+                        </label>
+                    </div>
                 </div>
 
-                <button type="submit" class="generate-btn">Initialize Quantum Sigil</button>
+                <div class="pro-features" id="proFeatures">
+                    <div class="pro-toggle">
+                        <label>
+                            <input type="checkbox" id="batchMode">
+                            📦 Batch x5 (Generate 5 Variants)
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="generate-btn" id="generateBtn">Initialize Quantum Sigil</button>
             </form>
 
             <div class="loading" id="loading">
@@ -510,96 +787,226 @@
             <div id="result" class="result">
                 <div id="error" class="error"></div>
                 <img id="sigil" class="sigil-image" alt="Generated Sigil">
-                <br>
-                <button class="download-btn" onclick="downloadSigil()" style="display: none;" id="downloadBtn">
-                    ⬇ Download Neural Sigil
-                </button>
+                <div class="export-options" id="exportOptions">
+                    <button class="export-btn" onclick="downloadPNG()">⬇ PNG</button>
+                    <button class="export-btn" onclick="downloadSVG()" id="svgBtn" style="display: none;">⬇ SVG</button>
+                    <button class="export-btn" onclick="downloadBatch()" id="batchBtn" style="display: none;">📦 Batch ZIP</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pro Key Modal -->
+    <div class="modal" id="proKeyModal">
+        <div class="modal-content">
+            <h3 class="modal-title">🔑 Enter Pro Key</h3>
+            <input type="text" id="proKeyInput" class="modal-input" placeholder="Enter your pro key...">
+            <div class="modal-buttons">
+                <button class="modal-btn primary" onclick="unlockPro()">🚀 Unlock</button>
+                <button class="modal-btn secondary" onclick="closeModal()">Cancel</button>
             </div>
         </div>
     </div>
 
     <script>
         // Application state
-        let currentSelectedVibe = 'mystical';
+        let currentSelectedVibes = ['mystical'];
         let isGenerating = false;
         let currentSigilData = null;
+        let currentSVGData = null;
+        let cooldownActive = false;
+        let cooldownTimer = null;
+        let isPro = false;
+        let batchSigils = [];
+
+        // Pro tier limitations
+        const FREE_VIBES = ['mystical', 'elemental', 'light'];
+        const PRO_VIBES = ['cosmic', 'crystal', 'shadow'];
+        const COOLDOWN_TIME = 10; // seconds
 
         // Initialize application
-        function initializeApp() {
-            console.log('🚀 Initializing Sigil Generator...');
+        async function initializeApp() {
+            console.log('🚀 Initializing Sigil Generator Pro...');
             
-            // Get DOM elements
+            // Check pro status
+            await checkProStatus();
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Update UI based on pro status
+            updateProUI();
+            
+            console.log('✅ App initialization complete!');
+        }
+
+        async function checkProStatus() {
+            try {
+                // Check localStorage first
+                const localPro = localStorage.getItem('sigil_pro') === '1';
+                
+                // Check server-side cookie
+                const response = await fetch('/api/is-pro');
+                const data = await response.json();
+                const serverPro = data.pro;
+                
+                // Consider pro if either is true
+                isPro = localPro || serverPro;
+                
+                console.log(`Pro status: ${isPro} (local: ${localPro}, server: ${serverPro})`);
+            } catch (error) {
+                console.error('Error checking pro status:', error);
+                isPro = localStorage.getItem('sigil_pro') === '1';
+            }
+        }
+
+        function setupEventListeners() {
             const form = document.getElementById('sigilForm');
             const textarea = document.getElementById('phrase');
             const vibeOptions = document.querySelectorAll('.vibe-option');
-            const generateBtn = document.querySelector('.generate-btn');
-            const loadingDiv = document.getElementById('loading');
-            const resultDiv = document.getElementById('result');
-            const errorDiv = document.getElementById('error');
-            const sigilImg = document.getElementById('sigil');
-            const downloadBtn = document.getElementById('downloadBtn');
+            const proKeyBtn = document.getElementById('proKeyBtn');
+            const comboMode = document.getElementById('comboMode');
 
-            if (!form || !textarea || !vibeOptions.length || !generateBtn || 
-                !loadingDiv || !resultDiv || !errorDiv || !sigilImg || !downloadBtn) {
-                console.error('❌ Missing required DOM elements');
-                return false;
-            }
-
-            console.log('✅ All DOM elements found');
-
-            // Setup vibe selection
-            vibeOptions.forEach(option => {
-                option.addEventListener('click', function() {
-                    console.log('🎭 Vibe selected:', this.getAttribute('data-vibe'));
-                    
-                    // Update visual selection
-                    vibeOptions.forEach(opt => opt.classList.remove('selected'));
-                    this.classList.add('selected');
-                    
-                    // Update current vibe
-                    currentSelectedVibe = this.getAttribute('data-vibe');
-                    console.log('Current vibe updated to:', currentSelectedVibe);
-                });
-            });
-
-            // Setup form submission
+            // Form submission
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                if (!isGenerating) {
+                if (!isGenerating && !cooldownActive) {
                     await generateSigil();
                 }
             });
 
-            // Setup Enter key (but not Shift+Enter)
+            // Vibe selection
+            vibeOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    selectVibe(this);
+                });
+            });
+
+            // Pro key button
+            proKeyBtn.addEventListener('click', openProKeyModal);
+
+            // Combo mode toggle
+            comboMode.addEventListener('change', function() {
+                if (this.checked && !isPro) {
+                    this.checked = false;
+                    showToast('Combo mode requires Pro upgrade', 'error');
+                }
+            });
+
+            // Enter key handling
             textarea.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey && !isGenerating) {
+                if (e.key === 'Enter' && !e.shiftKey && !isGenerating && !cooldownActive) {
                     e.preventDefault();
                     generateSigil();
                 }
             });
 
-            console.log('✅ Event listeners attached');
-            console.log('🎉 Sigil Generator ready!');
-            
-            return true;
+            // Close modal on outside click
+            document.getElementById('proKeyModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
         }
 
-        // Main sigil generation function
-        async function generateSigil() {
-            if (isGenerating) {
-                console.log('⚠️ Already generating, please wait...');
+        function selectVibe(option) {
+            const vibe = option.getAttribute('data-vibe');
+            const comboMode = document.getElementById('comboMode').checked && isPro;
+            
+            // Check if vibe is locked for free users
+            if (!isPro && PRO_VIBES.includes(vibe)) {
+                showToast('This energy requires Pro upgrade', 'error');
                 return;
             }
+
+            if (comboMode) {
+                // Multi-selection mode
+                if (option.classList.contains('selected')) {
+                    option.classList.remove('selected');
+                    currentSelectedVibes = currentSelectedVibes.filter(v => v !== vibe);
+                } else {
+                    option.classList.add('selected');
+                    currentSelectedVibes.push(vibe);
+                }
+                
+                if (currentSelectedVibes.length === 0) {
+                    // Select mystical as default
+                    document.querySelector('[data-vibe="mystical"]').classList.add('selected');
+                    currentSelectedVibes = ['mystical'];
+                }
+            } else {
+                // Single selection mode
+                document.querySelectorAll('.vibe-option').forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                currentSelectedVibes = [vibe];
+            }
+            
+            console.log('Selected vibes:', currentSelectedVibes);
+        }
+
+        function updateProUI() {
+            const proBadge = document.getElementById('proBadge');
+            const proButtons = document.getElementById('proButtons');
+            const upgradeBtn = document.getElementById('upgradeBtn');
+            const proKeyBtn = document.getElementById('proKeyBtn');
+            const seedGroup = document.getElementById('seedGroup');
+            const comboSection = document.getElementById('comboSection');
+            const proFeatures = document.getElementById('proFeatures');
+            const svgBtn = document.getElementById('svgBtn');
+            const batchBtn = document.getElementById('batchBtn');
+            
+            if (isPro) {
+                // Show pro elements
+                proBadge.classList.add('visible');
+                upgradeBtn.classList.add('hidden');
+                proKeyBtn.classList.add('hidden');
+                seedGroup.classList.add('visible');
+                comboSection.classList.add('visible');
+                proFeatures.classList.add('visible');
+                svgBtn.style.display = 'inline-block';
+                batchBtn.style.display = 'inline-block';
+                
+                // Enable all vibes
+                document.querySelectorAll('.vibe-option').forEach(option => {
+                    option.classList.remove('disabled');
+                    const lockIcon = option.querySelector('.lock-icon');
+                    if (lockIcon) lockIcon.style.display = 'none';
+                });
+            } else {
+                // Hide pro elements and disable locked vibes
+                proBadge.classList.remove('visible');
+                upgradeBtn.classList.remove('hidden');
+                proKeyBtn.classList.remove('hidden');
+                seedGroup.classList.remove('visible');
+                comboSection.classList.remove('visible');
+                proFeatures.classList.remove('visible');
+                svgBtn.style.display = 'none';
+                batchBtn.style.display = 'none';
+                
+                // Disable pro vibes
+                document.querySelectorAll('.vibe-option').forEach(option => {
+                    const vibe = option.getAttribute('data-vibe');
+                    if (PRO_VIBES.includes(vibe)) {
+                        option.classList.add('disabled');
+                        const lockIcon = option.querySelector('.lock-icon');
+                        if (lockIcon) lockIcon.style.display = 'inline';
+                    }
+                });
+            }
+        }
+
+        async function generateSigil() {
+            if (isGenerating || cooldownActive) return;
 
             console.log('🎨 Starting sigil generation...');
             isGenerating = true;
 
             try {
-                // Get input values
                 const phraseInput = document.getElementById('phrase');
                 const phrase = phraseInput.value.trim();
+                const seed = document.getElementById('seed').value || null;
+                const batchMode = document.getElementById('batchMode').checked && isPro;
 
-                // Validate input
                 if (!phrase) {
                     showError('Please enter your quantum intent matrix');
                     return;
@@ -610,92 +1017,229 @@
                     return;
                 }
 
-                console.log(`📝 Generating: "${phrase}" with vibe: "${currentSelectedVibe}"`);
+                const vibe = currentSelectedVibes.length === 1 ? currentSelectedVibes[0] : 'combo';
+                const size = isPro ? 2048 : 512;
+                const batchCount = batchMode ? 5 : 1;
+
+                console.log(`📝 Generating: "${phrase}" with vibes: ${currentSelectedVibes.join('+')}`);
                 
-                // Show loading state
                 showLoading(true);
                 clearResult();
 
-                // Send generation request
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout
-
-                const response = await fetch('/generate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ 
-                        phrase: phrase,
-                        vibe: currentSelectedVibe 
-                    }),
-                    signal: controller.signal
-                });
-
-                clearTimeout(timeoutId);
-                console.log('📡 Response status:', response.status);
-
-                if (!response.ok) {
-                    throw new Error(`Server error: ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log('📦 Response received');
-
-                if (data.error) {
-                    showError(data.error);
-                } else if (data.success && data.image) {
-                    currentSigilData = data.image;
-                    showResult(data.image);
-                    console.log('🎨 Sigil generated successfully!');
+                // Generate sigil(s)
+                if (batchCount === 1) {
+                    await generateSingleSigil(phrase, vibe, size, seed);
                 } else {
-                    showError('Invalid response from quantum matrix');
+                    await generateBatchSigils(phrase, vibe, size, seed, batchCount);
                 }
-                
+
+                // Start cooldown for free users
+                if (!isPro) {
+                    startCooldown();
+                }
+
             } catch (error) {
                 console.error('🚨 Generation error:', error);
-                
-                if (error.name === 'AbortError') {
-                    showError('Generation timed out. The quantum matrix is overloaded. Please try again.');
-                } else if (error.message.includes('fetch')) {
-                    showError('Network error. Please check your connection and try again.');
-                } else {
-                    showError('Generation failed: ' + error.message);
-                }
-                
+                showError('Generation failed: ' + error.message);
             } finally {
                 showLoading(false);
                 isGenerating = false;
             }
         }
 
-        // UI management functions
+        async function generateSingleSigil(phrase, vibe, size, seed) {
+            // Create canvas for sigil generation
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // Generate sigil (simplified version of the Python logic)
+            await drawSigil(ctx, phrase, vibe, size, seed);
+
+            // Add watermark for free users
+            if (!isPro) {
+                drawWatermark(ctx, size);
+            }
+
+            // Convert to base64
+            currentSigilData = canvas.toDataURL('image/png');
+            
+            // Generate SVG for pro users
+            if (isPro) {
+                currentSVGData = generateSVG(phrase, vibe, size, seed);
+            }
+
+            showResult(currentSigilData);
+        }
+
+        async function generateBatchSigils(phrase, vibe, size, seed, count) {
+            batchSigils = [];
+            
+            for (let i = 0; i < count; i++) {
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+
+                const batchSeed = seed ? parseInt(seed) + i : Date.now() + i;
+                await drawSigil(ctx, phrase, vibe, size, batchSeed);
+
+                const imageData = canvas.toDataURL('image/png');
+                batchSigils.push({
+                    data: imageData,
+                    filename: `sigil_${i + 1}.png`
+                });
+            }
+
+            // Show first sigil as preview
+            currentSigilData = batchSigils[0].data;
+            showResult(currentSigilData);
+            showToast(`Generated ${count} sigil variants!`, 'success');
+        }
+
+        async function drawSigil(ctx, phrase, vibe, size, seed) {
+            // Simplified sigil drawing logic
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, size, size);
+
+            const center = { x: size / 2, y: size / 2 };
+            const colors = getVibeColors(vibe);
+            const random = createSeededRandom(seed || phrase.length);
+
+            // Draw basic patterns based on phrase and vibe
+            for (let i = 0; i < phrase.length * 5; i++) {
+                const angle = (i * 360 / (phrase.length * 5)) + random() * 60;
+                const radius = (size / 8) + random() * (size / 4);
+                const x = center.x + Math.cos(angle * Math.PI / 180) * radius;
+                const y = center.y + Math.sin(angle * Math.PI / 180) * radius;
+
+                ctx.beginPath();
+                ctx.arc(x, y, 2 + random() * 8, 0, 2 * Math.PI);
+                ctx.fillStyle = colors[i % colors.length] + Math.floor(random() * 128 + 127).toString(16).padStart(2, '0');
+                ctx.fill();
+            }
+
+            // Add connecting lines
+            for (let i = 0; i < phrase.length * 3; i++) {
+                const angle1 = random() * 360;
+                const angle2 = random() * 360;
+                const radius1 = random() * (size / 3);
+                const radius2 = random() * (size / 3);
+
+                const x1 = center.x + Math.cos(angle1 * Math.PI / 180) * radius1;
+                const y1 = center.y + Math.sin(angle1 * Math.PI / 180) * radius1;
+                const x2 = center.x + Math.cos(angle2 * Math.PI / 180) * radius2;
+                const y2 = center.y + Math.sin(angle2 * Math.PI / 180) * radius2;
+
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = colors[i % colors.length] + '80';
+                ctx.lineWidth = 1 + random() * 3;
+                ctx.stroke();
+            }
+        }
+
+        function getVibeColors(vibe) {
+            const colorMap = {
+                'mystical': ['#9640e6', '#ff64ff', '#78c8ff', '#c896ff'],
+                'cosmic': ['#141450', '#6496ff', '#c864ff', '#ffc864'],
+                'elemental': ['#ff6432', '#32ff64', '#6496ff', '#c89664'],
+                'crystal': ['#c8ffff', '#96c8ff', '#ffc8ff', '#c8ffc8'],
+                'shadow': ['#502050', '#784078', '#3c203c', '#643264'],
+                'light': ['#ffffc8', '#ffc896', '#c8ffc8', '#ffddff'],
+                'combo': ['#ff64ff', '#64ffff', '#ffff64', '#64ff64']
+            };
+            return colorMap[vibe] || colorMap['mystical'];
+        }
+
+        function createSeededRandom(seed) {
+            const numSeed = typeof seed === 'string' ? seed.split('').reduce((a, b) => {
+                a = ((a << 5) - a) + b.charCodeAt(0);
+                return a & a;
+            }, 0) : seed || Date.now();
+            
+            let current = Math.abs(numSeed);
+            return function() {
+                current = (current * 9301 + 49297) % 233280;
+                return current / 233280;
+            };
+        }
+
+        function drawWatermark(ctx, size) {
+            ctx.save();
+            ctx.globalAlpha = 0.6;
+            ctx.fillStyle = '#ffffff';
+            ctx.font = `${Math.floor(size / 25)}px Orbitron, monospace`;
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText('Sigilcraft', size - 10, size - 10);
+            ctx.restore();
+        }
+
+        function generateSVG(phrase, vibe, size, seed) {
+            // Simplified SVG generation
+            const colors = getVibeColors(vibe);
+            const random = createSeededRandom(seed || phrase.length);
+            
+            let svg = `<svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">`;
+            svg += `<rect width="${size}" height="${size}" fill="#000000"/>`;
+
+            const center = { x: size / 2, y: size / 2 };
+
+            // Add circles
+            for (let i = 0; i < phrase.length * 5; i++) {
+                const angle = (i * 360 / (phrase.length * 5)) + random() * 60;
+                const radius = (size / 8) + random() * (size / 4);
+                const x = center.x + Math.cos(angle * Math.PI / 180) * radius;
+                const y = center.y + Math.sin(angle * Math.PI / 180) * radius;
+                const r = 2 + random() * 8;
+                const opacity = (random() * 128 + 127) / 255;
+
+                svg += `<circle cx="${x}" cy="${y}" r="${r}" fill="${colors[i % colors.length]}" opacity="${opacity}"/>`;
+            }
+
+            svg += '</svg>';
+            return svg;
+        }
+
+        function startCooldown() {
+            if (isPro) return;
+
+            cooldownActive = true;
+            let timeLeft = COOLDOWN_TIME;
+            const generateBtn = document.getElementById('generateBtn');
+
+            generateBtn.disabled = true;
+            
+            cooldownTimer = setInterval(() => {
+                generateBtn.textContent = `Ready in ${timeLeft}s...`;
+                timeLeft--;
+
+                if (timeLeft < 0) {
+                    clearInterval(cooldownTimer);
+                    cooldownActive = false;
+                    generateBtn.disabled = false;
+                    generateBtn.textContent = 'Initialize Quantum Sigil';
+                }
+            }, 1000);
+        }
+
         function showLoading(show) {
             const loadingDiv = document.getElementById('loading');
-            const generateBtn = document.querySelector('.generate-btn');
-            const textarea = document.getElementById('phrase');
-            const vibeOptions = document.querySelectorAll('.vibe-option');
+            const generateBtn = document.getElementById('generateBtn');
 
             if (show) {
                 loadingDiv.style.display = 'block';
                 generateBtn.disabled = true;
                 generateBtn.textContent = 'Processing Neural Matrix...';
-                generateBtn.style.opacity = '0.6';
-                textarea.disabled = true;
-                vibeOptions.forEach(option => {
-                    option.style.pointerEvents = 'none';
-                    option.style.opacity = '0.7';
-                });
             } else {
                 loadingDiv.style.display = 'none';
-                generateBtn.disabled = false;
-                generateBtn.textContent = 'Initialize Quantum Sigil';
-                generateBtn.style.opacity = '1';
-                textarea.disabled = false;
-                vibeOptions.forEach(option => {
-                    option.style.pointerEvents = 'auto';
-                    option.style.opacity = '1';
-                });
+                if (!cooldownActive) {
+                    generateBtn.disabled = false;
+                    generateBtn.textContent = 'Initialize Quantum Sigil';
+                }
             }
         }
 
@@ -703,16 +1247,15 @@
             const resultDiv = document.getElementById('result');
             const errorDiv = document.getElementById('error');
             const sigilImg = document.getElementById('sigil');
-            const downloadBtn = document.getElementById('downloadBtn');
+            const exportOptions = document.getElementById('exportOptions');
 
             resultDiv.style.display = 'block';
             errorDiv.textContent = message;
             errorDiv.style.display = 'block';
             errorDiv.classList.add('glitch');
             sigilImg.style.display = 'none';
-            downloadBtn.style.display = 'none';
+            exportOptions.classList.remove('visible');
 
-            // Remove glitch effect after animation
             setTimeout(() => {
                 errorDiv.classList.remove('glitch');
             }, 1000);
@@ -722,501 +1265,164 @@
             const resultDiv = document.getElementById('result');
             const errorDiv = document.getElementById('error');
             const sigilImg = document.getElementById('sigil');
-            const downloadBtn = document.getElementById('downloadBtn');
+            const exportOptions = document.getElementById('exportOptions');
 
             resultDiv.style.display = 'block';
             errorDiv.style.display = 'none';
             sigilImg.src = imageData;
             sigilImg.style.display = 'block';
-            downloadBtn.style.display = 'inline-block';
-            
-            // Store image data for download
-            currentSigilData = imageData;
+            exportOptions.classList.add('visible');
         }
 
         function clearResult() {
             const resultDiv = document.getElementById('result');
             const errorDiv = document.getElementById('error');
             const sigilImg = document.getElementById('sigil');
-            const downloadBtn = document.getElementById('downloadBtn');
+            const exportOptions = document.getElementById('exportOptions');
 
             resultDiv.style.display = 'none';
             errorDiv.style.display = 'none';
             sigilImg.style.display = 'none';
-            downloadBtn.style.display = 'none';
+            exportOptions.classList.remove('visible');
         }
 
-        // Enhanced download function with better error handling
-        function downloadSigil() {
-            console.log('📥 Download initiated...');
-            
-            try {
-                if (!currentSigilData) {
-                    console.error('❌ No sigil data available for download');
-                    showError('No sigil available for download. Please generate a sigil first.');
-                    return false;
-                }
-
-                // Validate that we have proper image data
-                if (!currentSigilData.startsWith('data:image/')) {
-                    console.error('❌ Invalid image data format');
-                    showError('Invalid image data. Please regenerate the sigil.');
-                    return false;
-                }
-
-                // Create download link with enhanced compatibility
-                const link = document.createElement('a');
-                link.href = currentSigilData;
-                link.style.display = 'none';
-                
-                // Generate safe filename with timestamp and current phrase
-                const phraseInput = document.getElementById('phrase');
-                let phrase = phraseInput.value.trim().substring(0, 20);
-                phrase = phrase.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
-                if (!phrase) phrase = 'sigil';
-                
-                const now = new Date();
-                const timestamp = now.toISOString().slice(0, 10);
-                const timestring = now.toTimeString().slice(0, 8).replace(/:/g, '');
-                const filename = `sigil_${phrase}_${currentSelectedVibe}_${timestamp}_${timestring}.png`;
-                
-                link.download = filename;
-                link.target = '_blank';
-                
-                // Enhanced download process
-                document.body.appendChild(link);
-                
-                // Multiple download attempts for better browser compatibility
-                try {
-                    link.click();
-                    console.log('✅ Download triggered:', filename);
-                } catch (clickError) {
-                    console.error('❌ Click download failed, trying alternative method');
-                    
-                    // Alternative method: create blob and download
-                    try {
-                        const base64Data = currentSigilData.split(',')[1];
-                        const byteCharacters = atob(base64Data);
-                        const byteNumbers = new Array(byteCharacters.length);
-                        for (let i = 0; i < byteCharacters.length; i++) {
-                            byteNumbers[i] = byteCharacters.charCodeAt(i);
-                        }
-                        const byteArray = new Uint8Array(byteNumbers);
-                        const blob = new Blob([byteArray], {type: 'image/png'});
-                        
-                        const blobUrl = URL.createObjectURL(blob);
-                        link.href = blobUrl;
-                        link.click();
-                        
-                        // Clean up blob URL after a delay
-                        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-                        console.log('✅ Blob download completed:', filename);
-                    } catch (blobError) {
-                        console.error('❌ Blob download failed:', blobError);
-                        showError('Download failed. Your browser may not support this feature.');
-                        return false;
-                    }
-                }
-                
-                // Clean up
-                setTimeout(() => {
-                    if (document.body.contains(link)) {
-                        document.body.removeChild(link);
-                    }
-                }, 1000);
-                
-                console.log('✅ Download process completed successfully:', filename);
-                return true;
-                
-            } catch (error) {
-                console.error('❌ Download failed with error:', error);
-                showError('Download failed: ' + error.message);
-                return false;
+        function downloadPNG() {
+            if (!currentSigilData) {
+                showToast('No sigil available for download', 'error');
+                return;
             }
+
+            const link = document.createElement('a');
+            link.href = currentSigilData;
+            link.download = `sigil_${Date.now()}.png`;
+            link.click();
+            
+            showToast('PNG downloaded successfully!', 'success');
         }
 
-        // Comprehensive testing function
-        async function runAppTests() {
-            console.log('🧪 Running comprehensive app tests...');
-            
-            let allTestsPassed = true;
-            const testResults = [];
-            
-            // Test 1: DOM Elements
-            console.log('🔍 Test 1: DOM Elements');
-            const requiredElements = [
-                'sigilForm', 'phrase', 'loading', 'result', 'error', 'sigil', 'downloadBtn'
-            ];
-            
-            let domTestPassed = true;
-            requiredElements.forEach(elementId => {
-                const element = document.getElementById(elementId);
-                if (element) {
-                    console.log(`✅ ${elementId} found`);
-                } else {
-                    console.log(`❌ ${elementId} missing`);
-                    domTestPassed = false;
-                    allTestsPassed = false;
-                }
-            });
-            testResults.push({name: 'DOM Elements', passed: domTestPassed});
-            
-            // Test 2: Vibe Options
-            console.log('🔍 Test 2: Vibe Options');
-            const vibeOptions = document.querySelectorAll('.vibe-option');
-            const expectedVibes = ['mystical', 'cosmic', 'elemental', 'crystal', 'shadow', 'light'];
-            let vibeTestPassed = vibeOptions.length === expectedVibes.length;
-            
-            console.log(`Found ${vibeOptions.length} vibe options (expected ${expectedVibes.length})`);
-            
-            vibeOptions.forEach((option, index) => {
-                const vibe = option.getAttribute('data-vibe');
-                const isSelected = option.classList.contains('selected');
-                console.log(`Vibe ${index}: ${vibe} ${isSelected ? '(selected)' : ''}`);
-                
-                if (!expectedVibes.includes(vibe)) {
-                    vibeTestPassed = false;
-                    console.log(`❌ Unexpected vibe: ${vibe}`);
-                }
-            });
-            
-            if (vibeTestPassed) {
-                console.log('✅ All expected vibes found');
-            } else {
-                console.log('❌ Vibe options test failed');
-                allTestsPassed = false;
+        function downloadSVG() {
+            if (!currentSVGData) {
+                showToast('SVG not available', 'error');
+                return;
             }
-            testResults.push({name: 'Vibe Options', passed: vibeTestPassed});
-            
-            // Test 3: Current State
-            console.log('🔍 Test 3: Application State');
-            console.log(`Current vibe: ${currentSelectedVibe}`);
-            console.log(`Is generating: ${isGenerating}`);
-            console.log(`Has sigil data: ${currentSigilData ? 'Yes' : 'No'}`);
-            const stateTestPassed = currentSelectedVibe && typeof isGenerating === 'boolean';
-            testResults.push({name: 'Application State', passed: stateTestPassed});
-            
-            // Test 4: API Connectivity
-            console.log('🔍 Test 4: API Connectivity');
-            let apiTestPassed = false;
-            try {
-                const response = await fetch('/test', {timeout: 5000});
-                const data = await response.json();
-                if (data.status === 'ok') {
-                    console.log('✅ API connection successful:', data.status);
-                    apiTestPassed = true;
-                } else {
-                    console.log('❌ API returned unexpected status:', data.status);
-                }
-            } catch (error) {
-                console.log('❌ API connection failed:', error);
-                allTestsPassed = false;
+
+            const blob = new Blob([currentSVGData], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `sigil_${Date.now()}.svg`;
+            link.click();
+            URL.revokeObjectURL(url);
+
+            showToast('SVG downloaded successfully!', 'success');
+        }
+
+        async function downloadBatch() {
+            if (!batchSigils.length) {
+                showToast('No batch sigils available', 'error');
+                return;
             }
-            testResults.push({name: 'API Connectivity', passed: apiTestPassed});
+
+            const zip = new JSZip();
+
+            batchSigils.forEach((sigil, index) => {
+                const base64Data = sigil.data.split(',')[1];
+                zip.file(sigil.filename, base64Data, { base64: true });
+            });
+
+            const content = await zip.generateAsync({ type: 'blob' });
+            const url = URL.createObjectURL(content);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `sigil_batch_${Date.now()}.zip`;
+            link.click();
+            URL.revokeObjectURL(url);
+
+            showToast(`Batch of ${batchSigils.length} sigils downloaded!`, 'success');
+        }
+
+        function openProKeyModal() {
+            document.getElementById('proKeyModal').classList.add('visible');
+            document.getElementById('proKeyInput').focus();
+        }
+
+        function closeModal() {
+            document.getElementById('proKeyModal').classList.remove('visible');
+            document.getElementById('proKeyInput').value = '';
+        }
+
+        async function unlockPro() {
+            const key = document.getElementById('proKeyInput').value.trim();
             
-            // Test 5: Generation Functionality
-            console.log('🔍 Test 5: Generation Functionality');
-            let generationTestPassed = false;
+            if (!key) {
+                showToast('Please enter a pro key', 'error');
+                return;
+            }
+
             try {
-                const originalPhrase = document.getElementById('phrase').value;
-                document.getElementById('phrase').value = 'TEST';
-                
-                console.log('Testing sigil generation...');
-                const testResponse = await fetch('/generate', {
+                const response = await fetch('/api/verify-pro', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({phrase: 'TEST', vibe: 'mystical'}),
-                    timeout: 30000
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ key })
                 });
-                
-                const testData = await testResponse.json();
-                if (testData.success && testData.image) {
-                    console.log('✅ Generation test successful');
-                    generationTestPassed = true;
+
+                const data = await response.json();
+
+                if (data.ok) {
+                    localStorage.setItem('sigil_pro', '1');
+                    isPro = true;
+                    updateProUI();
+                    closeModal();
+                    showToast('Pro unlocked successfully! 🎉', 'success');
                 } else {
-                    console.log('❌ Generation test failed:', testData.error);
+                    showToast('Invalid pro key', 'error');
                 }
-                
-                // Restore original phrase
-                document.getElementById('phrase').value = originalPhrase;
-                
             } catch (error) {
-                console.log('❌ Generation test error:', error);
-                allTestsPassed = false;
+                console.error('Error verifying pro key:', error);
+                showToast('Error verifying key', 'error');
             }
-            testResults.push({name: 'Generation Functionality', passed: generationTestPassed});
-            
-            // Test 6: Download Functionality
-            console.log('🔍 Test 6: Download Functionality');
-            let downloadTestPassed = false;
-            if (currentSigilData) {
-                try {
-                    downloadTestPassed = downloadSigil();
-                    if (downloadTestPassed) {
-                        console.log('✅ Download test successful');
-                    } else {
-                        console.log('❌ Download test failed');
-                    }
-                } catch (error) {
-                    console.log('❌ Download test error:', error);
-                }
-            } else {
-                console.log('⚠️ No sigil data available for download test');
-                downloadTestPassed = true; // Don't fail if no data available
-            }
-            testResults.push({name: 'Download Functionality', passed: downloadTestPassed});
-            
-            // Test 7: UI Interactions
-            console.log('🔍 Test 7: UI Interactions');
-            let uiTestPassed = true;
-            try {
-                // Test form validation
-                const form = document.getElementById('sigilForm');
-                const textarea = document.getElementById('phrase');
-                const generateBtn = document.querySelector('.generate-btn');
-                
-                if (!form || !textarea || !generateBtn) {
-                    uiTestPassed = false;
-                    console.log('❌ Missing UI elements');
-                } else {
-                    console.log('✅ All UI elements present');
-                }
-                
-                // Test vibe selection
-                vibeOptions.forEach(option => {
-                    if (!option.onclick && !option.addEventListener) {
-                        uiTestPassed = false;
-                        console.log('❌ Vibe option missing event handler');
-                    }
-                });
-                
-                if (uiTestPassed) {
-                    console.log('✅ UI interactions test passed');
-                } else {
-                    console.log('❌ UI interactions test failed');
-                }
-                
-            } catch (error) {
-                console.log('❌ UI test error:', error);
-                uiTestPassed = false;
-            }
-            testResults.push({name: 'UI Interactions', passed: uiTestPassed});
-            
-            // Calculate final results
-            const passedTests = testResults.filter(test => test.passed).length;
-            const totalTests = testResults.length;
-            
-            console.log('\n📊 COMPREHENSIVE TEST RESULTS:');
-            console.log('=' * 50);
-            testResults.forEach(test => {
-                const status = test.passed ? '✅ PASS' : '❌ FAIL';
-                console.log(`${test.name}: ${status}`);
-            });
-            console.log('=' * 50);
-            console.log(`Overall: ${passedTests}/${totalTests} tests passed (${Math.round(passedTests/totalTests*100)}%)`);
-            
-            if (passedTests === totalTests) {
-                console.log('🎉 ALL TESTS PASSED! App is fully operational!');
-            } else {
-                console.log('⚠️ Some tests failed - check logs above');
-                allTestsPassed = false;
-            }
-            
-            return {
-                allPassed: allTestsPassed,
-                results: testResults,
-                summary: `${passedTests}/${totalTests} tests passed`
-            };
         }
 
-        // Test vibe selection functionality
-        function testVibeSelection() {
-            console.log('🧪 Testing vibe selection...');
-            
-            const vibeOptions = document.querySelectorAll('.vibe-option');
-            let allVibesWork = true;
-            
-            vibeOptions.forEach((option, index) => {
-                const vibe = option.getAttribute('data-vibe');
-                console.log(`Testing vibe: ${vibe}`);
-                
-                // Simulate click
-                option.click();
-                
-                // Small delay to ensure DOM updates
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('visible');
+            }, 100);
+
+            setTimeout(() => {
+                toast.classList.remove('visible');
                 setTimeout(() => {
-                    // Verify selection
-                    if (currentSelectedVibe === vibe && option.classList.contains('selected')) {
-                        console.log(`✅ Vibe ${vibe} selection works`);
-                    } else {
-                        console.log(`❌ Vibe ${vibe} selection failed`);
-                        allVibesWork = false;
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
                     }
-                }, 10);
-            });
-            
-            return allVibesWork;
-        }
-
-        // Automated bug detection and fixing
-        async function detectAndFixBugs() {
-            console.log('🔧 Running automated bug detection and fixes...');
-            
-            const issues = [];
-            
-            // Check for common issues
-            const phraseInput = document.getElementById('phrase');
-            const generateBtn = document.querySelector('.generate-btn');
-            const downloadBtn = document.getElementById('downloadBtn');
-            
-            // Issue 1: Check if download button is properly visible when sigil exists
-            if (currentSigilData && downloadBtn && downloadBtn.style.display === 'none') {
-                console.log('🔧 Fixing: Download button not visible despite having sigil data');
-                downloadBtn.style.display = 'inline-block';
-                issues.push('Fixed download button visibility');
-            }
-            
-            // Issue 2: Check if form elements are properly enabled
-            if (phraseInput && phraseInput.disabled && !isGenerating) {
-                console.log('🔧 Fixing: Input field incorrectly disabled');
-                phraseInput.disabled = false;
-                issues.push('Fixed input field state');
-            }
-            
-            // Issue 3: Check if generate button is properly enabled
-            if (generateBtn && generateBtn.disabled && !isGenerating) {
-                console.log('🔧 Fixing: Generate button incorrectly disabled');
-                generateBtn.disabled = false;
-                generateBtn.style.opacity = '1';
-                issues.push('Fixed generate button state');
-            }
-            
-            // Issue 4: Check vibe selection state
-            const selectedVibes = document.querySelectorAll('.vibe-option.selected');
-            if (selectedVibes.length === 0) {
-                console.log('🔧 Fixing: No vibe selected, defaulting to mystical');
-                const mysticalOption = document.querySelector('[data-vibe="mystical"]');
-                if (mysticalOption) {
-                    mysticalOption.classList.add('selected');
-                    currentSelectedVibe = 'mystical';
-                    issues.push('Fixed vibe selection state');
-                }
-            } else if (selectedVibes.length > 1) {
-                console.log('🔧 Fixing: Multiple vibes selected, keeping only first');
-                for (let i = 1; i < selectedVibes.length; i++) {
-                    selectedVibes[i].classList.remove('selected');
-                }
-                currentSelectedVibe = selectedVibes[0].getAttribute('data-vibe');
-                issues.push('Fixed multiple vibe selection');
-            }
-            
-            // Issue 5: Reset loading state if stuck
-            const loadingDiv = document.getElementById('loading');
-            if (loadingDiv && loadingDiv.style.display === 'block' && !isGenerating) {
-                console.log('🔧 Fixing: Loading state stuck');
-                showLoading(false);
-                issues.push('Fixed stuck loading state');
-            }
-            
-            if (issues.length > 0) {
-                console.log('🔧 Fixed issues:', issues);
-                return issues;
-            } else {
-                console.log('✅ No issues detected');
-                return [];
-            }
-        }
-
-        // Complete app testing with automatic fixes
-        async function fullAppTest() {
-            console.log('🚀 Starting complete app testing with automatic fixes...');
-            
-            let iteration = 1;
-            let maxIterations = 3;
-            
-            while (iteration <= maxIterations) {
-                console.log(`\n🔄 Testing iteration ${iteration}/${maxIterations}`);
-                
-                // Detect and fix bugs
-                const fixedIssues = await detectAndFixBugs();
-                
-                // Run comprehensive tests
-                const testResults = await runAppTests();
-                
-                // Test specific functionality
-                const vibeTestPassed = testVibeSelection();
-                
-                if (testResults.allPassed && vibeTestPassed && fixedIssues.length === 0) {
-                    console.log('🎉 ALL TESTS PASSED! No issues found!');
-                    return true;
-                } else {
-                    console.log(`⚠️ Issues found in iteration ${iteration}:`);
-                    if (!testResults.allPassed) {
-                        console.log('- Some comprehensive tests failed');
-                    }
-                    if (!vibeTestPassed) {
-                        console.log('- Vibe selection tests failed');
-                    }
-                    if (fixedIssues.length > 0) {
-                        console.log('- Fixed issues:', fixedIssues);
-                    }
-                    
-                    if (iteration < maxIterations) {
-                        console.log(`🔄 Running iteration ${iteration + 1}...`);
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-                    }
-                }
-                
-                iteration++;
-            }
-            
-            console.log('⚠️ Testing completed but some issues may remain after maximum iterations');
-            return false;
+                }, 300);
+            }, 3000);
         }
 
         // Initialize app when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('📄 DOM loaded, initializing...');
-            
-            // Small delay to ensure everything is rendered
-            setTimeout(() => {
-                const success = initializeApp();
-                
-                if (success) {
-                    console.log('🎉 App initialization successful!');
-                    
-                    // Run comprehensive testing with automatic fixes
-                    setTimeout(() => {
-                        fullAppTest().then(allPassed => {
-                            if (allPassed) {
-                                console.log('✅ Application fully tested and verified!');
-                            } else {
-                                console.log('⚠️ Some issues detected - manual review may be needed');
-                            }
-                        });
-                    }, 500);
-                } else {
-                    console.error('💥 App initialization failed');
-                }
-            }, 100);
+            setTimeout(initializeApp, 100);
         });
 
-        // Error recovery
-        window.addEventListener('error', function(e) {
-            console.error('🚨 JavaScript Error:', e.error);
-            isGenerating = false;
-            showLoading(false);
+        // Close modal on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
         });
 
-        // Expose functions for manual testing
-        window.testApp = runAppTests;
-        window.testVibes = testVibeSelection;
-        window.generateSigil = generateSigil;
-        window.downloadSigil = downloadSigil;
-        window.detectAndFixBugs = detectAndFixBugs;
-        window.fullAppTest = fullAppTest;
-        
-        console.log('🔮 Sigil Generator script loaded successfully!');
+        // Handle enter key in pro key input
+        document.getElementById('proKeyInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                unlockPro();
+            }
+        });
     </script>
 </body>
 </html>
