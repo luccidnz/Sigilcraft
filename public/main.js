@@ -313,9 +313,31 @@ function dataURLtoBlob(dataURL){
   return new Blob([u8], {type:mime});
 }
 
+// -------- Stripe Checkout --------
+async function goPremiumCheckout() {
+  try {
+    const r = await fetch("/api/create-checkout-session", { method: "POST" });
+    const j = await r.json();
+    if (j.url) window.location.href = j.url;
+    else toast("Checkout error — try again.");
+  } catch (e) {
+    toast("Network error — server down?");
+    console.error(e);
+  }
+}
+window.goPremiumCheckout = goPremiumCheckout;
+
 // init
 window.addEventListener("load", async () => {
   await renderGate();
+  
+  // Check for purchase success/cancel
+  const p = new URLSearchParams(location.search);
+  if (p.get("purchase") === "success") {
+    toast("Chur! Payment successful. Check your email for your Pro key.");
+  } else if (p.get("purchase") === "cancel") {
+    toast("Purchase cancelled.");
+  }
 });
 
 // keep previewSvg hidden unless you want to show the SVG string; we use direct download instead.
