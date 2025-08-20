@@ -36,7 +36,7 @@ async function serverIsPro() {
 function localIsPro() {
   return localStorage.getItem("sigil_pro") === "1";
 }
-async function isUserPro() { // Renamed for clarity and consistency
+async function isUserPro() {
   return (await serverIsPro()) || localIsPro();
 }
 
@@ -81,8 +81,8 @@ function hideLoading() {
 
 // --- energy grid ---
 async function renderEnergies() {
-  const pro = await isUserPro();
-  const allowed = pro ? ALL_ENERGIES : FREE_ENERGIES;
+  const isPro = await isUserPro();
+  const allowed = isPro ? ALL_ENERGIES : FREE_ENERGIES;
   energyList.innerHTML = "";
   ALL_ENERGIES.forEach(name => {
     const div = document.createElement("div");
@@ -90,21 +90,25 @@ async function renderEnergies() {
     div.textContent = name;
     div.onclick = () => {
       if (!allowed.includes(name)) { toast("Pro feature"); return; }
+      
+      // Always clear and rebuild selection to ensure consistency
       if (!comboToggle.checked) {
-        // Single selection mode
+        // Single selection mode - replace current selection
         selectedEnergies = [name];
       } else {
-        // Combo mode - allow multiple selections
+        // Combo mode - toggle selection
         if (selectedEnergies.includes(name)) {
-          selectedEnergies = selectedEnergies.filter(e => e !== name);
+          // Remove from selection
+          const newSelection = selectedEnergies.filter(e => e !== name);
           // Ensure at least one energy is always selected
-          if (selectedEnergies.length === 0) {
-            selectedEnergies = [FREE_ENERGIES[0]]; // Default to mystical
-          }
+          selectedEnergies = newSelection.length > 0 ? newSelection : [FREE_ENERGIES[0]];
         } else {
-          selectedEnergies.push(name);
+          // Add to selection if not already present
+          selectedEnergies = [...selectedEnergies, name];
         }
       }
+      
+      console.log("Selected energies:", selectedEnergies);
       highlightSelection();
     };
     energyList.appendChild(div);
@@ -121,11 +125,11 @@ function highlightSelection() {
 
 // --- gating view ---
 async function renderGate() {
-  const pro = await isUserPro();
-  proBadge.classList.toggle("hidden", !pro);
-  proControls.classList.toggle("hidden", !pro);
+  const isPro = await isUserPro();
+  proBadge.classList.toggle("hidden", !isPro);
+  proControls.classList.toggle("hidden", !isPro);
   exportType.value = "png";
-  if (pro) {
+  if (isPro) {
     canvas.width = 2048; canvas.height = 2048;
   } else {
     canvas.width = 1200; canvas.height = 1200;
@@ -158,8 +162,8 @@ unlockBtn.onclick = async () => {
 
 // --- cooldown (free only) ---
 function startCooldownIfNeeded() {
-  isUserPro().then(pro => { // Use isUserPro
-    if (pro) return;
+  isUserPro().then(isPro => {
+    if (isPro) return;
     const now = Date.now();
     lastGenAt = now;
     const wait = 10000;
@@ -183,8 +187,8 @@ function clearCanvas() {
   ctx.fillStyle = "#0a0b0f"; ctx.fillRect(0,0,canvas.width,canvas.height);
 }
 async function drawWatermarkIfFree() {
-  const pro = await isUserPro();
-  if (pro) return;
+  const isPro = await isUserPro();
+  if (isPro) return;
   ctx.globalAlpha = 0.6;
   ctx.fillStyle = "#ffffff";
   ctx.font = `${Math.max(14, Math.floor(canvas.width * 0.04))}px monospace`;
@@ -388,22 +392,39 @@ genBtn.onclick = async () => {
     if (isPro && batchToggle.checked) {
       // batch create zip of 5
       if (typeof JSZip === 'undefined') {
-        toast("JSZip library not loaded");
+        toast("JSZip library not loaded", 'error');
         return;
       }
 
       const zip = new JSZip();
+      let successCount = 0;
+      
       for (let i = 0; i < 5; i++){
-        const batchPhrase = `${phrase} variant ${i + 1}`;
-        const data = await renderSigil(batchPhrase, vibe);
-        if (data && data.image) {
-          const base64Data = data.image.split(",")[1];
-          zip.file(`sigil_${i+1}.png`, base64Data, {base64: true});
+        try {
+          showLoading(`Creating sigil ${i + 1} of 5...`);
+          const batchPhrase = `${phrase} variant ${i + 1}`;
+          const data = await renderSigil(batchPhrase, vibe);
+          
+          if (data && data.image) {
+            const base64Data = data.image.includes(',') ? data.image.split(",")[1] : data.image;
+            zip.file(`sigil_${i+1}.png`, base64Data, {base64: true});
+            successCount++;
+          } else {
+            console.warn(`Failed to generate sigil ${i + 1}`);
+          }
+        } catch (error) {
+          console.error(`Error generating sigil ${i + 1}:`, error);
+          // Continue with other sigils even if one fails
         }
       }
-      const blob = await zip.generateAsync({type:"blob"});
-      triggerDownload(blob, "sigils.zip");
-      toast("✨ Batch sigils ready for download!", 'success', 4000);
+      
+      if (successCount > 0) {
+        const blob = await zip.generateAsync({type:"blob"});
+        triggerDownload(blob, "sigils.zip");
+        toast(`✨ ${successCount} sigils ready for download!`, 'success', 4000);
+      } else {
+        toast("❌ Failed to generate batch sigils", 'error');
+      }
     } else {
       // single
       await renderSigil(phrase, vibe);
@@ -426,7 +447,7 @@ downloadBtn.onclick = async () => {
   try {
     showLoading("Preparing download...");
 
-    const isPro = await isUserPro(); // Use isUserPro
+    const userIsPro = await isUserPro();
     const seed = Number(seedInput.value) || 0;
 
     // Check if we have a current sigil to download
@@ -438,7 +459,7 @@ downloadBtn.onclick = async () => {
 
     console.log("Image available for download, size:", lastGeneratedImage.length);
 
-    if (isPro && exportType.value === "svg") {
+    if (userIsPro && exportType.value === "svg") {
       console.log("Downloading as SVG");
       const svg = buildSvg(seed, 2048);
       const blob = new Blob([svg], {type:"image/svg+xml"});

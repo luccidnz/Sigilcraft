@@ -238,8 +238,15 @@ app.get("/api/test", (req, res) => {
 // Health check endpoint
 app.get("/api/health", async (req, res) => {
   try {
-    // Check Flask backend health
-    const flaskResponse = await fetch("http://127.0.0.1:5001/health", { timeout: 5000 });
+    // Check Flask backend health with proper timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
+    const flaskResponse = await fetch("http://127.0.0.1:5001/health", { 
+      signal: controller.signal 
+    });
+    clearTimeout(timeoutId);
+    
     const flaskHealthy = flaskResponse.ok;
     
     res.json({
@@ -251,6 +258,7 @@ app.get("/api/health", async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
+    console.error("Health check error:", error.message);
     res.status(503).json({
       status: "degraded",
       services: {
@@ -297,16 +305,22 @@ app.post("/generate", generationLimiter, async (req, res) => {
 
   } catch (error) {
     console.error("Flask backend proxy error:", error.message);
+    console.error("Error stack:", error.stack);
 
     if (error.name === 'AbortError') {
       res.status(408).json({
         success: false,
         error: "Request timed out. Please try a simpler sigil or try again."
       });
-    } else if (error.message.includes('ECONNREFUSED')) {
+    } else if (error.message.includes('ECONNREFUSED') || error.code === 'ECONNREFUSED') {
       res.status(503).json({
         success: false,
         error: "Sigil generation service is starting up. Please try again in a moment."
+      });
+    } else if (error.message.includes('fetch')) {
+      res.status(503).json({
+        success: false,
+        error: "Network error connecting to generation service. Please try again."
       });
     } else {
       res.status(500).json({

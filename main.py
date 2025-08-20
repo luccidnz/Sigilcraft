@@ -1550,11 +1550,12 @@ def generate():
 
             print(f"✅ SIGIL GENERATED SUCCESSFULLY - {len(img_base64)} chars")
 
-        except MemoryError:
-            app.logger.error("Memory error during generation")
+        except MemoryError as me:
+            app.logger.error(f"Memory error during generation: {str(me)}")
             return jsonify({'success': False, 'error': 'Image too complex. Try a shorter phrase.'})
         except Exception as generation_error:
             app.logger.error(f"Generation error: {str(generation_error)}")
+            app.logger.error(f"Generation traceback: {traceback.format_exc()}")
             return jsonify({'success': False, 'error': 'Generation temporarily unavailable. Please try again.'})
 
         response_data = {
