@@ -1,4 +1,3 @@
-
 import express from "express";
 import cookieParser from "cookie-parser";
 import Stripe from "stripe";
@@ -10,6 +9,7 @@ import dotenv from "dotenv";
 import compression from "compression";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import crypto from 'crypto'; // Import crypto module
 
 dotenv.config();
 
@@ -18,29 +18,22 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// Security headers
+// Security middleware
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "blob:"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://js.stripe.com"],
-      connectSrc: ["'self'", "https://api.stripe.com"],
-      frameSrc: ["'self'", "https://js.stripe.com", "https://hooks.stripe.com"]
+      connectSrc: ["'self'", "https://api.stripe.com"]
     }
   }
 }));
 
-// Compression
-app.use(compression({
-  filter: (req, res) => {
-    if (req.headers['x-no-compression']) return false;
-    return compression.filter(req, res);
-  },
-  threshold: 0
-}));
+// Compression middleware
+app.use(compression());
 
 // Rate limiting
 const limiter = rateLimit({
@@ -52,6 +45,14 @@ const limiter = rateLimit({
 });
 
 app.use('/api', limiter);
+
+// Stricter rate limiting for generation endpoints
+const generationLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // limit each IP to 10 generations per minute
+  message: { error: "Generation rate limit exceeded. Please wait before trying again." }
+});
+
 
 app.use(cookieParser());
 
@@ -101,9 +102,9 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public"), {
   setHeaders: (res, p) => {
     if (p.endsWith(".svg")) res.setHeader("Content-Type", "image/svg+xml");
-    
+
     // Cache static assets for 1 hour
-    if (p.endsWith('.css') || p.endsWith('.js') || p.endsWith('.png') || 
+    if (p.endsWith('.css') || p.endsWith('.js') || p.endsWith('.png') ||
         p.endsWith('.jpg') || p.endsWith('.svg') || p.endsWith('.ico')) {
       res.setHeader('Cache-Control', 'public, max-age=3600');
     } else {
@@ -185,7 +186,7 @@ app.post("/api/verify-pro", (req, res) => {
   try {
     const { key } = req.body;
     console.log(`Pro key verification: received="${key}", expected="${process.env.PRO_KEY}"`);
-    const ok = 
+    const ok =
       (key && process.env.PRO_KEY && key === process.env.PRO_KEY) ||
       (key && hasKey(key));
     if (ok) {
@@ -211,8 +212,8 @@ app.post("/api/verify-pro", (req, res) => {
 
 // Test endpoint for debugging
 app.get("/api/test", (req, res) => {
-  res.json({ 
-    status: "ok", 
+  res.json({
+    status: "ok",
     port: PORT,
     proKey: process.env.PRO_KEY ? "configured" : "missing",
     timestamp: new Date().toISOString()
@@ -220,7 +221,7 @@ app.get("/api/test", (req, res) => {
 });
 
 // Proxy sigil generation requests to Python Flask backend
-app.post("/generate", async (req, res) => {
+app.post("/generate", generationLimiter, async (req, res) => { // Apply generation limiter here
   try {
     const response = await fetch("http://localhost:5001/generate", {
       method: "POST",

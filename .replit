@@ -25,7 +25,7 @@ mode = "parallel"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python main.py"
+args = "FLASK_ENV=production python main.py"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
