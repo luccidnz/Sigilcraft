@@ -35,7 +35,7 @@ def handle_errors(f):
             app.logger.error(f"Error in {f.__name__}: {str(e)}")
             app.logger.error(f"Traceback: {traceback.format_exc()}")
             return jsonify({
-                'success': False, 
+                'success': False,
                 'error': 'Internal server error occurred',
                 'timestamp': str(datetime.now())
             }), 500
@@ -44,17 +44,17 @@ def handle_errors(f):
 def rate_limit(max_requests=60, per_seconds=60):
     """Simple in-memory rate limiting"""
     request_counts = {}
-    
+
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.environ.get('REMOTE_ADDR', 'unknown'))
             now = time.time()
-            
+
             # Clean old entries
             cutoff = now - per_seconds
             request_counts[client_ip] = [t for t in request_counts.get(client_ip, []) if t > cutoff]
-            
+
             # Check rate limit
             if len(request_counts.get(client_ip, [])) >= max_requests:
                 return jsonify({
@@ -62,7 +62,7 @@ def rate_limit(max_requests=60, per_seconds=60):
                     'error': 'Rate limit exceeded. Please wait before making more requests.',
                     'retry_after': per_seconds
                 }), 429
-            
+
             # Add current request
             request_counts.setdefault(client_ip, []).append(now)
             return f(*args, **kwargs)
@@ -166,7 +166,7 @@ def create_sigil(phrase, vibe="mystical", size=2048):
         # Apply final quality enhancements
         print("🎨 Applying final quality pass...")
         img = apply_final_quality_pass(img, vibe, phrase)
-        
+
         img_buffer = io.BytesIO()
         # Use maximum quality settings for PNG with no compression
         img.save(img_buffer, format='PNG', optimize=False, compress_level=0)
@@ -262,7 +262,7 @@ def create_mystical_sigil(draw, img, center, size, phrase, text_seed, combined_s
         alpha = 60 + (char_data['unique_chars'] * 10) % 120
 
         try:
-            draw.ellipse([x-radius, y-radius, x+radius, y+radius], 
+            draw.ellipse([x-radius, y-radius, x+radius, y+radius],
                         fill=(*color, alpha))
         except:
             pass
@@ -295,7 +295,7 @@ def create_cosmic_sigil(draw, img, center, size, phrase, text_seed, combined_see
         star_size = 1 + (char_data['consonant_count'] % 4) + random.randint(0, 2)
 
         try:
-            draw.ellipse([x-star_size, y-star_size, x+star_size, y+star_size], 
+            draw.ellipse([x-star_size, y-star_size, x+star_size, y+star_size],
                         fill=(brightness, brightness, brightness, 200))
         except:
             pass
@@ -552,7 +552,7 @@ def create_mystical_symbols(draw, center, size, phrase, colors, seed, char_data)
                     width = 2 + (char_data['special_count'] % 3)
                     draw.line([(x, y), (inner_x, inner_y)], fill=(*color, 200), width=width)
                     radius = 2 + (ord(char) % 4)
-                    draw.ellipse([inner_x-radius, inner_y-radius, inner_x+radius, inner_y+radius], 
+                    draw.ellipse([inner_x-radius, inner_y-radius, inner_x+radius, inner_y+radius],
                                fill=(*color, 255))
                 except:
                     pass
@@ -581,7 +581,7 @@ def create_constellation(draw, center, size, phrase, colors, seed, char_data):
                 color = colors[(char_diff + i + j) % len(colors)]
                 try:
                     alpha = 100 + (char_diff % 120)
-                    draw.line([star_positions[i][:2], star_positions[j][:2]], 
+                    draw.line([star_positions[i][:2], star_positions[j][:2]],
                              fill=(*color, alpha), width=2)
                 except:
                     pass
@@ -592,7 +592,7 @@ def create_constellation(draw, center, size, phrase, colors, seed, char_data):
         color = colors[(char_val + char_data['numeric_count']) % len(colors)]
         radius = 4 + (char_val % 6)
         try:
-            draw.ellipse([pos[0]-radius, pos[1]-radius, pos[0]+radius, pos[1]+radius], 
+            draw.ellipse([pos[0]-radius, pos[1]-radius, pos[0]+radius, pos[1]+radius],
                         fill=(*color, 255))
         except:
             pass
@@ -623,7 +623,7 @@ def create_fire_pattern(draw, center, size, phrase, colors, seed, char_data):
             width = max(1, 7 + char_data['special_count'] - i // 2)
             alpha = max(100, 255 - i * 8 + char_data['unique_chars'])
             try:
-                draw.line([flame_points[i], flame_points[i + 1]], 
+                draw.line([flame_points[i], flame_points[i + 1]],
                          fill=(*color, alpha), width=width)
             except:
                 pass
@@ -651,7 +651,7 @@ def create_water_pattern(draw, center, size, phrase, colors, seed, char_data):
 
         for i in range(len(wave_points) - 1):
             try:
-                draw.line([wave_points[i], wave_points[i + 1]], 
+                draw.line([wave_points[i], wave_points[i + 1]],
                          fill=(*color, alpha), width=width)
             except:
                 pass
@@ -712,7 +712,7 @@ def create_air_pattern(draw, center, size, phrase, colors, seed, char_data):
 
         for i in range(len(spiral_points) - 1):
             try:
-                draw.line([spiral_points[i], spiral_points[i + 1]], 
+                draw.line([spiral_points[i], spiral_points[i + 1]],
                          fill=(*color, alpha), width=width)
             except:
                 pass
@@ -744,7 +744,7 @@ def create_elemental_symbols(draw, center, size, phrase, colors, seed, char_data
         else:  # Air circle
             try:
                 width = 2 + (char_data['numeric_count'] % 3)
-                draw.ellipse([x-symbol_size, y-symbol_size, x+symbol_size, y+symbol_size], 
+                draw.ellipse([x-symbol_size, y-symbol_size, x+symbol_size, y+symbol_size],
                            outline=(*color, alpha), width=width)
                 continue
             except:
@@ -807,10 +807,10 @@ def create_geometric_patterns(draw, center, size, phrase, colors, seed, char_dat
 
             try:
                 if pattern_type == 0:  # Square
-                    draw.rectangle([x-pattern_size, y-pattern_size, x+pattern_size, y+pattern_size], 
+                    draw.rectangle([x-pattern_size, y-pattern_size, x+pattern_size, y+pattern_size],
                                  outline=(*color, alpha), width=width)
                 elif pattern_type == 1:  # Circle
-                    draw.ellipse([x-pattern_size, y-pattern_size, x+pattern_size, y+pattern_size], 
+                    draw.ellipse([x-pattern_size, y-pattern_size, x+pattern_size, y+pattern_size],
                                outline=(*color, alpha), width=width)
                 elif pattern_type == 2:  # Triangle
                     points = [(x, y-pattern_size), (x-pattern_size, y+pattern_size//2), (x+pattern_size, y+pattern_size//2)]
@@ -851,7 +851,7 @@ def create_shadow_runes(draw, center, size, phrase, colors, seed, char_data):
                 alpha = 200 + (char_data['special_count'] * 10) % 55
 
                 try:
-                    draw.line([(start_x, start_y), (end_x, end_y)], 
+                    draw.line([(start_x, start_y), (end_x, end_y)],
                              fill=(*color, alpha), width=width)
                 except:
                     pass
@@ -871,8 +871,8 @@ def create_void_effect(draw, center, size, phrase, seed, char_data):
         outline_alpha = 150 + (char_data['unique_chars'] * 8) % 100
 
         try:
-            draw.ellipse([void_x-void_radius, void_y-void_radius, 
-                         void_x+void_radius, void_y+void_radius], 
+            draw.ellipse([void_x-void_radius, void_y-void_radius,
+                         void_x+void_radius, void_y+void_radius],
                         fill=(0, 0, 0, 255), outline=(40, 40, 40, outline_alpha))
         except:
             pass
@@ -896,8 +896,8 @@ def create_light_orbs(draw, center, size, phrase, colors, seed, char_data):
             alpha = int(255 * (radius_step / orb_radius) * 0.7) + (char_data['special_count'] % 30)
             alpha = min(255, max(50, alpha))
             try:
-                draw.ellipse([orb_x-radius_step, orb_y-radius_step, 
-                             orb_x+radius_step, orb_y+radius_step], 
+                draw.ellipse([orb_x-radius_step, orb_y-radius_step,
+                             orb_x+radius_step, orb_y+radius_step],
                             fill=(*color, alpha))
             except:
                 pass
@@ -922,10 +922,10 @@ def create_healing_symbols(draw, center, size, phrase, colors, seed, char_data):
         # Draw healing cross with phrase influence
         try:
             # Vertical line
-            draw.line([(x, y-cross_size), (x, y+cross_size)], 
+            draw.line([(x, y-cross_size), (x, y+cross_size)],
                      fill=(*color, alpha), width=width)
             # Horizontal line
-            draw.line([(x-cross_size, y), (x+cross_size, y)], 
+            draw.line([(x-cross_size, y), (x+cross_size, y)],
                      fill=(*color, alpha), width=width)
         except:
             pass
@@ -1096,7 +1096,7 @@ def add_glow_effect(img, glow_color, intensity=1.0):
             # Apply color tint to glow
             for i in range(3):
                 glow_array[:, :, i] = np.clip(
-                    glow_array[:, :, i] * (glow_color[i] / 255.0) * intensity, 
+                    glow_array[:, :, i] * (glow_color[i] / 255.0) * intensity,
                     0, 255
                 )
 
@@ -1234,22 +1234,22 @@ def apply_final_quality_pass(img, vibe, phrase):
     """Apply final quality improvements for maximum visual impact"""
     try:
         char_data = get_phrase_characteristics(phrase)
-        
+
         # Ultra-high quality enhancement - triple resolution for maximum detail
         img = img.resize((img.width * 3, img.height * 3), Image.LANCZOS)
-        
+
         # Advanced multi-pass sharpening
         enhancer = ImageEnhance.Sharpness(img)
         img = enhancer.enhance(2.5)
-        
+
         # Enhanced contrast for deeper blacks and brighter colors
         enhancer = ImageEnhance.Contrast(img)
         img = enhancer.enhance(1.6)
-        
+
         # Boost color vibrancy significantly
         enhancer = ImageEnhance.Color(img)
         img = enhancer.enhance(2.0)
-        
+
         # Apply vibe-specific final touches with enhanced intensity
         if vibe == 'light':
             # Extra brightness and bloom
@@ -1286,22 +1286,22 @@ def apply_final_quality_pass(img, vibe, phrase):
             img = add_mystical_shimmer(img, intensity=1.5)
             enhancer = ImageEnhance.Color(img)
             img = enhancer.enhance(1.8)
-        
+
         # Multiple anti-aliasing passes for ultra-smooth edges
         img = img.filter(ImageFilter.SMOOTH_MORE)
         img = img.filter(ImageFilter.SMOOTH)
-        
+
         # Advanced sharpening after smoothing
         enhancer = ImageEnhance.Sharpness(img)
         img = enhancer.enhance(1.8)
-        
+
         # Resize back to target size with highest quality
         target_size = img.width // 3
         img = img.resize((target_size, target_size), Image.LANCZOS)
-        
+
         # Final detail enhancement
         img = enhance_fine_details(img, char_data)
-        
+
         return img
     except Exception as e:
         print(f"Final quality pass warning: {e}")
@@ -1384,10 +1384,10 @@ def add_stellar_glow(img, intensity=1.0):
         # Multi-layer stellar effect
         glow1 = img.filter(ImageFilter.GaussianBlur(radius=8))
         glow2 = img.filter(ImageFilter.GaussianBlur(radius=16))
-        
+
         enhancer = ImageEnhance.Color(glow1)
         glow1 = enhancer.enhance(1.8 * intensity)
-        
+
         result = Image.blend(img, glow1, 0.25 * intensity)
         result = Image.blend(result, glow2, 0.15 * intensity)
         return result
@@ -1401,10 +1401,10 @@ def add_crystal_brilliance(img, intensity=1.0):
         brilliant = img.filter(ImageFilter.EDGE_ENHANCE_MORE)
         enhancer = ImageEnhance.Brightness(brilliant)
         brilliant = enhancer.enhance(1.4 * intensity)
-        
+
         enhancer = ImageEnhance.Contrast(brilliant)
         brilliant = enhancer.enhance(1.6 * intensity)
-        
+
         return Image.blend(img, brilliant, 0.3 * intensity)
     except:
         return img
@@ -1416,7 +1416,7 @@ def add_elemental_energy(img, intensity=1.0):
         energy = img.filter(ImageFilter.EDGE_ENHANCE)
         enhancer = ImageEnhance.Color(energy)
         energy = enhancer.enhance(2.0 * intensity)
-        
+
         return Image.blend(img, energy, 0.4 * intensity)
     except:
         return img
@@ -1428,10 +1428,10 @@ def add_mystical_shimmer(img, intensity=1.0):
         shimmer = img.filter(ImageFilter.GaussianBlur(radius=12))
         enhancer = ImageEnhance.Color(shimmer)
         shimmer = enhancer.enhance(1.6 * intensity)
-        
+
         enhancer = ImageEnhance.Brightness(shimmer)
         shimmer = enhancer.enhance(1.2 * intensity)
-        
+
         return Image.blend(img, shimmer, 0.35 * intensity)
     except:
         return img
@@ -1443,11 +1443,11 @@ def enhance_fine_details(img, char_data):
         detail_factor = 1.2 + (char_data['unique_chars'] * 0.02)
         enhancer = ImageEnhance.Sharpness(img)
         img = enhancer.enhance(detail_factor)
-        
+
         # Micro-contrast enhancement
         enhancer = ImageEnhance.Contrast(img)
         img = enhancer.enhance(1.15)
-        
+
         return img
     except:
         return img
@@ -1559,14 +1559,13 @@ def generate():
 
 
 if __name__ == "__main__":
-    print("Starting Flask sigil generation server on port 5001...")
     import os
-    
-    # Use production WSGI server if available
-    try:
+
+    # Use production WSGI server in production
+    if os.environ.get('FLASK_ENV') == 'production':
         from waitress import serve
-        print("Using Waitress production server...")
+        print("Starting production Flask sigil server on port 5001...")
         serve(app, host="0.0.0.0", port=5001, threads=4, connection_limit=100)
-    except ImportError:
-        print("Waitress not available, using development server...")
+    else:
+        print("Starting Flask sigil generation server on port 5001...")
         app.run(host="0.0.0.0", port=5001, debug=False, threaded=True)
