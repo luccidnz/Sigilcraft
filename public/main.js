@@ -99,7 +99,7 @@ async function renderGate() {
   if (pro) {
     canvas.width = 2048; canvas.height = 2048;
   } else {
-    canvas.width = 800; canvas.height = 800;
+    canvas.width = 1200; canvas.height = 1200;
     comboToggle.checked = false;
     batchToggle.checked = false;
   }
@@ -247,7 +247,7 @@ genBtn.onclick = async () => {
   const pro = await isPro();
   // Handle multiple vibes by combining them or using combo mode
   const vibe = selectedEnergies.length > 1 ? selectedEnergies.join("+") : selectedEnergies[0];
-  const size = pro ? 2048 : 512;
+  const size = pro ? 2048 : 1200;
 
   canvas.width = size; canvas.height = size;
   genBtn.disabled = true;
@@ -297,15 +297,23 @@ downloadBtn.onclick = async () => {
     return;
   }
   
-  if (pro && exportType.value === "svg") {
-    const svg = buildSvg(seed, 2048);
-    const blob = new Blob([svg], {type:"image/svg+xml"});
-    triggerDownload(blob, "sigil.svg");
-  } else {
-    // Use the last generated image data directly
-    const imageData = lastGeneratedImage.replace(/^data:image\/[^;]+;base64,/, "");
-    const blob = dataURLtoBlob(`data:image/png;base64,${imageData}`);
-    triggerDownload(blob, "sigil.png");
+  try {
+    if (pro && exportType.value === "svg") {
+      const svg = buildSvg(seed, 2048);
+      const blob = new Blob([svg], {type:"image/svg+xml"});
+      triggerDownload(blob, "sigil.svg");
+      toast("SVG downloaded");
+    } else {
+      // Convert data URL to blob and download
+      const blob = dataURLtoBlob(lastGeneratedImage);
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const filename = `sigil_${timestamp}.png`;
+      triggerDownload(blob, filename);
+      toast("Sigil downloaded");
+    }
+  } catch (error) {
+    console.error("Download error:", error);
+    toast("Download failed - try again");
   }
 };
 

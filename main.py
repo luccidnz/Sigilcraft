@@ -50,7 +50,7 @@ def create_sigil(phrase, vibe="mystical", size=800):
                 # Create a semi-transparent overlay for additional vibes
                 overlay = Image.new('RGBA', (size, size), color=(0, 0, 0, 0))
                 overlay_draw = ImageDraw.Draw(overlay)
-                
+
                 if individual_vibe == 'mystical':
                     create_mystical_sigil(overlay_draw, overlay, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
                 elif individual_vibe == 'cosmic':
@@ -63,7 +63,7 @@ def create_sigil(phrase, vibe="mystical", size=800):
                     create_shadow_sigil(overlay_draw, overlay, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
                 elif individual_vibe == 'light':
                     create_light_sigil(overlay_draw, overlay, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
-                
+
                 # Blend the overlay with reduced opacity
                 img = Image.alpha_composite(img, overlay)
             else:
@@ -100,15 +100,19 @@ def create_sigil(phrase, vibe="mystical", size=800):
     print("🎨 Applying final enhancements...")
     img = apply_vibe_effects(img, vibe, original_phrase)
 
-    print("💾 Converting to base64...")
+    # Apply additional artistic enhancement
+    img = apply_artistic_enhancement(img, vibe, original_phrase)
+
+    print("💾 Converting to high-quality base64...")
     try:
         img_buffer = io.BytesIO()
-        img.save(img_buffer, format='PNG', quality=100, optimize=True, compress_level=1)
+        # Use maximum quality settings for PNG
+        img.save(img_buffer, format='PNG', optimize=False, compress_level=0)
         img_buffer.seek(0)
         img_data = img_buffer.getvalue()
         img_base64 = base64.b64encode(img_data).decode()
 
-        print(f"✅ Image created successfully: {len(img_base64)} characters")
+        print(f"✅ High-quality image created successfully: {len(img_base64)} characters")
         return img_base64, None
 
     except Exception as e:
@@ -928,7 +932,7 @@ def apply_vibe_effects(img, vibe, phrase):
     try:
         # Apply advanced visual enhancements
         img = apply_advanced_effects(img, vibe, char_data)
-        
+
         if vibe == 'shadow':
             # Very dark and mysterious with phrase influence
             brightness_factor = 0.5 + (char_data['consonant_count'] * 0.02)
@@ -989,10 +993,10 @@ def apply_vibe_effects(img, vibe, phrase):
             img = enhancer.enhance(brightness_factor)
             # Add mystical aura effect
             img = add_aura_effect(img)
-            
+
         # Final quality enhancement
         img = enhance_overall_quality(img, char_data)
-        
+
     except Exception as e:
         print(f"Post-processing warning: {e}")
 
@@ -1004,17 +1008,17 @@ def apply_advanced_effects(img, vibe, char_data):
     try:
         # Anti-aliasing and smoothing
         img = img.filter(ImageFilter.SMOOTH)
-        
+
         # Enhance overall quality
         enhancer = ImageEnhance.Sharpness(img)
         img = enhancer.enhance(1.3)
-        
+
         # Add subtle depth
         img = add_depth_effect(img, char_data)
-        
+
     except Exception as e:
         print(f"Advanced effects warning: {e}")
-    
+
     return img
 
 
@@ -1023,7 +1027,7 @@ def add_glow_effect(img, glow_color, intensity=1.0):
     try:
         # Create a blurred version for glow
         glow = img.filter(ImageFilter.GaussianBlur(radius=8))
-        
+
         # Enhance the glow with the specified color
         glow_array = np.array(glow)
         if len(glow_array.shape) == 3 and glow_array.shape[2] >= 3:
@@ -1033,9 +1037,9 @@ def add_glow_effect(img, glow_color, intensity=1.0):
                     glow_array[:, :, i] * (glow_color[i] / 255.0) * intensity, 
                     0, 255
                 )
-            
+
             glow = Image.fromarray(glow_array.astype(np.uint8))
-        
+
         # Blend with original
         return Image.blend(img, glow, 0.3)
     except:
@@ -1049,12 +1053,12 @@ def add_bloom_effect(img, intensity=1.0):
         bloom1 = img.filter(ImageFilter.GaussianBlur(radius=4))
         bloom2 = img.filter(ImageFilter.GaussianBlur(radius=8))
         bloom3 = img.filter(ImageFilter.GaussianBlur(radius=12))
-        
+
         # Blend them together
         result = Image.blend(img, bloom1, 0.2 * intensity)
         result = Image.blend(result, bloom2, 0.15 * intensity)
         result = Image.blend(result, bloom3, 0.1 * intensity)
-        
+
         return result
     except:
         return img
@@ -1069,7 +1073,7 @@ def add_shimmer_effect(img):
             noise = np.random.normal(0, 8, img_array.shape[:2])
             for i in range(3):
                 img_array[:, :, i] = np.clip(img_array[:, :, i] + noise, 0, 255)
-        
+
         return Image.fromarray(img_array.astype(np.uint8))
     except:
         return img
@@ -1084,10 +1088,10 @@ def add_refraction_effect(img):
             # Slight color separation effect
             shifted_r = np.roll(img_array[:, :, 0], 1, axis=1)
             shifted_b = np.roll(img_array[:, :, 2], -1, axis=1)
-            
+
             img_array[:, :, 0] = np.clip(img_array[:, :, 0] * 0.9 + shifted_r * 0.1, 0, 255)
             img_array[:, :, 2] = np.clip(img_array[:, :, 2] * 0.9 + shifted_b * 0.1, 0, 255)
-        
+
         return Image.fromarray(img_array.astype(np.uint8))
     except:
         return img
@@ -1099,10 +1103,10 @@ def add_energy_effect(img):
         # Create energy waves
         enhancer = ImageEnhance.Color(img)
         img = enhancer.enhance(1.3)
-        
+
         # Add slight motion blur effect
         img = img.filter(ImageFilter.BLUR)
-        
+
         return img
     except:
         return img
@@ -1113,7 +1117,7 @@ def add_aura_effect(img):
     try:
         # Create soft aura
         aura = img.filter(ImageFilter.GaussianBlur(radius=12))
-        
+
         # Blend with original
         return Image.blend(img, aura, 0.25)
     except:
@@ -1125,18 +1129,18 @@ def add_depth_effect(img, char_data):
     try:
         # Create a subtle shadow/depth effect
         depth = img.filter(ImageFilter.GaussianBlur(radius=6))
-        
+
         # Darken the depth layer
         enhancer = ImageEnhance.Brightness(depth)
         depth = enhancer.enhance(0.7)
-        
+
         # Offset slightly for depth
         depth_array = np.array(depth)
         img_array = np.array(img)
-        
+
         # Blend with offset
         result = Image.blend(Image.fromarray(depth_array), img, 0.85)
-        
+
         return result
     except:
         return img
@@ -1149,21 +1153,69 @@ def enhance_overall_quality(img, char_data):
         sharpness_boost = 1.1 + (char_data['unique_chars'] * 0.02)
         enhancer = ImageEnhance.Sharpness(img)
         img = enhancer.enhance(sharpness_boost)
-        
+
         # Subtle contrast enhancement
         contrast_boost = 1.05 + (char_data['consonant_count'] * 0.01)
         enhancer = ImageEnhance.Contrast(img)
         img = enhancer.enhance(contrast_boost)
-        
+
         # Color saturation boost
         color_boost = 1.1 + (char_data['vowel_count'] * 0.015)
         enhancer = ImageEnhance.Color(img)
         img = enhancer.enhance(color_boost)
-        
+
         return img
     except:
         return img
 
+def apply_artistic_enhancement(img, vibe, phrase):
+    """Apply artistic enhancements to improve image quality and aesthetics."""
+    char_data = get_phrase_characteristics(phrase)
+    try:
+        # Enhance artistic elements based on vibe
+        if vibe == 'mystical':
+            # Add a soft, glowing aura
+            img = add_aura_effect(img)
+        elif vibe == 'cosmic':
+            # Add subtle star-like shimmer and depth
+            img = add_shimmer_effect(img)
+            img = add_depth_effect(img, char_data)
+        elif vibe == 'elemental':
+            # Enhance vibrancy and add a touch of energy
+            img = add_energy_effect(img)
+            img = ImageEnhance.Color(img).enhance(1.15)
+        elif vibe == 'crystal':
+            # Increase sharpness and add refraction-like effects
+            img = ImageEnhance.Sharpness(img).enhance(1.5)
+            img = add_refraction_effect(img)
+        elif vibe == 'shadow':
+            # Deepen shadows and add a subtle vignette effect
+            img = ImageEnhance.Brightness(img).enhance(0.9)
+            img = add_shadow_glow_effect(img) # Assuming a new function for shadow glow
+        elif vibe == 'light':
+            # Increase bloom and add a soft light diffusion
+            img = add_bloom_effect(img, intensity=1.3)
+            img = ImageEnhance.Brightness(img).enhance(1.1)
+
+        # Apply a final sharpening pass for clarity
+        img = ImageEnhance.Sharpness(img).enhance(1.3)
+
+    except Exception as e:
+        print(f"Artistic enhancement warning: {e}")
+
+    return img
+
+# Placeholder for a potential new function, if not already defined
+def add_shadow_glow_effect(img):
+    """Helper for shadow glow, can be further customized."""
+    try:
+        # Simple dark glow around edges
+        glow = img.filter(ImageFilter.GaussianBlur(radius=6))
+        enhancer = ImageEnhance.Brightness(glow)
+        glow = enhancer.enhance(0.7)
+        return Image.blend(img, glow, 0.3)
+    except:
+        return img
 
 @app.route('/')
 def index():
@@ -1224,7 +1276,7 @@ def generate():
             return jsonify({'success': False, 'error': 'Phrase too long (max 200 characters)'})
 
         valid_vibes = ['mystical', 'cosmic', 'elemental', 'crystal', 'shadow', 'light']
-        
+
         # Handle combined vibes (e.g., "mystical+cosmic")
         if '+' in vibe:
             vibe_parts = vibe.split('+')
