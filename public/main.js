@@ -190,6 +190,9 @@ async function renderSigil(phrase = "default", vibe = "mystical") {
       
       const img = new Image();
       img.onload = async () => {
+        // Use high quality scaling
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         await drawWatermarkIfFree();
         console.log("Image rendered to canvas");
@@ -337,16 +340,62 @@ downloadBtn.onclick = async () => {
         return;
       }
       
-      const blob = dataURLtoBlob(lastGeneratedImage);
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const filename = `sigil_${timestamp}.png`;
-      console.log("Triggering download:", filename, "blob size:", blob.size);
-      triggerDownload(blob, filename);
-      toast("Sigil downloaded");
+      try {
+        const blob = dataURLtoBlob(lastGeneratedImage);
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+        const filename = `quantum_sigil_${timestamp}.png`;
+        console.log("Triggering download:", filename, "blob size:", blob.size);
+        
+        // Create download link with proper error handling
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.style.display = 'none';
+        
+        // Add to DOM, click, and remove
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up object URL
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+        
+        toast("✨ Quantum Sigil downloaded successfully!");
+      } catch (downloadError) {
+        console.error("Download process error:", downloadError);
+        
+        // Fallback: try canvas download
+        try {
+          const canvasBlob = await new Promise(resolve => {
+            canvas.toBlob(resolve, 'image/png', 1.0);
+          });
+          
+          if (canvasBlob) {
+            const url = URL.createObjectURL(canvasBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `quantum_sigil_${Date.now()}.png`;
+            link.style.display = 'none';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            setTimeout(() => URL.revokeObjectURL(url), 100);
+            toast("✨ Sigil downloaded via canvas!");
+          } else {
+            throw new Error("Canvas conversion failed");
+          }
+        } catch (canvasError) {
+          console.error("Canvas fallback failed:", canvasError);
+          toast("❌ Download failed - please try again");
+        }
+      }
     }
   } catch (error) {
     console.error("Download error:", error);
-    toast(`Download failed: ${error.message}`);
+    toast(`❌ Download failed: ${error.message}`);
   }
 };
 

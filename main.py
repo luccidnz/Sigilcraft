@@ -12,7 +12,7 @@ import hashlib
 app = Flask(__name__)
 
 
-def create_sigil(phrase, vibe="mystical", size=1600):
+def create_sigil(phrase, vibe="mystical", size=2048):
     """Create a highly varied sigil with dramatic differences for each unique input"""
     print(f"🎨 Creating sigil for: '{phrase}' with vibe: '{vibe}' at size: {size}")
 
@@ -1177,58 +1177,72 @@ def apply_final_quality_pass(img, vibe, phrase):
     try:
         char_data = get_phrase_characteristics(phrase)
         
-        # Ultra-high quality enhancement
-        img = img.resize((img.width * 2, img.height * 2), Image.LANCZOS)
+        # Ultra-high quality enhancement - triple resolution for maximum detail
+        img = img.resize((img.width * 3, img.height * 3), Image.LANCZOS)
         
-        # Advanced sharpening
+        # Advanced multi-pass sharpening
         enhancer = ImageEnhance.Sharpness(img)
-        img = enhancer.enhance(2.0)
+        img = enhancer.enhance(2.5)
         
         # Enhanced contrast for deeper blacks and brighter colors
         enhancer = ImageEnhance.Contrast(img)
-        img = enhancer.enhance(1.4)
-        
-        # Boost color vibrancy
-        enhancer = ImageEnhance.Color(img)
         img = enhancer.enhance(1.6)
         
-        # Apply vibe-specific final touches
+        # Boost color vibrancy significantly
+        enhancer = ImageEnhance.Color(img)
+        img = enhancer.enhance(2.0)
+        
+        # Apply vibe-specific final touches with enhanced intensity
         if vibe == 'light':
             # Extra brightness and bloom
             enhancer = ImageEnhance.Brightness(img)
-            img = enhancer.enhance(1.3)
-            img = add_bloom_effect(img, intensity=1.5)
+            img = enhancer.enhance(1.4)
+            img = add_bloom_effect(img, intensity=2.0)
+            img = add_radiance_boost(img, intensity=1.5)
         elif vibe == 'shadow':
             # Deeper shadows and mysterious glow
             enhancer = ImageEnhance.Brightness(img)
-            img = enhancer.enhance(0.8)
-            img = add_glow_effect(img, (60, 20, 60), intensity=1.2)
+            img = enhancer.enhance(0.7)
+            img = add_glow_effect(img, (60, 20, 60), intensity=1.5)
+            img = add_shadow_depth(img, intensity=1.3)
         elif vibe == 'cosmic':
             # Cosmic shimmer and depth
             img = add_shimmer_effect(img)
+            img = add_stellar_glow(img, intensity=1.4)
             enhancer = ImageEnhance.Contrast(img)
-            img = enhancer.enhance(1.8)
+            img = enhancer.enhance(2.0)
         elif vibe == 'crystal':
             # Ultra sharp and brilliant
             enhancer = ImageEnhance.Sharpness(img)
-            img = enhancer.enhance(2.5)
+            img = enhancer.enhance(3.0)
             img = add_refraction_effect(img)
+            img = add_crystal_brilliance(img, intensity=1.6)
         elif vibe == 'elemental':
             # Natural vibrancy
             enhancer = ImageEnhance.Color(img)
-            img = enhancer.enhance(1.8)
+            img = enhancer.enhance(2.2)
+            img = add_elemental_energy(img, intensity=1.4)
         else:  # mystical
             # Ethereal glow
             img = add_aura_effect(img)
+            img = add_mystical_shimmer(img, intensity=1.5)
             enhancer = ImageEnhance.Color(img)
-            img = enhancer.enhance(1.5)
+            img = enhancer.enhance(1.8)
         
-        # Final anti-aliasing pass
+        # Multiple anti-aliasing passes for ultra-smooth edges
         img = img.filter(ImageFilter.SMOOTH_MORE)
+        img = img.filter(ImageFilter.SMOOTH)
         
-        # Resize back to target size with high quality
-        target_size = img.width // 2
+        # Advanced sharpening after smoothing
+        enhancer = ImageEnhance.Sharpness(img)
+        img = enhancer.enhance(1.8)
+        
+        # Resize back to target size with highest quality
+        target_size = img.width // 3
         img = img.resize((target_size, target_size), Image.LANCZOS)
+        
+        # Final detail enhancement
+        img = enhance_fine_details(img, char_data)
         
         return img
     except Exception as e:
@@ -1281,6 +1295,102 @@ def add_shadow_glow_effect(img):
         enhancer = ImageEnhance.Brightness(glow)
         glow = enhancer.enhance(0.7)
         return Image.blend(img, glow, 0.3)
+    except:
+        return img
+
+def add_radiance_boost(img, intensity=1.0):
+    """Add radiant light boost effect"""
+    try:
+        # Create radiance overlay
+        radiance = img.filter(ImageFilter.GaussianBlur(radius=15))
+        enhancer = ImageEnhance.Brightness(radiance)
+        radiance = enhancer.enhance(1.5 * intensity)
+        return Image.blend(img, radiance, 0.4 * intensity)
+    except:
+        return img
+
+def add_shadow_depth(img, intensity=1.0):
+    """Add depth to shadow effects"""
+    try:
+        # Create depth shadow
+        shadow = img.filter(ImageFilter.GaussianBlur(radius=10))
+        enhancer = ImageEnhance.Brightness(shadow)
+        shadow = enhancer.enhance(0.5 * intensity)
+        return Image.blend(img, shadow, 0.35 * intensity)
+    except:
+        return img
+
+def add_stellar_glow(img, intensity=1.0):
+    """Add stellar glow for cosmic vibes"""
+    try:
+        # Multi-layer stellar effect
+        glow1 = img.filter(ImageFilter.GaussianBlur(radius=8))
+        glow2 = img.filter(ImageFilter.GaussianBlur(radius=16))
+        
+        enhancer = ImageEnhance.Color(glow1)
+        glow1 = enhancer.enhance(1.8 * intensity)
+        
+        result = Image.blend(img, glow1, 0.25 * intensity)
+        result = Image.blend(result, glow2, 0.15 * intensity)
+        return result
+    except:
+        return img
+
+def add_crystal_brilliance(img, intensity=1.0):
+    """Add crystal brilliance effect"""
+    try:
+        # Create brilliant highlights
+        brilliant = img.filter(ImageFilter.EDGE_ENHANCE_MORE)
+        enhancer = ImageEnhance.Brightness(brilliant)
+        brilliant = enhancer.enhance(1.4 * intensity)
+        
+        enhancer = ImageEnhance.Contrast(brilliant)
+        brilliant = enhancer.enhance(1.6 * intensity)
+        
+        return Image.blend(img, brilliant, 0.3 * intensity)
+    except:
+        return img
+
+def add_elemental_energy(img, intensity=1.0):
+    """Add elemental energy effects"""
+    try:
+        # Create energy aura
+        energy = img.filter(ImageFilter.EDGE_ENHANCE)
+        enhancer = ImageEnhance.Color(energy)
+        energy = enhancer.enhance(2.0 * intensity)
+        
+        return Image.blend(img, energy, 0.4 * intensity)
+    except:
+        return img
+
+def add_mystical_shimmer(img, intensity=1.0):
+    """Add mystical shimmer effect"""
+    try:
+        # Create ethereal shimmer
+        shimmer = img.filter(ImageFilter.GaussianBlur(radius=12))
+        enhancer = ImageEnhance.Color(shimmer)
+        shimmer = enhancer.enhance(1.6 * intensity)
+        
+        enhancer = ImageEnhance.Brightness(shimmer)
+        shimmer = enhancer.enhance(1.2 * intensity)
+        
+        return Image.blend(img, shimmer, 0.35 * intensity)
+    except:
+        return img
+
+def enhance_fine_details(img, char_data):
+    """Enhance fine details based on phrase characteristics"""
+    try:
+        # Detail enhancement based on phrase complexity
+        detail_factor = 1.2 + (char_data['unique_chars'] * 0.02)
+        enhancer = ImageEnhance.Sharpness(img)
+        img = enhancer.enhance(detail_factor)
+        
+        # Micro-contrast enhancement
+        enhancer = ImageEnhance.Contrast(img)
+        img = enhancer.enhance(1.15)
+        
+        return img
     except:
         return img
 
@@ -1359,7 +1469,7 @@ def generate():
         print(f"✅ GENERATING SIGIL: '{phrase}' with vibe: '{vibe}'")
 
         try:
-            img_base64, error = create_sigil(phrase, vibe, size=800)
+            img_base64, error = create_sigil(phrase, vibe, size=2048)
 
             if error:
                 return jsonify({'success': False, 'error': error})
