@@ -4,6 +4,7 @@ const FREE_ENERGIES = ["mystical","elemental","light"];
 const ALL_ENERGIES  = ["mystical","cosmic","elemental","crystal","shadow","light"];
 let selectedEnergies = [FREE_ENERGIES[0]];
 let lastGenAt = 0;
+let lastGeneratedImage = null;
 
 const el = (id) => document.getElementById(id);
 const genBtn = el("genBtn");
@@ -98,7 +99,7 @@ async function renderGate() {
   if (pro) {
     canvas.width = 2048; canvas.height = 2048;
   } else {
-    canvas.width = 512; canvas.height = 512;
+    canvas.width = 800; canvas.height = 800;
     comboToggle.checked = false;
     batchToggle.checked = false;
   }
@@ -178,6 +179,7 @@ async function renderSigil(phrase = "default", vibe = "mystical") {
     const data = await response.json();
     
     if (data.success && data.image) {
+      lastGeneratedImage = data.image; // Store for download
       const img = new Image();
       img.onload = async () => {
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -288,13 +290,22 @@ genBtn.onclick = async () => {
 downloadBtn.onclick = async () => {
   const pro = await isPro();
   const seed = Number(seedInput.value) || 0;
+  
+  // Check if we have a current sigil to download
+  if (!lastGeneratedImage) {
+    toast("Generate a sigil first");
+    return;
+  }
+  
   if (pro && exportType.value === "svg") {
     const svg = buildSvg(seed, 2048);
     const blob = new Blob([svg], {type:"image/svg+xml"});
     triggerDownload(blob, "sigil.svg");
   } else {
-    const url = canvas.toDataURL("image/png");
-    triggerDownload(dataURLtoBlob(url), "sigil.png");
+    // Use the last generated image data directly
+    const imageData = lastGeneratedImage.replace(/^data:image\/[^;]+;base64,/, "");
+    const blob = dataURLtoBlob(`data:image/png;base64,${imageData}`);
+    triggerDownload(blob, "sigil.png");
   }
 };
 
