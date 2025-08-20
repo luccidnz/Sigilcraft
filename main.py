@@ -12,7 +12,7 @@ import hashlib
 app = Flask(__name__)
 
 
-def create_sigil(phrase, vibe="mystical", size=800):
+def create_sigil(phrase, vibe="mystical", size=1600):
     """Create a highly varied sigil with dramatic differences for each unique input"""
     print(f"🎨 Creating sigil for: '{phrase}' with vibe: '{vibe}' at size: {size}")
 
@@ -105,8 +105,12 @@ def create_sigil(phrase, vibe="mystical", size=800):
 
     print("💾 Converting to high-quality base64...")
     try:
+        # Apply final quality enhancements
+        print("🎨 Applying final quality pass...")
+        img = apply_final_quality_pass(img, vibe, phrase)
+        
         img_buffer = io.BytesIO()
-        # Use maximum quality settings for PNG
+        # Use maximum quality settings for PNG with no compression
         img.save(img_buffer, format='PNG', optimize=False, compress_level=0)
         img_buffer.seek(0)
         img_data = img_buffer.getvalue()
@@ -1166,6 +1170,69 @@ def enhance_overall_quality(img, char_data):
 
         return img
     except:
+        return img
+
+def apply_final_quality_pass(img, vibe, phrase):
+    """Apply final quality improvements for maximum visual impact"""
+    try:
+        char_data = get_phrase_characteristics(phrase)
+        
+        # Ultra-high quality enhancement
+        img = img.resize((img.width * 2, img.height * 2), Image.LANCZOS)
+        
+        # Advanced sharpening
+        enhancer = ImageEnhance.Sharpness(img)
+        img = enhancer.enhance(2.0)
+        
+        # Enhanced contrast for deeper blacks and brighter colors
+        enhancer = ImageEnhance.Contrast(img)
+        img = enhancer.enhance(1.4)
+        
+        # Boost color vibrancy
+        enhancer = ImageEnhance.Color(img)
+        img = enhancer.enhance(1.6)
+        
+        # Apply vibe-specific final touches
+        if vibe == 'light':
+            # Extra brightness and bloom
+            enhancer = ImageEnhance.Brightness(img)
+            img = enhancer.enhance(1.3)
+            img = add_bloom_effect(img, intensity=1.5)
+        elif vibe == 'shadow':
+            # Deeper shadows and mysterious glow
+            enhancer = ImageEnhance.Brightness(img)
+            img = enhancer.enhance(0.8)
+            img = add_glow_effect(img, (60, 20, 60), intensity=1.2)
+        elif vibe == 'cosmic':
+            # Cosmic shimmer and depth
+            img = add_shimmer_effect(img)
+            enhancer = ImageEnhance.Contrast(img)
+            img = enhancer.enhance(1.8)
+        elif vibe == 'crystal':
+            # Ultra sharp and brilliant
+            enhancer = ImageEnhance.Sharpness(img)
+            img = enhancer.enhance(2.5)
+            img = add_refraction_effect(img)
+        elif vibe == 'elemental':
+            # Natural vibrancy
+            enhancer = ImageEnhance.Color(img)
+            img = enhancer.enhance(1.8)
+        else:  # mystical
+            # Ethereal glow
+            img = add_aura_effect(img)
+            enhancer = ImageEnhance.Color(img)
+            img = enhancer.enhance(1.5)
+        
+        # Final anti-aliasing pass
+        img = img.filter(ImageFilter.SMOOTH_MORE)
+        
+        # Resize back to target size with high quality
+        target_size = img.width // 2
+        img = img.resize((target_size, target_size), Image.LANCZOS)
+        
+        return img
+    except Exception as e:
+        print(f"Final quality pass warning: {e}")
         return img
 
 def apply_artistic_enhancement(img, vibe, phrase):

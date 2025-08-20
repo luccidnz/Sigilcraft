@@ -170,28 +170,48 @@ async function renderSigil(phrase = "default", vibe = "mystical") {
   clearCanvas();
   
   try {
+    console.log("Sending sigil generation request:", { phrase, vibe });
     const response = await fetch("/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ phrase, vibe })
     });
     
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
     const data = await response.json();
+    console.log("Received response:", data.success ? "Success" : "Failed", data.error || "");
     
     if (data.success && data.image) {
       lastGeneratedImage = data.image; // Store for download
+      console.log("Stored image for download, length:", data.image.length);
+      
       const img = new Image();
       img.onload = async () => {
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         await drawWatermarkIfFree();
+        console.log("Image rendered to canvas");
+      };
+      img.onerror = () => {
+        console.error("Failed to load generated image");
+        toast("Failed to display generated image");
       };
       img.src = data.image;
       return data;
     } else {
-      throw new Error(data.error || "Generation failed");
+      throw new Error(data.error || "Generation failed - no image data received");
     }
   } catch (error) {
-    console.error("Sigil generation error:", error);
+    console.error("Sigil generation error:", error.message || error);
+    
+    // Show error to user
+    toast(`Generation failed: ${error.message || "Unknown error"}`);
+    
+    // Clear any stored image
+    lastGeneratedImage = null;
+    
     // Fallback to placeholder on error
     const r = mulberry32(Date.now());
     const n = 120;
@@ -288,32 +308,45 @@ genBtn.onclick = async () => {
 };
 
 downloadBtn.onclick = async () => {
+  console.log("Download button clicked");
   const pro = await isPro();
   const seed = Number(seedInput.value) || 0;
   
   // Check if we have a current sigil to download
   if (!lastGeneratedImage) {
+    console.log("No image available for download");
     toast("Generate a sigil first");
     return;
   }
   
+  console.log("Image available for download, size:", lastGeneratedImage.length);
+  
   try {
     if (pro && exportType.value === "svg") {
+      console.log("Downloading as SVG");
       const svg = buildSvg(seed, 2048);
       const blob = new Blob([svg], {type:"image/svg+xml"});
       triggerDownload(blob, "sigil.svg");
       toast("SVG downloaded");
     } else {
+      console.log("Downloading as PNG");
       // Convert data URL to blob and download
+      if (!lastGeneratedImage.startsWith('data:')) {
+        console.error("Invalid image data format");
+        toast("Invalid image format");
+        return;
+      }
+      
       const blob = dataURLtoBlob(lastGeneratedImage);
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const filename = `sigil_${timestamp}.png`;
+      console.log("Triggering download:", filename, "blob size:", blob.size);
       triggerDownload(blob, filename);
       toast("Sigil downloaded");
     }
   } catch (error) {
     console.error("Download error:", error);
-    toast("Download failed - try again");
+    toast(`Download failed: ${error.message}`);
   }
 };
 
