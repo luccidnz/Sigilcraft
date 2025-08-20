@@ -221,17 +221,53 @@ app.get("/api/test", (req, res) => {
 });
 
 // Proxy sigil generation requests to Python Flask backend
-app.post("/generate", generationLimiter, async (req, res) => { // Apply generation limiter here
+app.post("/generate", generationLimiter, async (req, res) => {
   try {
+    console.log("Proxying generation request to Flask backend...");
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout
+
     const response = await fetch("http://localhost:5001/generate", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(req.body)
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "User-Agent": "Sigilcraft-Proxy/1.0"
+      },
+      body: JSON.stringify(req.body),
+      signal: controller.signal
     });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`Flask backend returned ${response.status}: ${response.statusText}`);
+    }
+
     const data = await response.json();
+    console.log("Successfully proxied generation request");
     res.json(data);
+
   } catch (error) {
-    res.status(500).json({ success: false, error: "Sigil generation service unavailable" });
+    console.error("Flask backend proxy error:", error.message);
+
+    if (error.name === 'AbortError') {
+      res.status(408).json({
+        success: false,
+        error: "Request timed out. Please try a simpler sigil or try again."
+      });
+    } else if (error.message.includes('ECONNREFUSED')) {
+      res.status(503).json({
+        success: false,
+        error: "Sigil generation service is starting up. Please try again in a moment."
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: "Sigil generation temporarily unavailable. Please try again."
+      });
+    }
   }
 });
 

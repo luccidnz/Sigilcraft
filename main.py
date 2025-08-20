@@ -1559,13 +1559,31 @@ def generate():
 
 
 if __name__ == "__main__":
+    print("Starting Flask sigil generation server on port 5001...")
     import os
 
-    # Use production WSGI server in production
-    if os.environ.get('FLASK_ENV') == 'production':
+    # Use production WSGI server
+    try:
         from waitress import serve
-        print("Starting production Flask sigil server on port 5001...")
-        serve(app, host="0.0.0.0", port=5001, threads=4, connection_limit=100)
-    else:
-        print("Starting Flask sigil generation server on port 5001...")
-        app.run(host="0.0.0.0", port=5001, debug=False, threaded=True)
+        print("✅ Using Waitress production server...")
+        serve(app, host="0.0.0.0", port=5001, 
+              threads=8, 
+              connection_limit=200, 
+              cleanup_interval=30,
+              channel_timeout=300)
+    except ImportError:
+        print("⚠️  Waitress not available, installing...")
+        import subprocess
+        try:
+            subprocess.check_call(['pip', 'install', 'waitress'])
+            from waitress import serve
+            print("✅ Waitress installed and ready...")
+            serve(app, host="0.0.0.0", port=5001, 
+                  threads=8, 
+                  connection_limit=200, 
+                  cleanup_interval=30,
+                  channel_timeout=300)
+        except Exception as e:
+            print(f"❌ Could not install Waitress: {e}")
+            print("Using development server as fallback...")
+            app.run(host="0.0.0.0", port=5001, debug=False, threaded=True)

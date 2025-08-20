@@ -36,7 +36,7 @@ async function serverIsPro() {
 function localIsPro() {
   return localStorage.getItem("sigil_pro") === "1";
 }
-async function isPro() {
+async function isUserPro() { // Renamed for clarity and consistency
   return (await serverIsPro()) || localIsPro();
 }
 
@@ -81,7 +81,7 @@ function hideLoading() {
 
 // --- energy grid ---
 async function renderEnergies() {
-  const pro = await isPro();
+  const pro = await isUserPro();
   const allowed = pro ? ALL_ENERGIES : FREE_ENERGIES;
   energyList.innerHTML = "";
   ALL_ENERGIES.forEach(name => {
@@ -121,7 +121,7 @@ function highlightSelection() {
 
 // --- gating view ---
 async function renderGate() {
-  const pro = await isPro();
+  const pro = await isUserPro();
   proBadge.classList.toggle("hidden", !pro);
   proControls.classList.toggle("hidden", !pro);
   exportType.value = "png";
@@ -158,8 +158,8 @@ unlockBtn.onclick = async () => {
 
 // --- cooldown (free only) ---
 function startCooldownIfNeeded() {
-  serverIsPro().then(pro => {
-    if (pro || localIsPro()) return;
+  isUserPro().then(pro => { // Use isUserPro
+    if (pro) return;
     const now = Date.now();
     lastGenAt = now;
     const wait = 10000;
@@ -183,7 +183,7 @@ function clearCanvas() {
   ctx.fillStyle = "#0a0b0f"; ctx.fillRect(0,0,canvas.width,canvas.height);
 }
 async function drawWatermarkIfFree() {
-  const pro = await isPro();
+  const pro = await isUserPro();
   if (pro) return;
   ctx.globalAlpha = 0.6;
   ctx.fillStyle = "#ffffff";
@@ -196,22 +196,30 @@ async function drawWatermarkIfFree() {
 
 // Generate sigil using backend with retry logic
 async function renderSigil(phrase = "default", vibe = "mystical", retryCount = 0) {
+  const maxRetries = 3;
+  const retryDelay = 1000 * Math.min(retryCount + 1, 5); // Progressive delay with cap
+
   clearCanvas();
-  const maxRetries = 2;
 
   try {
-    console.log("Sending sigil generation request:", { phrase, vibe });
+    console.log(`Sending sigil generation request (attempt ${retryCount + 1}):`, { phrase, vibe });
 
+    // Add timeout to fetch request with longer timeout for complex requests
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout
+    const isComplexRequest = vibe.includes('+') || phrase.length > 50;
+    const timeoutDuration = isComplexRequest ? 45000 : 30000;
+    const timeoutId = setTimeout(() => controller.abort(), timeoutDuration);
 
     const response = await fetch("/generate", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phrase, vibe }),
+      headers: { 
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Cache-Control": "no-cache"
+      },
+      body: JSON.stringify({ phrase: phrase.trim(), vibe }),
       signal: controller.signal
     });
-
     clearTimeout(timeoutId);
 
     if (!response.ok) {
@@ -252,18 +260,20 @@ async function renderSigil(phrase = "default", vibe = "mystical", retryCount = 0
   } catch (error) {
     console.error("Sigil generation error:", error);
 
-    // Retry logic for network errors
+    // Retry logic for network errors or timeouts
     if (retryCount < maxRetries && (
       error.name === 'AbortError' || 
       error.message.includes('Failed to fetch') ||
-      error.message.includes('temporarily unavailable')
+      error.message.includes('temporarily unavailable') ||
+      error.message.includes('NetworkError') || // Common for fetch issues
+      error.message.includes('timeout')
     )) {
-      console.log(`Retrying generation (attempt ${retryCount + 1}/${maxRetries})...`);
-      await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1))); // Exponential backoff
+      console.log(`Retrying generation (attempt ${retryCount + 1}/${maxRetries})... Delay: ${retryDelay}ms`);
+      await new Promise(resolve => setTimeout(resolve, retryDelay)); // Use progressive delay
       return renderSigil(phrase, vibe, retryCount + 1);
     }
 
-    throw error;
+    throw error; // Re-throw if not a retryable error or max retries reached
   }
 }
 
@@ -342,7 +352,7 @@ const validateEnergies = (energies, isPro) => {
 
 genBtn.onclick = async () => {
   // Validate energies
-  const pro = await isPro();
+  const pro = await isUserPro();
   const energyValidation = validateEnergies(selectedEnergies, pro);
   if (!energyValidation.valid) {
     toast(energyValidation.error);
@@ -364,7 +374,6 @@ genBtn.onclick = async () => {
 
   const phrase = phraseValidation.phrase;
 
-  const pro = await isPro();
   // Handle multiple vibes by combining them or using combo mode
   const vibe = selectedEnergies.length > 1 ? selectedEnergies.join("+") : selectedEnergies[0];
   const size = pro ? 2048 : 1200;
@@ -417,7 +426,7 @@ downloadBtn.onclick = async () => {
   try {
     showLoading("Preparing download...");
 
-    const pro = await isPro();
+    const pro = await isUserPro(); // Use isUserPro
     const seed = Number(seedInput.value) || 0;
 
     // Check if we have a current sigil to download
