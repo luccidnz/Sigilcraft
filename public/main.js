@@ -352,8 +352,8 @@ const validateEnergies = (energies, isPro) => {
 
 genBtn.onclick = async () => {
   // Validate energies
-  const pro = await isUserPro();
-  const energyValidation = validateEnergies(selectedEnergies, pro);
+  const isPro = await isUserPro();
+  const energyValidation = validateEnergies(selectedEnergies, isPro);
   if (!energyValidation.valid) {
     toast(energyValidation.error);
     return;
@@ -376,16 +376,16 @@ genBtn.onclick = async () => {
 
   // Handle multiple vibes by combining them or using combo mode
   const vibe = selectedEnergies.length > 1 ? selectedEnergies.join("+") : selectedEnergies[0];
-  const size = pro ? 2048 : 1200;
+  const size = isPro ? 2048 : 1200;
 
   canvas.width = size; canvas.height = size;
   genBtn.disabled = true;
   genBtn.textContent = "Generating...";
 
-  showLoading(pro && batchToggle.checked ? "Creating sigil batch..." : "Channeling quantum energy...");
+  showLoading(isPro && batchToggle.checked ? "Creating sigil batch..." : "Channeling quantum energy...");
 
   try {
-    if (pro && batchToggle.checked) {
+    if (isPro && batchToggle.checked) {
       // batch create zip of 5
       if (typeof JSZip === 'undefined') {
         toast("JSZip library not loaded");
@@ -426,7 +426,7 @@ downloadBtn.onclick = async () => {
   try {
     showLoading("Preparing download...");
 
-    const pro = await isUserPro(); // Use isUserPro
+    const isPro = await isUserPro(); // Use isUserPro
     const seed = Number(seedInput.value) || 0;
 
     // Check if we have a current sigil to download
@@ -438,7 +438,7 @@ downloadBtn.onclick = async () => {
 
     console.log("Image available for download, size:", lastGeneratedImage.length);
 
-    if (pro && exportType.value === "svg") {
+    if (isPro && exportType.value === "svg") {
       console.log("Downloading as SVG");
       const svg = buildSvg(seed, 2048);
       const blob = new Blob([svg], {type:"image/svg+xml"});

@@ -168,8 +168,8 @@ def create_sigil(phrase, vibe="mystical", size=2048):
         img = apply_final_quality_pass(img, vibe, phrase)
 
         img_buffer = io.BytesIO()
-        # Use maximum quality settings for PNG with no compression
-        img.save(img_buffer, format='PNG', optimize=False, compress_level=0)
+        # Use optimized PNG compression for better file size while maintaining quality
+        img.save(img_buffer, format='PNG', optimize=True, compress_level=6)
         img_buffer.seek(0)
         img_data = img_buffer.getvalue()
         img_base64 = base64.b64encode(img_data).decode()
@@ -1235,8 +1235,8 @@ def apply_final_quality_pass(img, vibe, phrase):
     try:
         char_data = get_phrase_characteristics(phrase)
 
-        # Ultra-high quality enhancement - triple resolution for maximum detail
-        img = img.resize((img.width * 3, img.height * 3), Image.LANCZOS)
+        # High quality enhancement - double resolution for better detail while managing memory
+        img = img.resize((img.width * 2, img.height * 2), Image.LANCZOS)
 
         # Advanced multi-pass sharpening
         enhancer = ImageEnhance.Sharpness(img)
@@ -1296,7 +1296,7 @@ def apply_final_quality_pass(img, vibe, phrase):
         img = enhancer.enhance(1.8)
 
         # Resize back to target size with highest quality
-        target_size = img.width // 3
+        target_size = img.width // 2
         img = img.resize((target_size, target_size), Image.LANCZOS)
 
         # Final detail enhancement
@@ -1506,11 +1506,20 @@ def generate():
 
         print(f"Received phrase: '{phrase}' with vibe: '{vibe}'")
 
+        # Enhanced validation
         if not phrase:
             return jsonify({'success': False, 'error': 'Please enter your intent or desire'})
 
+        if len(phrase) < 2:
+            return jsonify({'success': False, 'error': 'Intent too short (minimum 2 characters)'})
+
         if len(phrase) > 200:
-            return jsonify({'success': False, 'error': 'Phrase too long (max 200 characters)'})
+            return jsonify({'success': False, 'error': 'Intent too long (maximum 200 characters)'})
+
+        # Sanitize phrase
+        phrase = ''.join(char for char in phrase if char.isprintable() or char.isspace())
+        if not phrase.strip():
+            return jsonify({'success': False, 'error': 'Invalid characters in intent'})
 
         valid_vibes = ['mystical', 'cosmic', 'elemental', 'crystal', 'shadow', 'light']
 
@@ -1532,16 +1541,21 @@ def generate():
             img_base64, error = create_sigil(phrase, vibe, size=2048)
 
             if error:
-                return jsonify({'success': False, 'error': error})
+                app.logger.error(f"Sigil creation error: {error}")
+                return jsonify({'success': False, 'error': str(error)})
 
             if not img_base64:
+                app.logger.error("No image data generated")
                 return jsonify({'success': False, 'error': 'Failed to generate sigil image'})
 
-            print(f"✅ SIGIL GENERATED SUCCESSFULLY")
+            print(f"✅ SIGIL GENERATED SUCCESSFULLY - {len(img_base64)} chars")
 
+        except MemoryError:
+            app.logger.error("Memory error during generation")
+            return jsonify({'success': False, 'error': 'Image too complex. Try a shorter phrase.'})
         except Exception as generation_error:
-            print(f"GENERATION ERROR: {str(generation_error)}")
-            return jsonify({'success': False, 'error': 'Sigil generation failed. Please try again.'})
+            app.logger.error(f"Generation error: {str(generation_error)}")
+            return jsonify({'success': False, 'error': 'Generation temporarily unavailable. Please try again.'})
 
         response_data = {
             'success': True,

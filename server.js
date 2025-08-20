@@ -53,6 +53,21 @@ const generationLimiter = rateLimit({
   message: { error: "Generation rate limit exceeded. Please wait before trying again." }
 });
 
+// CORS and additional headers
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('X-Content-Type-Options', 'nosniff');
+  res.header('X-Frame-Options', 'DENY');
+  res.header('X-XSS-Protection', '1; mode=block');
+  
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
 
 app.use(cookieParser());
 
@@ -220,20 +235,51 @@ app.get("/api/test", (req, res) => {
   });
 });
 
+// Health check endpoint
+app.get("/api/health", async (req, res) => {
+  try {
+    // Check Flask backend health
+    const flaskResponse = await fetch("http://127.0.0.1:5001/health", { timeout: 5000 });
+    const flaskHealthy = flaskResponse.ok;
+    
+    res.json({
+      status: "healthy",
+      services: {
+        node: "online",
+        flask: flaskHealthy ? "online" : "offline"
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: "degraded",
+      services: {
+        node: "online",
+        flask: "offline"
+      },
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // Proxy sigil generation requests to Python Flask backend
 app.post("/generate", generationLimiter, async (req, res) => {
   try {
     console.log("Proxying generation request to Flask backend...");
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout
+    const isComplexRequest = req.body.vibe && req.body.vibe.includes('+');
+    const timeoutDuration = isComplexRequest ? 60000 : 45000;
+    const timeoutId = setTimeout(() => controller.abort(), timeoutDuration);
 
-    const response = await fetch("http://localhost:5001/generate", {
+    const response = await fetch("http://127.0.0.1:5001/generate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json",
-        "User-Agent": "Sigilcraft-Proxy/1.0"
+        "User-Agent": "Sigilcraft-Proxy/1.0",
+        "Connection": "keep-alive"
       },
       body: JSON.stringify(req.body),
       signal: controller.signal
