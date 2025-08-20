@@ -7,6 +7,9 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fetch from "node-fetch";
 import dotenv from "dotenv";
+import compression from "compression";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 
 dotenv.config();
 
@@ -14,6 +17,42 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
+// Security headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "blob:"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://js.stripe.com"],
+      connectSrc: ["'self'", "https://api.stripe.com"],
+      frameSrc: ["'self'", "https://js.stripe.com", "https://hooks.stripe.com"]
+    }
+  }
+}));
+
+// Compression
+app.use(compression({
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) return false;
+    return compression.filter(req, res);
+  },
+  threshold: 0
+}));
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: { error: "Too many requests, please try again later." },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+app.use('/api', limiter);
+
 app.use(cookieParser());
 
 // -------- Stripe --------
@@ -58,11 +97,21 @@ app.post("/api/stripe-webhook",
 // After webhook, enable JSON for the rest
 app.use(express.json());
 
-// -------- Static
+// -------- Static with caching
 app.use(express.static(path.join(__dirname, "public"), {
   setHeaders: (res, p) => {
     if (p.endsWith(".svg")) res.setHeader("Content-Type", "image/svg+xml");
-  }
+    
+    // Cache static assets for 1 hour
+    if (p.endsWith('.css') || p.endsWith('.js') || p.endsWith('.png') || 
+        p.endsWith('.jpg') || p.endsWith('.svg') || p.endsWith('.ico')) {
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+    } else {
+      // HTML files - no cache for dynamic content
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    }
+  },
+  maxAge: '1h'
 }));
 
 // -------- Simple key store (JSON file)

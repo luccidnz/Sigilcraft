@@ -41,13 +41,43 @@ async function isPro() {
   return (await serverIsPro()) || localIsPro();
 }
 
-// --- ui toast ---
+// --- enhanced toast system ---
 let toastTimer;
-function toast(msg) {
+function toast(msg, type = 'info', duration = 3000) {
   toastEl.textContent = msg;
-  toastEl.style.display = "block";
+  toastEl.className = 'show';
+  
+  // Remove existing type classes
+  toastEl.classList.remove('error', 'success', 'warning', 'info');
+  
+  // Add type-specific styling
+  if (type !== 'info') {
+    toastEl.classList.add(type);
+  }
+  
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=> toastEl.style.display = "none", 2500);
+  toastTimer = setTimeout(() => {
+    toastEl.classList.remove('show');
+    setTimeout(() => {
+      toastEl.style.display = "none";
+      toastEl.className = '';
+    }, 300);
+  }, duration);
+}
+
+// Loading spinner utilities
+const loadingSpinner = el("loadingSpinner");
+
+function showLoading(text = "Generating quantum sigil...") {
+  const loadingText = loadingSpinner.querySelector('.loading-text');
+  if (loadingText) loadingText.textContent = text;
+  loadingSpinner.classList.remove('hidden');
+  document.body.style.overflow = 'hidden'; // Prevent scrolling
+}
+
+function hideLoading() {
+  loadingSpinner.classList.add('hidden');
+  document.body.style.overflow = ''; // Restore scrolling
 }
 
 // --- energy grid ---
@@ -166,68 +196,137 @@ async function drawWatermarkIfFree() {
 }
 
 // Generate sigil using backend
-async function renderSigil(phrase = "default", vibe = "mystical") {
+async function renderSigil(phrase = "default", vibe = "mystical", retryCount = 0) {
+  const maxRetries = 3;
+  const retryDelay = 1000 * (retryCount + 1); // Progressive delay
+  
   clearCanvas();
   
   try {
-    console.log("Sending sigil generation request:", { phrase, vibe });
+    console.log(`Sending sigil generation request (attempt ${retryCount + 1}):`, { phrase, vibe });
+    
+    // Add timeout to fetch request
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    
     const response = await fetch("/generate", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phrase, vibe })
+      headers: { 
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({ phrase, vibe }),
+      signal: controller.signal
     });
     
+    clearTimeout(timeoutId);
+    
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      // Handle specific HTTP errors
+      if (response.status === 429) {
+        throw new Error("Rate limit exceeded. Please wait a moment and try again.");
+      } else if (response.status === 500) {
+        throw new Error("Server error. Please try again in a moment.");
+      } else if (response.status >= 400 && response.status < 500) {
+        throw new Error(`Request error: ${response.statusText}`);
+      } else {
+        throw new Error(`Server error: ${response.status} ${response.statusText}`);
+      }
     }
     
-    const data = await response.json();
+    let data;
+    try {
+      data = await response.json();
+    } catch (parseError) {
+      throw new Error("Invalid response from server");
+    }
+    
     console.log("Received response:", data.success ? "Success" : "Failed", data.error || "");
     
     if (data.success && data.image) {
-      lastGeneratedImage = data.image; // Store for download
+      lastGeneratedImage = data.image;
       console.log("Stored image for download, length:", data.image.length);
       
-      const img = new Image();
-      img.onload = async () => {
-        // Use high quality scaling
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        await drawWatermarkIfFree();
-        console.log("Image rendered to canvas");
-      };
-      img.onerror = () => {
-        console.error("Failed to load generated image");
-        toast("Failed to display generated image");
-      };
-      img.src = data.image;
-      return data;
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        
+        img.onload = async () => {
+          try {
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            await drawWatermarkIfFree();
+            console.log("Image rendered to canvas");
+            resolve(data);
+          } catch (renderError) {
+            console.error("Canvas rendering error:", renderError);
+            reject(new Error("Failed to render image to canvas"));
+          }
+        };
+        
+        img.onerror = () => {
+          console.error("Failed to load generated image");
+          reject(new Error("Failed to load generated image"));
+        };
+        
+        img.src = data.image;
+      });
     } else {
       throw new Error(data.error || "Generation failed - no image data received");
     }
   } catch (error) {
-    console.error("Sigil generation error:", error.message || error);
+    console.error(`Sigil generation error (attempt ${retryCount + 1}):`, error.message || error);
     
-    // Show error to user
-    toast(`Generation failed: ${error.message || "Unknown error"}`);
+    // Handle abort error (timeout)
+    if (error.name === 'AbortError') {
+      error.message = "Request timed out. Please try again.";
+    }
     
-    // Clear any stored image
+    // Retry logic for network errors and server errors
+    const retryableErrors = [
+      'Failed to fetch',
+      'NetworkError',
+      'Request timed out',
+      'Server error'
+    ];
+    
+    const shouldRetry = retryCount < maxRetries && 
+      retryableErrors.some(retryError => 
+        error.message.includes(retryError) || error.message.includes('500')
+      );
+    
+    if (shouldRetry) {
+      console.log(`Retrying in ${retryDelay}ms...`);
+      toast(`Connection issue. Retrying... (${retryCount + 1}/${maxRetries})`);
+      
+      await new Promise(resolve => setTimeout(resolve, retryDelay));
+      return renderSigil(phrase, vibe, retryCount + 1);
+    }
+    
+    // Final failure
+    const errorMessage = error.message || "Unknown error occurred";
+    toast(`Generation failed: ${errorMessage}`);
+    
     lastGeneratedImage = null;
     
-    // Fallback to placeholder on error
-    const r = mulberry32(Date.now());
-    const n = 120;
-    ctx.strokeStyle = "#9ad0ff"; 
-    ctx.lineWidth = Math.max(2, canvas.width * 0.004);
-    ctx.beginPath();
-    for (let i=0;i<n;i++){
-      const x = canvas.width  * r();
-      const y = canvas.height * r();
-      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    // Fallback placeholder
+    try {
+      const r = mulberry32(Date.now());
+      const n = 120;
+      ctx.strokeStyle = "#9ad0ff"; 
+      ctx.lineWidth = Math.max(2, canvas.width * 0.004);
+      ctx.beginPath();
+      for (let i = 0; i < n; i++) {
+        const x = canvas.width * r();
+        const y = canvas.height * r();
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      await drawWatermarkIfFree();
+    } catch (placeholderError) {
+      console.error("Failed to render placeholder:", placeholderError);
     }
-    ctx.stroke();
-    await drawWatermarkIfFree();
+    
     throw error;
   }
 }
@@ -249,23 +348,85 @@ function buildSvg(seed = 0, size = 2048) {
 }
 
 // --- generation + download ---
+// Input validation utilities
+const validatePhrase = (phrase) => {
+  if (!phrase || typeof phrase !== 'string') {
+    return { valid: false, error: "Please enter your intent or desire" };
+  }
+  
+  const trimmed = phrase.trim();
+  if (trimmed.length === 0) {
+    return { valid: false, error: "Please enter your intent or desire" };
+  }
+  
+  if (trimmed.length > 200) {
+    return { valid: false, error: "Intent is too long (maximum 200 characters)" };
+  }
+  
+  if (trimmed.length < 2) {
+    return { valid: false, error: "Intent is too short (minimum 2 characters)" };
+  }
+  
+  // Check for potentially harmful content
+  const harmfulPatterns = [
+    /<script/i, /javascript:/i, /vbscript:/i, /data:/i,
+    /onload=/i, /onerror=/i, /onclick=/i
+  ];
+  
+  for (const pattern of harmfulPatterns) {
+    if (pattern.test(trimmed)) {
+      return { valid: false, error: "Invalid characters detected" };
+    }
+  }
+  
+  return { valid: true, phrase: trimmed };
+};
+
+const validateEnergies = (energies, isPro) => {
+  if (!Array.isArray(energies) || energies.length === 0) {
+    return { valid: false, error: "Select at least one energy type" };
+  }
+  
+  const allowedEnergies = isPro ? ALL_ENERGIES : FREE_ENERGIES;
+  const invalidEnergies = energies.filter(e => !allowedEnergies.includes(e));
+  
+  if (invalidEnergies.length > 0) {
+    return { 
+      valid: false, 
+      error: `${invalidEnergies.join(", ")} ${invalidEnergies.length === 1 ? 'is' : 'are'} not available` 
+    };
+  }
+  
+  if (!isPro && energies.length > 1) {
+    return { valid: false, error: "Multiple energies require Pro upgrade" };
+  }
+  
+  return { valid: true };
+};
+
 genBtn.onclick = async () => {
-  if (!selectedEnergies.length) {
-    toast("Select at least one energy type");
+  // Validate energies
+  const pro = await isPro();
+  const energyValidation = validateEnergies(selectedEnergies, pro);
+  if (!energyValidation.valid) {
+    toast(energyValidation.error);
     return;
   }
   
+  // Get and validate phrase
   const intentInput = document.getElementById("intentInput");
   if (!intentInput) {
     toast("Intent input field not found");
     return;
   }
   
-  const phrase = intentInput.value?.trim();
-  if (!phrase) {
-    toast("Please enter your intent or desire");
+  const phraseValidation = validatePhrase(intentInput.value);
+  if (!phraseValidation.valid) {
+    toast(phraseValidation.error);
     return;
   }
+  
+  const phrase = phraseValidation.phrase;
   
   const pro = await isPro();
   // Handle multiple vibes by combining them or using combo mode
@@ -275,6 +436,8 @@ genBtn.onclick = async () => {
   canvas.width = size; canvas.height = size;
   genBtn.disabled = true;
   genBtn.textContent = "Generating...";
+  
+  showLoading(pro && batchToggle.checked ? "Creating sigil batch..." : "Channeling quantum energy...");
 
   try {
     if (pro && batchToggle.checked) {
@@ -295,15 +458,17 @@ genBtn.onclick = async () => {
       }
       const blob = await zip.generateAsync({type:"blob"});
       triggerDownload(blob, "sigils.zip");
-      toast("Batch ready");
+      toast("✨ Batch sigils ready for download!", 'success', 4000);
     } else {
       // single
       await renderSigil(phrase, vibe);
-      toast("Sigil generated");
+      toast("✨ Quantum sigil generated successfully!", 'success', 3000);
     }
   } catch (error) {
-    toast(`Generation failed: ${error.message}`);
+    console.error("Generation process error:", error);
+    toast(`❌ Generation failed: ${error.message}`, 'error', 5000);
   } finally {
+    hideLoading();
     genBtn.disabled = false;
     genBtn.textContent = "Initialize Quantum Sigil";
     startCooldownIfNeeded();
@@ -312,101 +477,185 @@ genBtn.onclick = async () => {
 
 downloadBtn.onclick = async () => {
   console.log("Download button clicked");
-  const pro = await isPro();
-  const seed = Number(seedInput.value) || 0;
-  
-  // Check if we have a current sigil to download
-  if (!lastGeneratedImage) {
-    console.log("No image available for download");
-    toast("Generate a sigil first");
-    return;
-  }
-  
-  console.log("Image available for download, size:", lastGeneratedImage.length);
   
   try {
+    showLoading("Preparing download...");
+    
+    const pro = await isPro();
+    const seed = Number(seedInput.value) || 0;
+    
+    // Check if we have a current sigil to download
+    if (!lastGeneratedImage) {
+      console.log("No image available for download");
+      toast("⚠️ Generate a sigil first to download", 'warning');
+      return;
+    }
+    
+    console.log("Image available for download, size:", lastGeneratedImage.length);
+    
     if (pro && exportType.value === "svg") {
       console.log("Downloading as SVG");
       const svg = buildSvg(seed, 2048);
       const blob = new Blob([svg], {type:"image/svg+xml"});
-      triggerDownload(blob, "sigil.svg");
-      toast("SVG downloaded");
+      
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+      const filename = `quantum_sigil_${timestamp}.svg`;
+      
+      await downloadBlob(blob, filename);
+      toast("✨ SVG sigil downloaded!", 'success');
+      
     } else {
       console.log("Downloading as PNG");
-      // Convert data URL to blob and download
-      if (!lastGeneratedImage.startsWith('data:')) {
-        console.error("Invalid image data format");
-        toast("Invalid image format");
+      
+      // Validate image data format
+      if (!lastGeneratedImage.startsWith('data:image/png;base64,')) {
+        console.error("Invalid image data format:", lastGeneratedImage.substring(0, 50));
+        toast("❌ Invalid image format detected", 'error');
         return;
       }
       
       try {
-        const blob = dataURLtoBlob(lastGeneratedImage);
+        // Convert data URL to blob
+        const blob = await dataURLToBlobAsync(lastGeneratedImage);
+        
+        if (!blob || blob.size === 0) {
+          throw new Error("Failed to create download blob");
+        }
+        
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
         const filename = `quantum_sigil_${timestamp}.png`;
-        console.log("Triggering download:", filename, "blob size:", blob.size);
         
-        // Create download link with proper error handling
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        link.style.display = 'none';
+        console.log("Created blob for download:", {
+          filename,
+          size: blob.size,
+          type: blob.type
+        });
         
-        // Add to DOM, click, and remove
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        await downloadBlob(blob, filename);
+        toast("✨ Quantum Sigil downloaded successfully!", 'success');
         
-        // Clean up object URL
-        setTimeout(() => URL.revokeObjectURL(url), 100);
-        
-        toast("✨ Quantum Sigil downloaded successfully!");
-      } catch (downloadError) {
-        console.error("Download process error:", downloadError);
+      } catch (blobError) {
+        console.error("Blob creation failed:", blobError);
         
         // Fallback: try canvas download
         try {
-          const canvasBlob = await new Promise(resolve => {
-            canvas.toBlob(resolve, 'image/png', 1.0);
+          console.log("Attempting canvas fallback...");
+          
+          if (!canvas || canvas.width === 0 || canvas.height === 0) {
+            throw new Error("Canvas not available or invalid");
+          }
+          
+          const canvasBlob = await new Promise((resolve, reject) => {
+            canvas.toBlob((blob) => {
+              if (blob) {
+                resolve(blob);
+              } else {
+                reject(new Error("Canvas toBlob returned null"));
+              }
+            }, 'image/png', 1.0);
           });
           
-          if (canvasBlob) {
-            const url = URL.createObjectURL(canvasBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `quantum_sigil_${Date.now()}.png`;
-            link.style.display = 'none';
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            setTimeout(() => URL.revokeObjectURL(url), 100);
-            toast("✨ Sigil downloaded via canvas!");
-          } else {
-            throw new Error("Canvas conversion failed");
-          }
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+          const filename = `quantum_sigil_canvas_${timestamp}.png`;
+          
+          await downloadBlob(canvasBlob, filename);
+          toast("✨ Sigil downloaded via canvas backup!", 'success');
+          
         } catch (canvasError) {
           console.error("Canvas fallback failed:", canvasError);
-          toast("❌ Download failed - please try again");
+          toast("❌ Download failed - please regenerate the sigil and try again", 'error', 6000);
         }
       }
     }
+    
   } catch (error) {
     console.error("Download error:", error);
-    toast(`❌ Download failed: ${error.message}`);
+    toast(`❌ Download failed: ${error.message}`, 'error', 5000);
+  } finally {
+    hideLoading();
   }
 };
 
-function triggerDownload(blobOrUrl, filename){
-  const blob = typeof blobOrUrl === "string" ? dataURLtoBlob(blobOrUrl) : blobOrUrl;
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = filename; a.click();
-  URL.revokeObjectURL(url);
+// Enhanced blob conversion with better error handling
+async function dataURLToBlobAsync(dataURL) {
+  return new Promise((resolve, reject) => {
+    try {
+      const arr = dataURL.split(',');
+      if (arr.length !== 2) {
+        throw new Error("Invalid data URL format");
+      }
+      
+      const mimeMatch = arr[0].match(/:(.*?);/);
+      if (!mimeMatch) {
+        throw new Error("Invalid MIME type in data URL");
+      }
+      
+      const mime = mimeMatch[1];
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8 = new Uint8Array(n);
+      
+      while(n--) {
+        u8[n] = bstr.charCodeAt(n);
+      }
+      
+      const blob = new Blob([u8], {type: mime});
+      resolve(blob);
+      
+    } catch (error) {
+      reject(new Error(`Data URL conversion failed: ${error.message}`));
+    }
+  });
 }
 
+// Enhanced download function with better error handling
+async function downloadBlob(blob, filename) {
+  return new Promise((resolve, reject) => {
+    try {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      
+      link.href = url;
+      link.download = filename;
+      link.style.display = 'none';
+      
+      // Handle download completion
+      link.addEventListener('click', () => {
+        setTimeout(() => {
+          URL.revokeObjectURL(url);
+          document.body.removeChild(link);
+          resolve();
+        }, 100);
+      });
+      
+      // Handle download errors
+      link.addEventListener('error', (event) => {
+        URL.revokeObjectURL(url);
+        document.body.removeChild(link);
+        reject(new Error('Download link failed'));
+      });
+      
+      document.body.appendChild(link);
+      link.click();
+      
+    } catch (error) {
+      reject(new Error(`Download setup failed: ${error.message}`));
+    }
+  });
+}
+
+// Legacy download function for batch downloads
+function triggerDownload(blobOrUrl, filename){
+  try {
+    const blob = typeof blobOrUrl === "string" ? dataURLtoBlob(blobOrUrl) : blobOrUrl;
+    downloadBlob(blob, filename).catch(console.error);
+  } catch (error) {
+    console.error("Legacy download error:", error);
+    toast("❌ Download failed", 'error');
+  }
+}
+
+// Legacy blob conversion (kept for batch functionality)
 function dataURLtoBlob(dataURL){
   const arr = dataURL.split(","), mime = arr[0].match(/:(.*?);/)[1];
   const bstr = atob(arr[1]); let n = bstr.length; const u8 = new Uint8Array(n);

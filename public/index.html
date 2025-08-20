@@ -20,12 +20,12 @@
   <main class="wrap">
     <section class="panel">
       <h2>Neural Intent Interface</h2>
-      
+
       <div class="input-group">
         <label for="intentInput">Enter Your Intent or Desire:</label>
         <input type="text" id="intentInput" placeholder="I manifest abundance and success..." maxlength="200" required>
       </div>
-      
+
       <div id="energyList" class="energies"></div>
 
       <div id="proControls" class="pro-only hidden">
@@ -41,7 +41,18 @@
       </div>
 
       <button id="genBtn" class="btn primary">Initialize Quantum Sigil</button>
-      <div id="cooldown" class="cooldown hidden"></div>
+      <div id="cooldown" class="hidden" style="color: var(--warning); margin-top: 10px;"></div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="loading-spinner hidden">
+      <div class="spinner"></div>
+      <div class="loading-text">Generating quantum sigil...</div>
+      <div class="loading-progress">
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
+        </div>
+      </div>
+    </div>
 
       <div class="downloads">
         <button id="downloadBtn" class="btn">⬇ Download Neural Sigil</button>
