@@ -8,8 +8,66 @@ import base64
 import random
 import numpy as np
 import hashlib
+import logging
+import traceback
+import time
+from functools import wraps
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler('sigil_generator.log')
+    ]
+)
 
 app = Flask(__name__)
+app.logger.setLevel(logging.INFO)
+
+def handle_errors(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except Exception as e:
+            app.logger.error(f"Error in {f.__name__}: {str(e)}")
+            app.logger.error(f"Traceback: {traceback.format_exc()}")
+            return jsonify({
+                'success': False, 
+                'error': 'Internal server error occurred',
+                'timestamp': str(datetime.now())
+            }), 500
+    return decorated_function
+
+def rate_limit(max_requests=60, per_seconds=60):
+    """Simple in-memory rate limiting"""
+    request_counts = {}
+    
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.environ.get('REMOTE_ADDR', 'unknown'))
+            now = time.time()
+            
+            # Clean old entries
+            cutoff = now - per_seconds
+            request_counts[client_ip] = [t for t in request_counts.get(client_ip, []) if t > cutoff]
+            
+            # Check rate limit
+            if len(request_counts.get(client_ip, [])) >= max_requests:
+                return jsonify({
+                    'success': False,
+                    'error': 'Rate limit exceeded. Please wait before making more requests.',
+                    'retry_after': per_seconds
+                }), 429
+            
+            # Add current request
+            request_counts.setdefault(client_ip, []).append(now)
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
 
 
 def create_sigil(phrase, vibe="mystical", size=2048):
@@ -1430,6 +1488,8 @@ def status():
 
 
 @app.route('/generate', methods=['POST'])
+@rate_limit(max_requests=30, per_seconds=60)
+@handle_errors
 def generate():
     try:
         print("=== GENERATE REQUEST RECEIVED ===")
@@ -1500,4 +1560,13 @@ def generate():
 
 if __name__ == "__main__":
     print("Starting Flask sigil generation server on port 5001...")
-    app.run(host="0.0.0.0", port=5001, debug=False)
+    import os
+    
+    # Use production WSGI server if available
+    try:
+        from waitress import serve
+        print("Using Waitress production server...")
+        serve(app, host="0.0.0.0", port=5001, threads=4, connection_limit=100)
+    except ImportError:
+        print("Waitress not available, using development server...")
+        app.run(host="0.0.0.0", port=5001, debug=False, threaded=True)
