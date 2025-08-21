@@ -474,7 +474,7 @@ downloadBtn.onclick = async () => {
     console.log("Image available for download, size:", lastGeneratedImage.length);
 
     if (userIsPro && exportType.value === "svg") {
-      console.log("Downloading as SVG");
+      console.log("Downloading as SVG - Note: Using placeholder SVG as actual sigil is PNG-based");
       const svg = buildSvg(seed, 2048);
       const blob = new Blob([svg], {type:"image/svg+xml"});
 
@@ -487,16 +487,26 @@ downloadBtn.onclick = async () => {
     } else {
       console.log("Downloading as PNG");
 
-      // Validate image data format
-      if (!lastGeneratedImage.startsWith('data:image/png;base64,') && !lastGeneratedImage.startsWith('data:image/png;')) {
+      // Validate image data format - be more flexible with data URL formats
+      if (!lastGeneratedImage.startsWith('data:image/') && !lastGeneratedImage.includes('base64,')) {
         console.error("Invalid image data format:", lastGeneratedImage.substring(0, 50));
         toast("❌ Invalid image format detected", 'error');
         return;
       }
 
       try {
+        // Ensure proper data URL format
+        let dataURL = lastGeneratedImage;
+        if (!dataURL.startsWith('data:image/png;base64,') && dataURL.includes('base64,')) {
+          // Fix malformed data URLs
+          const base64Part = dataURL.split('base64,')[1] || dataURL.split(',')[1];
+          if (base64Part) {
+            dataURL = `data:image/png;base64,${base64Part}`;
+          }
+        }
+
         // Convert data URL to blob
-        const blob = await dataURLToBlobAsync(lastGeneratedImage);
+        const blob = await dataURLToBlobAsync(dataURL);
 
         if (!blob || blob.size === 0) {
           throw new Error("Failed to create download blob");
@@ -560,18 +570,26 @@ downloadBtn.onclick = async () => {
 async function dataURLToBlobAsync(dataURL) {
   return new Promise((resolve, reject) => {
     try {
+      console.log("Converting data URL to blob, length:", dataURL.length);
+      
       const arr = dataURL.split(',');
       if (arr.length !== 2) {
-        throw new Error("Invalid data URL format");
+        throw new Error("Invalid data URL format - missing comma separator");
       }
 
-      const mimeMatch = arr[0].match(/:(.*?);/);
-      if (!mimeMatch) {
-        throw new Error("Invalid MIME type in data URL");
+      const header = arr[0];
+      const base64Data = arr[1];
+      
+      if (!base64Data || base64Data.length === 0) {
+        throw new Error("No base64 data found");
       }
 
-      const mime = mimeMatch[1];
-      const bstr = atob(arr[1]);
+      const mimeMatch = header.match(/:(.*?);/) || header.match(/:(.*?)$/);
+      const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+      
+      console.log("Detected MIME type:", mime);
+      
+      const bstr = atob(base64Data);
       let n = bstr.length;
       const u8 = new Uint8Array(n);
 
@@ -580,9 +598,11 @@ async function dataURLToBlobAsync(dataURL) {
       }
 
       const blob = new Blob([u8], {type: mime});
+      console.log("Blob created successfully, size:", blob.size, "type:", blob.type);
       resolve(blob);
 
     } catch (error) {
+      console.error("Data URL conversion error:", error);
       reject(new Error(`Data URL conversion failed: ${error.message}`));
     }
   });
@@ -592,6 +612,12 @@ async function dataURLToBlobAsync(dataURL) {
 async function downloadBlob(blob, filename) {
   return new Promise((resolve, reject) => {
     try {
+      console.log("Setting up download for:", filename, "blob size:", blob.size);
+      
+      if (!blob || blob.size === 0) {
+        throw new Error("Invalid or empty blob");
+      }
+
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
 
@@ -599,26 +625,40 @@ async function downloadBlob(blob, filename) {
       link.download = filename;
       link.style.display = 'none';
 
+      // Add to DOM first for better browser compatibility
+      document.body.appendChild(link);
+
       // Handle download completion
+      const cleanup = () => {
+        try {
+          URL.revokeObjectURL(url);
+          if (document.body.contains(link)) {
+            document.body.removeChild(link);
+          }
+        } catch (e) {
+          console.warn("Cleanup error:", e);
+        }
+      };
+
       link.addEventListener('click', () => {
         setTimeout(() => {
-          URL.revokeObjectURL(url);
-          document.body.removeChild(link);
+          cleanup();
           resolve();
-        }, 100);
+        }, 1000);
       });
 
       // Handle download errors
       link.addEventListener('error', (event) => {
-        URL.revokeObjectURL(url);
-        document.body.removeChild(link);
+        cleanup();
         reject(new Error('Download link failed'));
       });
 
-      document.body.appendChild(link);
+      // Trigger download
       link.click();
+      console.log("Download initiated successfully");
 
     } catch (error) {
+      console.error("Download setup error:", error);
       reject(new Error(`Download setup failed: ${error.message}`));
     }
   });
