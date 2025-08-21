@@ -428,7 +428,7 @@ genBtn.onclick = async () => {
       
       if (successCount > 0) {
         const blob = await zip.generateAsync({type:"blob"});
-        triggerDownload(blob, "sigils.zip");
+        downloadFile(blob, "sigils.zip");
         toast(`✨ ${successCount} sigils ready for download!`, 'success', 4000);
       } else {
         toast("❌ Failed to generate batch sigils", 'error');
@@ -459,8 +459,6 @@ downloadBtn.onclick = async () => {
   console.log("Download button clicked");
 
   try {
-    showLoading("Preparing download...");
-
     const userIsPro = await isUserPro();
     const seed = Number(seedInput.value) || 0;
 
@@ -474,286 +472,78 @@ downloadBtn.onclick = async () => {
     console.log("Image available for download, size:", lastGeneratedImage.length);
 
     if (userIsPro && exportType.value === "svg") {
+      // SVG Download
       console.log("Downloading as SVG");
       const svg = buildSvg(seed, 2048);
       const blob = new Blob([svg], {type:"image/svg+xml"});
-
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
       const filename = `quantum_sigil_${timestamp}.svg`;
-
-      triggerDownload(blob, filename);
+      downloadFile(blob, filename);
       toast("✨ SVG sigil downloaded!", 'success');
-
     } else {
+      // PNG Download
       console.log("Downloading as PNG");
-
-      // Validate image data first
-      if (!lastGeneratedImage || typeof lastGeneratedImage !== 'string') {
-        console.error("Invalid image data:", typeof lastGeneratedImage);
-        toast("❌ No valid image data available", 'error');
-        return;
-      }
-
+      
       // Ensure proper data URL format
       let dataURL = lastGeneratedImage;
       if (!dataURL.startsWith('data:image/')) {
-        console.log("Adding data URL prefix to image data");
         dataURL = `data:image/png;base64,${lastGeneratedImage}`;
       }
 
-      try {
-        // Convert the base64 data to blob using the fixed method
-        const blob = dataURLtoBlob(dataURL);
-        
-        if (!blob || blob.size === 0) {
-          throw new Error("Generated blob is empty or invalid");
-        }
-        
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
-        const filename = `quantum_sigil_${timestamp}.png`;
-
-        console.log("Created blob for download:", {
-          filename,
-          size: blob.size,
-          type: blob.type
-        });
-
-        triggerDownload(blob, filename);
-        toast("✨ Quantum Sigil downloaded successfully!", 'success');
-
-      } catch (error) {
-        console.error("Primary download failed, trying fallback:", error);
-        
-        // Fallback: use canvas download
-        if (canvas && canvas.width > 0 && canvas.height > 0) {
-          try {
-            canvas.toBlob((blob) => {
-              if (blob && blob.size > 0) {
-                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
-                const filename = `quantum_sigil_canvas_${timestamp}.png`;
-                triggerDownload(blob, filename);
-                toast("✨ Sigil downloaded via canvas!", 'success');
-              } else {
-                console.error("Canvas blob is empty or null");
-                toast("❌ Canvas download failed - please regenerate the sigil", 'error');
-              }
-            }, 'image/png', 1.0);
-          } catch (canvasError) {
-            console.error("Canvas download error:", canvasError);
-            toast("❌ Download failed - please regenerate the sigil", 'error');
-          }
-        } else {
-          console.error("Canvas not available for fallback");
-          toast("❌ Download failed - please regenerate the sigil", 'error');
-        }
+      // Use modern fetch API for reliable conversion
+      const response = await fetch(dataURL);
+      const blob = await response.blob();
+      
+      if (blob.size === 0) {
+        throw new Error("Generated blob is empty");
       }
+      
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+      const filename = `quantum_sigil_${timestamp}.png`;
+
+      console.log("Created blob for download:", {
+        filename,
+        size: blob.size,
+        type: blob.type
+      });
+
+      downloadFile(blob, filename);
+      toast("✨ Quantum Sigil downloaded successfully!", 'success');
     }
 
   } catch (error) {
     console.error("Download error:", error);
-    toast(`❌ Download failed: ${error.message}`, 'error', 5000);
-  } finally {
-    hideLoading();
+    toast(`❌ Download failed: ${error.message}`, 'error');
   }
 };
 
-// Enhanced blob conversion with better error handling
-async function dataURLToBlobAsync(dataURL) {
-  return new Promise((resolve, reject) => {
-    try {
-      console.log("Converting data URL to blob, length:", dataURL.length);
-      
-      const arr = dataURL.split(',');
-      if (arr.length !== 2) {
-        throw new Error("Invalid data URL format - missing comma separator");
-      }
-
-      const header = arr[0];
-      const base64Data = arr[1];
-      
-      if (!base64Data || base64Data.length === 0) {
-        throw new Error("No base64 data found");
-      }
-
-      const mimeMatch = header.match(/:(.*?);/) || header.match(/:(.*?)$/);
-      const mime = mimeMatch ? mimeMatch[1] : 'image/png';
-      
-      console.log("Detected MIME type:", mime);
-      
-      const bstr = atob(base64Data);
-      let n = bstr.length;
-      const u8 = new Uint8Array(n);
-
-      while(n--) {
-        u8[n] = bstr.charCodeAt(n);
-      }
-
-      const blob = new Blob([u8], {type: mime});
-      console.log("Blob created successfully, size:", blob.size, "type:", blob.type);
-      resolve(blob);
-
-    } catch (error) {
-      console.error("Data URL conversion error:", error);
-      reject(new Error(`Data URL conversion failed: ${error.message}`));
-    }
-  });
+// Simple, reliable download function
+function downloadFile(blob, filename) {
+  console.log("Starting download:", filename, "size:", blob.size);
+  
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  
+  link.href = url;
+  link.download = filename;
+  link.style.display = 'none';
+  
+  // Add to DOM, click, and clean up
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  // Clean up URL after a short delay
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 1000);
+  
+  console.log("Download initiated successfully");
 }
 
-// Enhanced download function with better error handling
-async function downloadBlob(blob, filename) {
-  return new Promise((resolve, reject) => {
-    try {
-      console.log("Setting up download for:", filename, "blob size:", blob.size);
-      
-      if (!blob || blob.size === 0) {
-        throw new Error("Invalid or empty blob");
-      }
-
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-
-      link.href = url;
-      link.download = filename;
-      link.style.display = 'none';
-
-      // Add to DOM first for better browser compatibility
-      document.body.appendChild(link);
-
-      // Handle download completion
-      const cleanup = () => {
-        try {
-          URL.revokeObjectURL(url);
-          if (document.body.contains(link)) {
-            document.body.removeChild(link);
-          }
-        } catch (e) {
-          console.warn("Cleanup error:", e);
-        }
-      };
-
-      link.addEventListener('click', () => {
-        setTimeout(() => {
-          cleanup();
-          resolve();
-        }, 1000);
-      });
-
-      // Handle download errors
-      link.addEventListener('error', (event) => {
-        cleanup();
-        reject(new Error('Download link failed'));
-      });
-
-      // Trigger download
-      link.click();
-      console.log("Download initiated successfully");
-
-    } catch (error) {
-      console.error("Download setup error:", error);
-      reject(new Error(`Download setup failed: ${error.message}`));
-    }
-  });
-}
-
-// Legacy download function for batch downloads
+// Legacy download function for batch downloads (simplified)
 function triggerDownload(blob, filename) {
-  try {
-    console.log("Triggering download:", filename, "blob size:", blob.size);
-    const a = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a); // Add to DOM for Firefox compatibility
-    a.click();
-    document.body.removeChild(a); // Remove from DOM
-
-    // Clean up after a delay to ensure download starts
-    setTimeout(() => {
-      URL.revokeObjectURL(url);
-    }, 1000);
-
-    console.log("Download triggered successfully");
-  } catch (error) {
-    console.error("Download failed:", error);
-    toast("Download failed: " + error.message);
-  }
-}
-
-// Legacy blob conversion (kept for batch functionality)
-function dataURLtoBlob(dataURL){
-  try {
-    const arr = dataURL.split(",");
-    if (arr.length !== 2) {
-      throw new Error("Invalid data URL format");
-    }
-    
-    // More robust MIME type extraction
-    const mimeMatch = arr[0].match(/:(.*?);/);
-    const mime = mimeMatch ? mimeMatch[1] : 'image/png';
-    
-    const bstr = atob(arr[1]); 
-    let n = bstr.length; 
-    const u8 = new Uint8Array(n);
-    while(n--) u8[n] = bstr.charCodeAt(n);
-    return new Blob([u8], {type:mime});
-  } catch (error) {
-    console.error("dataURLtoBlob error:", error);
-    throw new Error(`Failed to convert data URL to blob: ${error.message}`);
-  }
-}
-
-// ---- downloadPNG function ----
-function downloadPNG() {
-  if (!lastGeneratedImage) {
-    toast("No image to download");
-    return;
-  }
-
-  try {
-    console.log("Image available for download, size:", lastGeneratedImage.length);
-    console.log("Downloading as PNG");
-
-    // More robust base64 to blob conversion
-    const response = lastGeneratedImage.startsWith('data:') ? lastGeneratedImage : `data:image/png;base64,${lastGeneratedImage}`;
-
-    fetch(response)
-      .then(res => res.blob())
-      .then(blob => {
-        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-        const filename = `quantum_sigil_${timestamp}.png`;
-
-        console.log("Triggering download:", filename, "blob size:", blob.size);
-        triggerDownload(blob, filename);
-        toast("Downloaded PNG");
-      })
-      .catch(error => {
-        console.error("PNG download error:", error);
-
-        // Fallback method
-        try {
-          const base64Data = lastGeneratedImage.includes(',') ? lastGeneratedImage.split(",")[1] : lastGeneratedImage;
-          const byteCharacters = atob(base64Data);
-          const byteNumbers = new Array(byteCharacters.length);
-          for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-          }
-          const byteArray = new Uint8Array(byteNumbers);
-          const blob = new Blob([byteArray], { type: "image/png" });
-
-          const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-          const filename = `quantum_sigil_${timestamp}.png`;
-
-          triggerDownload(blob, filename);
-          toast("Downloaded PNG (fallback method)");
-        } catch (fallbackError) {
-          console.error("Fallback download failed:", fallbackError);
-          toast("Download failed - please try again");
-        }
-      });
-  } catch (error) {
-    console.error("PNG download error:", error);
-    toast("Download failed");
-  }
+  downloadFile(blob, filename);
 }
 
 // -------- Stripe Checkout --------
