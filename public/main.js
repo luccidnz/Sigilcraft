@@ -254,12 +254,15 @@ async function renderSigil(phrase = "default", vibe = "mystical", retryCount = 0
       };
       img.onerror = () => {
         console.error("Failed to load generated image");
-        toast("Failed to display generated image");
+        toast("Failed to display generated image", 'error');
       };
       img.src = data.image;
       return data;
     } else {
-      throw new Error(data.error || "Generation failed - no image data received");
+      return {
+        success: false,
+        error: data.error || "Generation failed - no image data received"
+      };
     }
   } catch (error) {
     console.error("Sigil generation error:", error);
@@ -277,7 +280,12 @@ async function renderSigil(phrase = "default", vibe = "mystical", retryCount = 0
       return renderSigil(phrase, vibe, retryCount + 1);
     }
 
-    throw error; // Re-throw if not a retryable error or max retries reached
+    // Don't re-throw the error, return a structured error response instead
+    return {
+      success: false,
+      error: error.message || 'Generation failed',
+      retryable: false
+    };
   }
 }
 
@@ -403,14 +411,14 @@ genBtn.onclick = async () => {
         try {
           showLoading(`Creating sigil ${i + 1} of 5...`);
           const batchPhrase = `${phrase} variant ${i + 1}`;
-          const data = await renderSigil(batchPhrase, vibe);
+          const result = await renderSigil(batchPhrase, vibe);
           
-          if (data && data.image) {
-            const base64Data = data.image.includes(',') ? data.image.split(",")[1] : data.image;
+          if (result && result.success && result.image) {
+            const base64Data = result.image.includes(',') ? result.image.split(",")[1] : result.image;
             zip.file(`sigil_${i+1}.png`, base64Data, {base64: true});
             successCount++;
           } else {
-            console.warn(`Failed to generate sigil ${i + 1}`);
+            console.warn(`Failed to generate sigil ${i + 1}:`, result?.error || 'Unknown error');
           }
         } catch (error) {
           console.error(`Error generating sigil ${i + 1}:`, error);
@@ -427,12 +435,18 @@ genBtn.onclick = async () => {
       }
     } else {
       // single
-      await renderSigil(phrase, vibe);
-      toast("✨ Quantum sigil generated successfully!", 'success', 3000);
+      const result = await renderSigil(phrase, vibe);
+      
+      if (result && result.success) {
+        toast("✨ Quantum sigil generated successfully!", 'success', 3000);
+      } else {
+        const errorMsg = result?.error || 'Unknown generation error';
+        toast(`❌ Generation failed: ${errorMsg}`, 'error', 5000);
+      }
     }
   } catch (error) {
     console.error("Generation process error:", error);
-    toast(`❌ Generation failed: ${error.message}`, 'error', 5000);
+    toast(`❌ Generation failed: ${error.message || 'Unknown error'}`, 'error', 5000);
   } finally {
     hideLoading();
     genBtn.disabled = false;
