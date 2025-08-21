@@ -481,34 +481,33 @@ downloadBtn.onclick = async () => {
       downloadFile(blob, filename);
       toast("✨ SVG sigil downloaded!", 'success');
     } else {
-      // PNG Download
-      console.log("Downloading as PNG");
+      // PNG Download - use canvas directly for most reliable download
+      console.log("Downloading as PNG via canvas");
       
-      // Ensure proper data URL format
-      let dataURL = lastGeneratedImage;
-      if (!dataURL.startsWith('data:image/')) {
-        dataURL = `data:image/png;base64,${lastGeneratedImage}`;
+      if (!canvas || canvas.width === 0 || canvas.height === 0) {
+        throw new Error("Canvas not available for download");
       }
 
-      // Use modern fetch API for reliable conversion
-      const response = await fetch(dataURL);
-      const blob = await response.blob();
-      
-      if (blob.size === 0) {
-        throw new Error("Generated blob is empty");
-      }
-      
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
-      const filename = `quantum_sigil_${timestamp}.png`;
+      // Convert canvas to blob
+      canvas.toBlob((blob) => {
+        if (!blob || blob.size === 0) {
+          console.error("Canvas produced empty blob");
+          toast("❌ Download failed - please regenerate the sigil", 'error');
+          return;
+        }
 
-      console.log("Created blob for download:", {
-        filename,
-        size: blob.size,
-        type: blob.type
-      });
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+        const filename = `quantum_sigil_${timestamp}.png`;
 
-      downloadFile(blob, filename);
-      toast("✨ Quantum Sigil downloaded successfully!", 'success');
+        console.log("Created canvas blob for download:", {
+          filename,
+          size: blob.size,
+          type: blob.type
+        });
+
+        downloadFile(blob, filename);
+        toast("✨ Quantum Sigil downloaded successfully!", 'success');
+      }, 'image/png', 1.0);
     }
 
   } catch (error) {
@@ -521,27 +520,30 @@ downloadBtn.onclick = async () => {
 function downloadFile(blob, filename) {
   console.log("Starting download:", filename, "size:", blob.size);
   
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  
-  link.href = url;
-  link.download = filename;
-  link.style.display = 'none';
-  
-  // Add to DOM, click, and clean up
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  
-  // Clean up URL after a short delay
-  setTimeout(() => {
+  try {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    
+    link.href = url;
+    link.download = filename;
+    link.style.display = 'none';
+    
+    // Add to DOM, click, and clean up immediately
+    document.body.appendChild(link);
+    link.click();
+    
+    // Clean up immediately
+    document.body.removeChild(link);
     URL.revokeObjectURL(url);
-  }, 1000);
-  
-  console.log("Download initiated successfully");
+    
+    console.log("Download completed successfully");
+  } catch (error) {
+    console.error("Download file error:", error);
+    throw error;
+  }
 }
 
-// Legacy download function for batch downloads (simplified)
+// Legacy download function for batch downloads
 function triggerDownload(blob, filename) {
   downloadFile(blob, filename);
 }
