@@ -1574,14 +1574,32 @@ def generate():
 
 
 if __name__ == "__main__":
-    print("Starting Flask sigil generation server on port 5001...")
     import os
-
+    import socket
+    
+    # Find available port starting from 5001
+    def find_available_port(start_port=5001):
+        for port in range(start_port, start_port + 10):
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.bind(('0.0.0.0', port))
+                    return port
+            except OSError:
+                continue
+        return None
+    
+    port = find_available_port()
+    if not port:
+        print("❌ No available ports found in range 5001-5010")
+        exit(1)
+    
+    print(f"Starting Flask sigil generation server on port {port}...")
+    
     # Use production WSGI server
     try:
         from waitress import serve
         print("✅ Using Waitress production server...")
-        serve(app, host="0.0.0.0", port=5001, 
+        serve(app, host="0.0.0.0", port=port, 
               threads=8, 
               connection_limit=200, 
               cleanup_interval=30,
@@ -1593,7 +1611,7 @@ if __name__ == "__main__":
             subprocess.check_call(['pip', 'install', 'waitress'])
             from waitress import serve
             print("✅ Waitress installed and ready...")
-            serve(app, host="0.0.0.0", port=5001, 
+            serve(app, host="0.0.0.0", port=port, 
                   threads=8, 
                   connection_limit=200, 
                   cleanup_interval=30,
@@ -1601,4 +1619,20 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"❌ Could not install Waitress: {e}")
             print("Using development server as fallback...")
-            app.run(host="0.0.0.0", port=5001, debug=False, threaded=True)
+            app.run(host="0.0.0.0", port=port, debug=False, threaded=True)
+    except OSError as e:
+        if "Address already in use" in str(e):
+            print(f"❌ Port {port} still in use, trying Flask dev server...")
+            try:
+                app.run(host="0.0.0.0", port=port, debug=False, threaded=True)
+            except OSError:
+                # Try one more port
+                port = find_available_port(port + 1)
+                if port:
+                    print(f"🔄 Retrying on port {port}...")
+                    app.run(host="0.0.0.0", port=port, debug=False, threaded=True)
+                else:
+                    print("❌ Could not find available port")
+                    exit(1)
+        else:
+            raise

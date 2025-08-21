@@ -25,11 +25,7 @@ mode = "parallel"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "FLASK_ENV=production python main.py"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node server.js"
+args = "python start_servers.py"
 
 [[ports]]
 localPort = 3000

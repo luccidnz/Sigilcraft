@@ -11,7 +11,19 @@ import sys
 
 # Test configuration
 NODE_URL = 'http://localhost:5000'
-FLASK_URL = 'http://localhost:5001'
+FLASK_PORTS = [5001, 5002, 5003, 5004, 5005]
+
+def get_flask_url():
+    """Find the active Flask port"""
+    for port in FLASK_PORTS:
+        try:
+            import requests
+            response = requests.get(f'http://localhost:{port}/health', timeout=2)
+            if response.status_code == 200:
+                return f'http://localhost:{port}'
+        except:
+            continue
+    return None
 
 def test_vibe_combinations():
     """Test that multiple vibe combinations work correctly"""
@@ -108,18 +120,23 @@ def test_server_health():
         print(f"  ❌ Node.js health check error: {e}")
         node_healthy = False
     
-    try:
-        # Test Flask health
-        response = requests.get(f'{FLASK_URL}/health', timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            print(f"  ✅ Flask health check: {data.get('status', 'unknown')}")
-            flask_healthy = True
-        else:
-            print(f"  ❌ Flask health check failed: {response.status_code}")
+    # Test Flask health with dynamic port detection
+    flask_url = get_flask_url()
+    if flask_url:
+        try:
+            response = requests.get(f'{flask_url}/health', timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                print(f"  ✅ Flask health check: {data.get('status', 'unknown')} on {flask_url}")
+                flask_healthy = True
+            else:
+                print(f"  ❌ Flask health check failed: {response.status_code}")
+                flask_healthy = False
+        except Exception as e:
+            print(f"  ❌ Flask health check error: {e}")
             flask_healthy = False
-    except Exception as e:
-        print(f"  ❌ Flask health check error: {e}")
+    else:
+        print(f"  ❌ Flask server not found on any port")
         flask_healthy = False
     
     return node_healthy and flask_healthy

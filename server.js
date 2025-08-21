@@ -242,9 +242,21 @@ app.get("/api/health", async (req, res) => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
     
-    const flaskResponse = await fetch("http://127.0.0.1:5001/health", { 
-      signal: controller.signal 
-    });
+    // Try multiple Flask ports
+    let flaskHealthy = false;
+    for (const port of [5001, 5002, 5003, 5004, 5005]) {
+      try {
+        const flaskResponse = await fetch(`http://127.0.0.1:${port}/health`, { 
+          signal: controller.signal 
+        });
+        if (flaskResponse.ok) {
+          flaskHealthy = true;
+          break;
+        }
+      } catch (e) {
+        continue;
+      }
+    }
     clearTimeout(timeoutId);
     
     const flaskHealthy = flaskResponse.ok;
@@ -281,17 +293,36 @@ app.post("/generate", generationLimiter, async (req, res) => {
     const timeoutDuration = isComplexRequest ? 60000 : 45000;
     const timeoutId = setTimeout(() => controller.abort(), timeoutDuration);
 
-    const response = await fetch("http://127.0.0.1:5001/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "User-Agent": "Sigilcraft-Proxy/1.0",
-        "Connection": "keep-alive"
-      },
-      body: JSON.stringify(req.body),
-      signal: controller.signal
-    });
+    // Try multiple Flask ports for generation
+    let response = null;
+    let lastError = null;
+    
+    for (const port of [5001, 5002, 5003, 5004, 5005]) {
+      try {
+        response = await fetch(`http://127.0.0.1:${port}/generate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "Sigilcraft-Proxy/1.0",
+            "Connection": "keep-alive"
+          },
+          body: JSON.stringify(req.body),
+          signal: controller.signal
+        });
+        
+        if (response.ok) {
+          break;
+        }
+      } catch (error) {
+        lastError = error;
+        continue;
+      }
+    }
+    
+    if (!response) {
+      throw lastError || new Error("Flask backend not available on any port");
+    }
 
     clearTimeout(timeoutId);
 
