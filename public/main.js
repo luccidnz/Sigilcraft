@@ -487,10 +487,27 @@ downloadBtn.onclick = async () => {
     } else {
       console.log("Downloading as PNG");
 
-      // Simple and reliable PNG download using the existing triggerDownload function
+      // Validate image data first
+      if (!lastGeneratedImage || typeof lastGeneratedImage !== 'string') {
+        console.error("Invalid image data:", typeof lastGeneratedImage);
+        toast("❌ No valid image data available", 'error');
+        return;
+      }
+
+      // Ensure proper data URL format
+      let dataURL = lastGeneratedImage;
+      if (!dataURL.startsWith('data:image/')) {
+        console.log("Adding data URL prefix to image data");
+        dataURL = `data:image/png;base64,${lastGeneratedImage}`;
+      }
+
       try {
-        // Convert the base64 data to blob using the simpler method
-        const blob = dataURLtoBlob(lastGeneratedImage);
+        // Convert the base64 data to blob using the fixed method
+        const blob = dataURLtoBlob(dataURL);
+        
+        if (!blob || blob.size === 0) {
+          throw new Error("Generated blob is empty or invalid");
+        }
         
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
         const filename = `quantum_sigil_${timestamp}.png`;
@@ -509,17 +526,24 @@ downloadBtn.onclick = async () => {
         
         // Fallback: use canvas download
         if (canvas && canvas.width > 0 && canvas.height > 0) {
-          canvas.toBlob((blob) => {
-            if (blob) {
-              const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
-              const filename = `quantum_sigil_canvas_${timestamp}.png`;
-              triggerDownload(blob, filename);
-              toast("✨ Sigil downloaded via canvas!", 'success');
-            } else {
-              toast("❌ Download failed - please regenerate the sigil", 'error');
-            }
-          }, 'image/png', 1.0);
+          try {
+            canvas.toBlob((blob) => {
+              if (blob && blob.size > 0) {
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+                const filename = `quantum_sigil_canvas_${timestamp}.png`;
+                triggerDownload(blob, filename);
+                toast("✨ Sigil downloaded via canvas!", 'success');
+              } else {
+                console.error("Canvas blob is empty or null");
+                toast("❌ Canvas download failed - please regenerate the sigil", 'error');
+              }
+            }, 'image/png', 1.0);
+          } catch (canvasError) {
+            console.error("Canvas download error:", canvasError);
+            toast("❌ Download failed - please regenerate the sigil", 'error');
+          }
         } else {
+          console.error("Canvas not available for fallback");
           toast("❌ Download failed - please regenerate the sigil", 'error');
         }
       }
@@ -657,10 +681,25 @@ function triggerDownload(blob, filename) {
 
 // Legacy blob conversion (kept for batch functionality)
 function dataURLtoBlob(dataURL){
-  const arr = dataURL.split(","), mime = arr[0].match(/:(.*?);/)[1];
-  const bstr = atob(arr[1]); let n = bstr.length; const u8 = new Uint8Array(n);
-  while(n--) u8[n] = bstr.charCodeAt(n);
-  return new Blob([u8], {type:mime});
+  try {
+    const arr = dataURL.split(",");
+    if (arr.length !== 2) {
+      throw new Error("Invalid data URL format");
+    }
+    
+    // More robust MIME type extraction
+    const mimeMatch = arr[0].match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+    
+    const bstr = atob(arr[1]); 
+    let n = bstr.length; 
+    const u8 = new Uint8Array(n);
+    while(n--) u8[n] = bstr.charCodeAt(n);
+    return new Blob([u8], {type:mime});
+  } catch (error) {
+    console.error("dataURLtoBlob error:", error);
+    throw new Error(`Failed to convert data URL to blob: ${error.message}`);
+  }
 }
 
 // ---- downloadPNG function ----
