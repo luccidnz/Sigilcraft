@@ -44,7 +44,7 @@ async function isUserPro() {
 let toastTimer;
 function toast(msg, type = 'info', duration = 3000) {
   toastEl.textContent = msg;
-  toastEl.className = 'show';
+  toastEl.className = 'toast show';
 
   // Remove existing type classes
   toastEl.classList.remove('error', 'success', 'warning', 'info');
@@ -54,14 +54,55 @@ function toast(msg, type = 'info', duration = 3000) {
     toastEl.classList.add(type);
   }
 
+  // Add sound effect for different types
+  playNotificationSound(type);
+
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => {
     toastEl.classList.remove('show');
     setTimeout(() => {
-      toastEl.style.display = "none";
-      toastEl.className = '';
+      toastEl.className = 'toast';
     }, 300);
   }, duration);
+}
+
+// Sound effects for better UX
+function playNotificationSound(type) {
+  // Create audio context for web audio
+  try {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    // Different frequencies for different notification types
+    switch(type) {
+      case 'success':
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+        oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.1);
+        break;
+      case 'error':
+        oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+        oscillator.frequency.setValueAtTime(200, audioContext.currentTime + 0.1);
+        break;
+      case 'warning':
+        oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+        break;
+      default:
+        oscillator.frequency.setValueAtTime(500, audioContext.currentTime);
+    }
+
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2);
+
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.2);
+  } catch (e) {
+    // Fallback - silent operation if audio context fails
+  }
 }
 
 // Loading spinner utilities
@@ -90,7 +131,7 @@ async function renderEnergies() {
     div.textContent = name;
     div.onclick = () => {
       if (!allowed.includes(name)) { toast("Pro feature"); return; }
-      
+
       // Always clear and rebuild selection to ensure consistency
       if (!comboToggle.checked) {
         // Single selection mode - replace current selection
@@ -107,7 +148,7 @@ async function renderEnergies() {
           selectedEnergies = [...selectedEnergies, name];
         }
       }
-      
+
       console.log("Selected energies:", selectedEnergies);
       highlightSelection();
     };
@@ -406,13 +447,13 @@ genBtn.onclick = async () => {
 
       const zip = new JSZip();
       let successCount = 0;
-      
+
       for (let i = 0; i < 5; i++){
         try {
           showLoading(`Creating sigil ${i + 1} of 5...`);
           const batchPhrase = `${phrase} variant ${i + 1}`;
           const result = await renderSigil(batchPhrase, vibe);
-          
+
           if (result && result.success && result.image) {
             const base64Data = result.image.includes(',') ? result.image.split(",")[1] : result.image;
             zip.file(`sigil_${i+1}.png`, base64Data, {base64: true});
@@ -425,7 +466,7 @@ genBtn.onclick = async () => {
           // Continue with other sigils even if one fails
         }
       }
-      
+
       if (successCount > 0) {
         const blob = await zip.generateAsync({type:"blob"});
         downloadFile(blob, "sigils.zip");
@@ -436,7 +477,7 @@ genBtn.onclick = async () => {
     } else {
       // single
       const result = await renderSigil(phrase, vibe);
-      
+
       if (result && result.success) {
         toast("✨ Quantum sigil generated successfully!", 'success', 3000);
       } else {
@@ -483,7 +524,7 @@ downloadBtn.onclick = async () => {
     } else {
       // PNG Download - use canvas directly for most reliable download
       console.log("Downloading as PNG via canvas");
-      
+
       if (!canvas || canvas.width === 0 || canvas.height === 0) {
         throw new Error("Canvas not available for download");
       }
@@ -519,23 +560,23 @@ downloadBtn.onclick = async () => {
 // Simple, reliable download function
 function downloadFile(blob, filename) {
   console.log("Starting download:", filename, "size:", blob.size);
-  
+
   try {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    
+
     link.href = url;
     link.download = filename;
     link.style.display = 'none';
-    
+
     // Add to DOM, click, and clean up immediately
     document.body.appendChild(link);
     link.click();
-    
+
     // Clean up immediately
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    
+
     console.log("Download completed successfully");
   } catch (error) {
     console.error("Download file error:", error);
