@@ -12,6 +12,7 @@ import signal
 import os
 import socket
 from threading import Thread
+import json
 
 def find_available_port(start_port=5001):
     """Find an available port starting from start_port"""
@@ -28,16 +29,17 @@ def is_port_in_use(port):
     """Check if a port is already in use"""
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.bind(('0.0.0.0', port))
-            return False
-    except OSError:
-        return True
+            s.settimeout(1)
+            result = s.connect_ex(('127.0.0.1', port))
+            return result == 0
+    except:
+        return False
 
 def kill_process_on_port(port):
     """Kill any process using the specified port"""
     try:
         if os.name == 'posix':  # Linux/Unix
-            subprocess.run(['pkill', '-f', f':{port}'], capture_output=True)
+            subprocess.run(['fuser', '-k', f'{port}/tcp'], capture_output=True, timeout=5)
             time.sleep(1)
     except:
         pass
@@ -54,9 +56,14 @@ def start_flask_server():
     
     time.sleep(2)  # Wait for cleanup
     
+    # Set environment variables for Flask
+    env = os.environ.copy()
+    env['FLASK_ENV'] = 'production'
+    env['PYTHONUNBUFFERED'] = '1'
+    
     flask_process = subprocess.Popen([
         sys.executable, 'main.py'
-    ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True, env=env)
     
     return flask_process
 
@@ -70,9 +77,19 @@ def start_node_server():
         kill_process_on_port(5000)
         time.sleep(2)
     
+    # Check if node_modules exists
+    if not os.path.exists('node_modules'):
+        print("📦 Installing Node.js dependencies...")
+        subprocess.run(['npm', 'install'], check=True)
+    
+    # Set environment variables for Node.js
+    env = os.environ.copy()
+    if not env.get('PRO_KEY'):
+        env['PRO_KEY'] = 'changeme_super_secret'
+    
     node_process = subprocess.Popen([
         'node', 'server.js'
-    ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True, env=env)
     
     return node_process
 
@@ -100,26 +117,34 @@ def main():
     print("🚀 Starting Sigilcraft servers...")
     print("=" * 50)
     
+    # Create .env file if it doesn't exist
+    if not os.path.exists('.env'):
+        print("📝 Creating .env file...")
+        with open('.env', 'w') as f:
+            f.write('PRO_KEY=changeme_super_secret\n')
+            f.write('NODE_ENV=production\n')
+    
     # Start Flask server first
     flask_process = start_flask_server()
     
     # Wait for Flask to start
     print("⏳ Waiting for Flask server to initialize...")
-    time.sleep(5)
-    
-    # Check Flask status
-    flask_running = False
-    for port in range(5001, 5010):
-        if is_port_in_use(port):
-            print(f"✅ Flask server detected on port {port}")
-            flask_running = True
+    flask_ready = False
+    for attempt in range(30):  # Wait up to 30 seconds
+        time.sleep(1)
+        for port in range(5001, 5010):
+            if is_port_in_use(port):
+                print(f"✅ Flask server detected on port {port}")
+                flask_ready = True
+                break
+        if flask_ready:
             break
     
-    if not flask_running:
+    if not flask_ready:
         print("❌ Flask server failed to start")
         # Print Flask output for debugging
         if flask_process.poll() is not None:
-            output = flask_process.stdout.read()
+            output, _ = flask_process.communicate(timeout=5)
             print(f"Flask output: {output}")
         return 1
     
@@ -128,12 +153,23 @@ def main():
     
     # Wait for Node.js to start
     print("⏳ Waiting for Node.js server to initialize...")
-    time.sleep(3)
+    node_ready = False
+    for attempt in range(20):  # Wait up to 20 seconds
+        time.sleep(1)
+        if is_port_in_use(5000):
+            print("✅ Node.js server detected on port 5000")
+            node_ready = True
+            break
     
-    if is_port_in_use(5000):
-        print("✅ Node.js server detected on port 5000")
-    else:
+    if not node_ready:
         print("❌ Node.js server failed to start")
+        # Print Node output for debugging
+        if node_process.poll() is not None:
+            try:
+                output, _ = node_process.communicate(timeout=5)
+                print(f"Node.js output: {output}")
+            except:
+                pass
         return 1
     
     print("=" * 50)
@@ -164,7 +200,7 @@ def main():
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
     
-    # Monitor both processes
+    # Monitor both processes in the background
     flask_thread = Thread(target=monitor_process, args=(flask_process, "FLASK"))
     node_thread = Thread(target=monitor_process, args=(node_process, "NODE"))
     
@@ -174,7 +210,7 @@ def main():
     flask_thread.start()
     node_thread.start()
     
-    # Keep main thread alive
+    # Keep main thread alive and monitor process health
     try:
         while True:
             if flask_process.poll() is not None:

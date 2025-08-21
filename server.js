@@ -9,7 +9,8 @@ import dotenv from "dotenv";
 import compression from "compression";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
-import crypto from 'crypto'; // Import crypto module
+import { webcrypto } from 'crypto';
+import crypto from 'crypto';
 
 dotenv.config();
 
@@ -140,8 +141,7 @@ function saveKeys(list) { fs.writeFileSync(KEYS_FILE, JSON.stringify(list, null,
 function addKey(entry) { const list = loadKeys(); list.push(entry); saveKeys(list); }
 function hasKey(k) { return !!loadKeys().find(x => x.key === k); }
 function makeKey() {
-  return [...crypto.getRandomValues(new Uint8Array(24))]
-    .map(b => b.toString(16).padStart(2, "0")).join("");
+  return crypto.randomBytes(24).toString('hex');
 }
 
 // -------- Email helpers
@@ -259,7 +259,7 @@ app.get("/api/health", async (req, res) => {
     }
     clearTimeout(timeoutId);
     
-    const flaskHealthy = flaskResponse.ok;
+    clearTimeout(timeoutId);
     
     res.json({
       status: "healthy",

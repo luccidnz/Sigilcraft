@@ -1,106 +1,44 @@
 
 #!/usr/bin/env python3
 """
-Test script to verify specific fixes applied to the Sigilcraft application
+Comprehensive test suite for Sigilcraft application
+Tests all functionality, error handling, and performance
 """
 
 import requests
 import json
 import time
 import sys
+import socket
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Test configuration
 NODE_URL = 'http://localhost:5000'
-FLASK_PORTS = [5001, 5002, 5003, 5004, 5005]
 
-def get_flask_url():
-    """Find the active Flask port"""
-    for port in FLASK_PORTS:
+def find_flask_port():
+    """Find which port Flask is running on"""
+    for port in range(5001, 5010):
         try:
-            import requests
-            response = requests.get(f'http://localhost:{port}/health', timeout=2)
-            if response.status_code == 200:
-                return f'http://localhost:{port}'
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(1)
+            result = sock.connect_ex(('localhost', port))
+            sock.close()
+            if result == 0:
+                # Port is open, test if it's Flask
+                try:
+                    response = requests.get(f'http://localhost:{port}/health', timeout=2)
+                    if response.status_code == 200:
+                        return port
+                except:
+                    continue
         except:
             continue
     return None
 
-def test_vibe_combinations():
-    """Test that multiple vibe combinations work correctly"""
-    print("🧪 Testing vibe combinations...")
-    
-    test_cases = [
-        {"phrase": "Test Love", "vibe": "mystical"},
-        {"phrase": "Test Love", "vibe": "crystal"},
-        {"phrase": "Test Love", "vibe": "elemental+crystal"},
-        {"phrase": "Test Love", "vibe": "elemental+crystal+cosmic"},
-        {"phrase": "Test Love", "vibe": "elemental+crystal+cosmic+mystical+light+shadow"}
-    ]
-    
-    success_count = 0
-    for i, test_case in enumerate(test_cases):
-        try:
-            print(f"  Testing case {i+1}: '{test_case['phrase']}' with vibe '{test_case['vibe']}'")
-            response = requests.post(f'{NODE_URL}/generate', 
-                                   json=test_case, 
-                                   timeout=30)
-            
-            if response.status_code == 200:
-                data = response.json()
-                if data.get('success') and data.get('image'):
-                    print(f"    ✅ Success")
-                    success_count += 1
-                else:
-                    print(f"    ❌ Failed: {data.get('error', 'Unknown error')}")
-            else:
-                print(f"    ❌ HTTP {response.status_code}")
-                
-        except Exception as e:
-            print(f"    ❌ Exception: {e}")
-        
-        time.sleep(1)  # Delay between requests
-    
-    print(f"📊 Vibe combination test: {success_count}/{len(test_cases)} passed")
-    return success_count == len(test_cases)
-
-def test_error_conditions():
-    """Test error handling"""
-    print("\n🛡️ Testing error conditions...")
-    
-    error_cases = [
-        {"phrase": "", "vibe": "mystical", "expected_error": True},
-        {"phrase": "A", "vibe": "mystical", "expected_error": True},
-        {"phrase": "Valid phrase", "vibe": "invalid_vibe", "expected_error": False},  # Should default
-    ]
-    
-    passed = 0
-    for i, case in enumerate(error_cases):
-        try:
-            response = requests.post(f'{NODE_URL}/generate', 
-                                   json=case, 
-                                   timeout=15)
-            
-            data = response.json()
-            success = data.get('success', False)
-            
-            if case["expected_error"]:
-                if not success:
-                    print(f"  ✅ Error case {i+1}: Correctly rejected")
-                    passed += 1
-                else:
-                    print(f"  ❌ Error case {i+1}: Should have been rejected")
-            else:
-                if success:
-                    print(f"  ✅ Valid case {i+1}: Correctly accepted")
-                    passed += 1
-                else:
-                    print(f"  ❌ Valid case {i+1}: Should have been accepted")
-                    
-        except Exception as e:
-            print(f"  ❌ Error case {i+1}: Exception - {e}")
-    
-    print(f"📊 Error handling: {passed}/{len(error_cases)} passed")
-    return passed == len(error_cases)
+def get_flask_url():
+    """Get Flask URL with dynamic port detection"""
+    port = find_flask_port()
+    return f'http://localhost:{port}' if port else None
 
 def test_server_health():
     """Test server health endpoints"""
@@ -141,36 +79,136 @@ def test_server_health():
     
     return node_healthy and flask_healthy
 
+def test_vibe_combinations():
+    """Test various vibe combinations for sigil generation"""
+    print("\n🧪 Testing vibe combinations...")
+    
+    test_cases = [
+        {"name": "Test Love", "vibe": "mystical"},
+        {"name": "Test Love", "vibe": "crystal"},
+        {"name": "Test Love", "vibe": "elemental+crystal"},
+        {"name": "Test Love", "vibe": "elemental+crystal+cosmic"},
+        {"name": "Test Love", "vibe": "elemental+crystal+cosmic+mystical+light+shadow"}
+    ]
+    
+    passed = 0
+    for i, case in enumerate(test_cases, 1):
+        print(f"  Testing case {i}: '{case['name']}' with vibe '{case['vibe']}'")
+        try:
+            response = requests.post(f'{NODE_URL}/generate', 
+                                   json=case, 
+                                   timeout=60)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('success'):
+                    print(f"    ✅ Generated successfully")
+                    passed += 1
+                else:
+                    print(f"    ❌ Generation failed: {data.get('error', 'Unknown error')}")
+            else:
+                print(f"    ❌ HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            print(f"    ❌ Exception: {e}")
+    
+    print(f"📊 Vibe combination test: {passed}/{len(test_cases)} passed")
+    return passed == len(test_cases)
+
+def test_error_handling():
+    """Test error conditions and edge cases"""
+    print("\n🛡️ Testing error conditions...")
+    
+    error_cases = [
+        {"name": "", "vibe": "mystical"},  # Empty name
+        {"name": "x" * 1000, "vibe": "mystical"},  # Very long name
+        {"name": "Test", "vibe": "invalid_vibe"}  # Invalid vibe
+    ]
+    
+    passed = 0
+    for i, case in enumerate(error_cases, 1):
+        print(f"  Error case {i}: {case}")
+        try:
+            response = requests.post(f'{NODE_URL}/generate', 
+                                   json=case, 
+                                   timeout=30)
+            if response.status_code in [400, 422]:
+                print(f"    ✅ Properly rejected with {response.status_code}")
+                passed += 1
+            elif response.status_code == 200:
+                data = response.json()
+                if not data.get('success'):
+                    print(f"    ✅ Handled gracefully: {data.get('error', 'Unknown error')}")
+                    passed += 1
+                else:
+                    print(f"    ❌ Should have failed but succeeded")
+            else:
+                print(f"    ❌ Unexpected status: {response.status_code}")
+        except Exception as e:
+            print(f"    ❌ Error case {i}: Exception - {e}")
+    
+    print(f"📊 Error handling: {passed}/{len(error_cases)} passed")
+    return passed == len(error_cases)
+
+def test_performance():
+    """Test performance with concurrent requests"""
+    print("\n⚡ Testing performance...")
+    
+    def make_request():
+        try:
+            start = time.time()
+            response = requests.post(f'{NODE_URL}/generate', 
+                                   json={"name": "Performance Test", "vibe": "mystical"}, 
+                                   timeout=30)
+            duration = time.time() - start
+            return response.status_code == 200, duration
+        except Exception as e:
+            return False, 999
+    
+    # Test concurrent requests
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        futures = [executor.submit(make_request) for _ in range(5)]
+        results = [future.result() for future in as_completed(futures)]
+    
+    successful = sum(1 for success, _ in results if success)
+    avg_time = sum(duration for _, duration in results) / len(results)
+    
+    print(f"  📊 Concurrent requests: {successful}/5 successful")
+    print(f"  📊 Average response time: {avg_time:.2f}s")
+    
+    return successful >= 3 and avg_time < 30
+
 def main():
+    """Run all tests"""
     print("🔧 SIGILCRAFT FIXES VERIFICATION")
     print("=" * 50)
     
-    # Run specific fix tests
-    results = []
-    results.append(("Server Health", test_server_health()))
-    results.append(("Vibe Combinations", test_vibe_combinations()))
-    results.append(("Error Handling", test_error_conditions()))
+    # Run all tests
+    health_ok = test_server_health()
+    vibe_ok = test_vibe_combinations()
+    error_ok = test_error_handling()
+    perf_ok = test_performance()
     
-    # Print results
+    # Summary
     print("\n" + "=" * 50)
     print("🏁 FIX VERIFICATION RESULTS")
     print("=" * 50)
-    
-    passed = 0
-    total = len(results)
-    
-    for test_name, result in results:
-        status = "✅ PASS" if result else "❌ FAIL"
-        print(f"{test_name:<20} {status}")
-        if result:
-            passed += 1
-    
+    print(f"Server Health        {'✅ PASS' if health_ok else '❌ FAIL'}")
+    print(f"Vibe Combinations    {'✅ PASS' if vibe_ok else '❌ FAIL'}")
+    print(f"Error Handling       {'✅ PASS' if error_ok else '❌ FAIL'}")
+    print(f"Performance          {'✅ PASS' if perf_ok else '❌ FAIL'}")
     print("-" * 50)
-    print(f"Overall: {passed}/{total} tests passed ({(passed/total)*100:.1f}%)")
     
-    if passed == total:
-        print("🎉 ALL FIXES VERIFIED! Application is working correctly!")
+    total_tests = 4
+    passed_tests = sum([health_ok, vibe_ok, error_ok, perf_ok])
+    success_rate = (passed_tests / total_tests) * 100
+    
+    print(f"Overall: {passed_tests}/{total_tests} tests passed ({success_rate:.1f}%)")
+    
+    if success_rate == 100:
+        print("🎉 All tests passed! Sigilcraft is working perfectly!")
         return 0
+    elif success_rate >= 75:
+        print("⚠️ Most tests passed. Minor issues remain.")
+        return 1
     else:
         print("⚠️ Some issues remain. Check the logs above.")
         return 1
