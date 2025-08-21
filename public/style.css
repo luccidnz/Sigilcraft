@@ -1,10 +1,9 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@300;400;500;600;700;800;900&family=Exo+2:wght@200;300;400;500;600;700;800&display=swap');
 
 :root {
   --bg-primary: #0a0b0f;
   --bg-secondary: #1a1b24;
-  --bg-tertiary: #21242d;
+  --bg-tertiary: #21262d;
   --text-primary: #e6edf3;
   --text-secondary: #7d8590;
   --text-muted: #656d76;

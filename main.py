@@ -1636,3 +1636,369 @@ if __name__ == "__main__":
                     exit(1)
         else:
             raise
+#!/usr/bin/env python3
+"""
+Flask backend for Sigilcraft sigil generation
+Handles AI-powered sigil creation with multiple energy types
+"""
+
+from flask import Flask, request, jsonify, send_file
+from flask_cors import CORS
+import os
+import sys
+import json
+import time
+import hashlib
+import base64
+from io import BytesIO
+import logging
+from datetime import datetime
+import traceback
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+app = Flask(__name__)
+CORS(app)
+
+# Configuration
+ENERGY_TYPES = {
+    'elemental': 'Harness the raw power of earth, air, fire, and water',
+    'celestial': 'Channel cosmic energies from stars and planets', 
+    'quantum': 'Tap into quantum field fluctuations and probability waves',
+    'nature': 'Connect with the living essence of plants and animals',
+    'ancestral': 'Draw upon the wisdom and power of ancient lineages',
+    'digital': 'Interface with cyberspace and digital consciousness streams'
+}
+
+def generate_sigil_data(phrase, vibe, seed=None):
+    """Generate sigil data based on phrase and energy type"""
+    try:
+        # Create a unique hash for the sigil
+        content = f"{phrase}_{vibe}_{seed or int(time.time())}"
+        sigil_hash = hashlib.sha256(content.encode()).hexdigest()[:16]
+        
+        # Simulate sigil generation with different patterns based on energy type
+        if vibe == 'elemental':
+            pattern = create_elemental_pattern(phrase, sigil_hash)
+        elif vibe == 'celestial':
+            pattern = create_celestial_pattern(phrase, sigil_hash)
+        elif vibe == 'quantum':
+            pattern = create_quantum_pattern(phrase, sigil_hash)
+        elif vibe == 'nature':
+            pattern = create_nature_pattern(phrase, sigil_hash)
+        elif vibe == 'ancestral':
+            pattern = create_ancestral_pattern(phrase, sigil_hash)
+        elif vibe == 'digital':
+            pattern = create_digital_pattern(phrase, sigil_hash)
+        else:
+            pattern = create_default_pattern(phrase, sigil_hash)
+        
+        # Generate SVG content
+        svg_content = create_svg_sigil(pattern, vibe)
+        
+        return {
+            'success': True,
+            'svg': svg_content,
+            'hash': sigil_hash,
+            'energy': vibe,
+            'phrase': phrase
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating sigil: {str(e)}")
+        return {
+            'success': False,
+            'error': str(e)
+        }
+
+def create_elemental_pattern(phrase, hash_val):
+    """Create elemental-themed pattern"""
+    return {
+        'type': 'elemental',
+        'elements': len(phrase) % 4 + 1,
+        'intensity': len(hash_val) % 10 + 1,
+        'flow': 'circular' if len(phrase) % 2 == 0 else 'linear'
+    }
+
+def create_celestial_pattern(phrase, hash_val):
+    """Create celestial-themed pattern"""
+    return {
+        'type': 'celestial',
+        'stars': len(phrase) % 8 + 3,
+        'orbits': len(hash_val) % 5 + 1,
+        'constellation': 'spiral'
+    }
+
+def create_quantum_pattern(phrase, hash_val):
+    """Create quantum-themed pattern"""
+    return {
+        'type': 'quantum',
+        'particles': len(phrase) % 12 + 5,
+        'entanglement': len(hash_val) % 3 + 1,
+        'wave_function': 'probability'
+    }
+
+def create_nature_pattern(phrase, hash_val):
+    """Create nature-themed pattern"""
+    return {
+        'type': 'nature',
+        'growth': len(phrase) % 6 + 2,
+        'branches': len(hash_val) % 7 + 3,
+        'organic_flow': 'fibonacci'
+    }
+
+def create_ancestral_pattern(phrase, hash_val):
+    """Create ancestral-themed pattern"""
+    return {
+        'type': 'ancestral',
+        'symbols': len(phrase) % 9 + 4,
+        'lineage': len(hash_val) % 4 + 1,
+        'tradition': 'runic'
+    }
+
+def create_digital_pattern(phrase, hash_val):
+    """Create digital-themed pattern"""
+    return {
+        'type': 'digital',
+        'bits': len(phrase) % 16 + 8,
+        'encryption': len(hash_val) % 5 + 1,
+        'matrix': 'hexadecimal'
+    }
+
+def create_default_pattern(phrase, hash_val):
+    """Create default pattern"""
+    return {
+        'type': 'neutral',
+        'complexity': len(phrase) % 8 + 2,
+        'symmetry': len(hash_val) % 4 + 1
+    }
+
+def create_svg_sigil(pattern, energy_type):
+    """Create SVG representation of the sigil"""
+    width, height = 512, 512
+    center_x, center_y = width // 2, height // 2
+    
+    svg_parts = [
+        f'<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">',
+        '<defs>',
+        '<style>',
+        f'.sigil-{energy_type} {{ fill: none; stroke: #333; stroke-width: 2; }}',
+        f'.sigil-{energy_type}-fill {{ fill: #666; opacity: 0.3; }}',
+        '</style>',
+        '</defs>'
+    ]
+    
+    # Generate pattern based on energy type
+    if pattern['type'] == 'elemental':
+        svg_parts.extend(create_elemental_svg(center_x, center_y, pattern, energy_type))
+    elif pattern['type'] == 'celestial':
+        svg_parts.extend(create_celestial_svg(center_x, center_y, pattern, energy_type))
+    elif pattern['type'] == 'quantum':
+        svg_parts.extend(create_quantum_svg(center_x, center_y, pattern, energy_type))
+    elif pattern['type'] == 'nature':
+        svg_parts.extend(create_nature_svg(center_x, center_y, pattern, energy_type))
+    elif pattern['type'] == 'ancestral':
+        svg_parts.extend(create_ancestral_svg(center_x, center_y, pattern, energy_type))
+    elif pattern['type'] == 'digital':
+        svg_parts.extend(create_digital_svg(center_x, center_y, pattern, energy_type))
+    else:
+        svg_parts.extend(create_default_svg(center_x, center_y, pattern, energy_type))
+    
+    svg_parts.append('</svg>')
+    return ''.join(svg_parts)
+
+def create_elemental_svg(cx, cy, pattern, energy_type):
+    """Create elemental SVG elements"""
+    elements = []
+    radius = 100
+    
+    # Create circular pattern with elemental symbols
+    for i in range(pattern['elements']):
+        angle = (i * 360 / pattern['elements']) * 3.14159 / 180
+        x = cx + radius * cos_approx(angle)
+        y = cy + radius * sin_approx(angle)
+        
+        elements.append(f'<circle cx="{x}" cy="{y}" r="20" class="sigil-{energy_type}"/>')
+        elements.append(f'<line x1="{cx}" y1="{cy}" x2="{x}" y2="{y}" class="sigil-{energy_type}"/>')
+    
+    return elements
+
+def create_celestial_svg(cx, cy, pattern, energy_type):
+    """Create celestial SVG elements"""
+    elements = []
+    
+    # Create star pattern
+    for i in range(pattern['stars']):
+        radius = 50 + (i * 30)
+        angle = (i * 137.5) * 3.14159 / 180  # Golden angle
+        x = cx + radius * cos_approx(angle)
+        y = cy + radius * sin_approx(angle)
+        
+        elements.append(f'<polygon points="{x},{y-10} {x+8},{y+6} {x-8},{y+6}" class="sigil-{energy_type}"/>')
+    
+    return elements
+
+def create_quantum_svg(cx, cy, pattern, energy_type):
+    """Create quantum SVG elements"""
+    elements = []
+    
+    # Create quantum particle patterns
+    for i in range(pattern['particles']):
+        radius = 30 + (i * 15)
+        angle = (i * 60) * 3.14159 / 180
+        x = cx + radius * cos_approx(angle)
+        y = cy + radius * sin_approx(angle)
+        
+        elements.append(f'<ellipse cx="{x}" cy="{y}" rx="8" ry="3" class="sigil-{energy_type}"/>')
+    
+    return elements
+
+def create_nature_svg(cx, cy, pattern, energy_type):
+    """Create nature SVG elements"""
+    elements = []
+    
+    # Create organic branching pattern
+    for i in range(pattern['branches']):
+        angle = (i * 45) * 3.14159 / 180
+        x1 = cx
+        y1 = cy
+        x2 = cx + 80 * cos_approx(angle)
+        y2 = cy + 80 * sin_approx(angle)
+        
+        elements.append(f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" class="sigil-{energy_type}"/>')
+        
+        # Add leaves
+        leaf_x = x2 + 20 * cos_approx(angle + 0.5)
+        leaf_y = y2 + 20 * sin_approx(angle + 0.5)
+        elements.append(f'<ellipse cx="{leaf_x}" cy="{leaf_y}" rx="8" ry="4" class="sigil-{energy_type}-fill"/>')
+    
+    return elements
+
+def create_ancestral_svg(cx, cy, pattern, energy_type):
+    """Create ancestral SVG elements"""
+    elements = []
+    
+    # Create runic-style symbols
+    for i in range(pattern['symbols']):
+        angle = (i * 360 / pattern['symbols']) * 3.14159 / 180
+        radius = 60
+        x = cx + radius * cos_approx(angle)
+        y = cy + radius * sin_approx(angle)
+        
+        # Simple runic-style lines
+        elements.append(f'<line x1="{x-10}" y1="{y-15}" x2="{x+10}" y2="{y+15}" class="sigil-{energy_type}"/>')
+        elements.append(f'<line x1="{x+10}" y1="{y-15}" x2="{x-10}" y2="{y+15}" class="sigil-{energy_type}"/>')
+    
+    return elements
+
+def create_digital_svg(cx, cy, pattern, energy_type):
+    """Create digital SVG elements"""
+    elements = []
+    
+    # Create digital matrix pattern
+    grid_size = 20
+    for i in range(-4, 5):
+        for j in range(-4, 5):
+            if (i + j) % 2 == 0:
+                x = cx + i * grid_size
+                y = cy + j * grid_size
+                elements.append(f'<rect x="{x-5}" y="{y-5}" width="10" height="10" class="sigil-{energy_type}-fill"/>')
+    
+    return elements
+
+def create_default_svg(cx, cy, pattern, energy_type):
+    """Create default SVG elements"""
+    elements = []
+    
+    # Simple geometric pattern
+    elements.append(f'<circle cx="{cx}" cy="{cy}" r="50" class="sigil-{energy_type}"/>')
+    elements.append(f'<circle cx="{cx}" cy="{cy}" r="80" class="sigil-{energy_type}"/>')
+    
+    return elements
+
+def cos_approx(angle):
+    """Approximate cosine function"""
+    # Simple approximation for demo purposes
+    import math
+    return math.cos(angle)
+
+def sin_approx(angle):
+    """Approximate sine function"""
+    # Simple approximation for demo purposes
+    import math
+    return math.sin(angle)
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint"""
+    return jsonify({
+        'status': 'healthy',
+        'service': 'flask-sigilcraft',
+        'timestamp': datetime.now().isoformat()
+    })
+
+@app.route('/generate', methods=['POST'])
+def generate():
+    """Generate sigil endpoint"""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
+        
+        phrase = data.get('phrase', '').strip()
+        vibe = data.get('vibe', 'elemental').strip()
+        seed = data.get('seed')
+        
+        if not phrase:
+            return jsonify({'success': False, 'error': 'Phrase is required'}), 400
+        
+        if vibe not in ENERGY_TYPES:
+            vibe = 'elemental'
+        
+        logger.info(f"Generating sigil for phrase: '{phrase}' with energy: '{vibe}'")
+        
+        # Generate the sigil
+        result = generate_sigil_data(phrase, vibe, seed)
+        
+        if result['success']:
+            logger.info(f"Successfully generated sigil with hash: {result['hash']}")
+            return jsonify(result)
+        else:
+            logger.error(f"Failed to generate sigil: {result.get('error', 'Unknown error')}")
+            return jsonify(result), 500
+            
+    except Exception as e:
+        logger.error(f"Unexpected error in generate endpoint: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({
+            'success': False,
+            'error': 'Internal server error'
+        }), 500
+
+@app.route('/energies', methods=['GET'])
+def get_energies():
+    """Get available energy types"""
+    return jsonify({
+        'energies': ENERGY_TYPES
+    })
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5001))
+    
+    # Check if we're in production (Replit) or development
+    if os.environ.get('REPLIT_DEV_DOMAIN'):
+        # Production mode with Waitress
+        try:
+            from waitress import serve
+            logger.info(f"✅ Using Waitress production server...")
+            serve(app, host='0.0.0.0', port=port, threads=4)
+        except ImportError:
+            logger.warning("Waitress not available, falling back to Flask dev server")
+            app.run(host='0.0.0.0', port=port, debug=False)
+    else:
+        # Development mode
+        logger.info(f"🔧 Using Flask development server...")
+        app.run(host='0.0.0.0', port=port, debug=True)

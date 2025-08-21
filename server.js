@@ -46,9 +46,7 @@ const limiter = rateLimit({
   message: { error: "Too many requests, please try again later." },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.ip || req.connection.remoteAddress || 'unknown';
-  }
+  trustProxy: true
 });
 
 app.use('/api', limiter);
@@ -58,9 +56,7 @@ const generationLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 10, // limit each IP to 10 generations per minute
   message: { error: "Generation rate limit exceeded. Please wait before trying again." },
-  keyGenerator: (req) => {
-    return req.ip || req.connection.remoteAddress || 'unknown';
-  }
+  trustProxy: true
 });
 
 // CORS and additional headers

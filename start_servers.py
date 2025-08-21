@@ -14,6 +14,20 @@ import socket
 from threading import Thread
 import json
 
+def monitor_process(process, name):
+    """Monitor a process and log its output"""
+    try:
+        for line in iter(process.stdout.readline, ''):
+            if line:
+                print(f"[{name}] {line.strip()}")
+            else:
+                break
+    except Exception as e:
+        print(f"[{name}] Monitor error: {e}")
+    finally:
+        if process.stdout:
+            process.stdout.close()
+
 def find_available_port(start_port=5001):
     """Find an available port starting from start_port"""
     for port in range(start_port, start_port + 10):
