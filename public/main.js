@@ -474,44 +474,24 @@ downloadBtn.onclick = async () => {
     console.log("Image available for download, size:", lastGeneratedImage.length);
 
     if (userIsPro && exportType.value === "svg") {
-      console.log("Downloading as SVG - Note: Using placeholder SVG as actual sigil is PNG-based");
+      console.log("Downloading as SVG");
       const svg = buildSvg(seed, 2048);
       const blob = new Blob([svg], {type:"image/svg+xml"});
 
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
       const filename = `quantum_sigil_${timestamp}.svg`;
 
-      await downloadBlob(blob, filename);
+      triggerDownload(blob, filename);
       toast("✨ SVG sigil downloaded!", 'success');
 
     } else {
       console.log("Downloading as PNG");
 
-      // Validate image data format - be more flexible with data URL formats
-      if (!lastGeneratedImage.startsWith('data:image/') && !lastGeneratedImage.includes('base64,')) {
-        console.error("Invalid image data format:", lastGeneratedImage.substring(0, 50));
-        toast("❌ Invalid image format detected", 'error');
-        return;
-      }
-
+      // Simple and reliable PNG download using the existing triggerDownload function
       try {
-        // Ensure proper data URL format
-        let dataURL = lastGeneratedImage;
-        if (!dataURL.startsWith('data:image/png;base64,') && dataURL.includes('base64,')) {
-          // Fix malformed data URLs
-          const base64Part = dataURL.split('base64,')[1] || dataURL.split(',')[1];
-          if (base64Part) {
-            dataURL = `data:image/png;base64,${base64Part}`;
-          }
-        }
-
-        // Convert data URL to blob
-        const blob = await dataURLToBlobAsync(dataURL);
-
-        if (!blob || blob.size === 0) {
-          throw new Error("Failed to create download blob");
-        }
-
+        // Convert the base64 data to blob using the simpler method
+        const blob = dataURLtoBlob(lastGeneratedImage);
+        
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
         const filename = `quantum_sigil_${timestamp}.png`;
 
@@ -521,39 +501,26 @@ downloadBtn.onclick = async () => {
           type: blob.type
         });
 
-        await downloadBlob(blob, filename);
+        triggerDownload(blob, filename);
         toast("✨ Quantum Sigil downloaded successfully!", 'success');
 
-      } catch (blobError) {
-        console.error("Blob creation failed:", blobError);
-
-        // Fallback: try canvas download
-        try {
-          console.log("Attempting canvas fallback...");
-
-          if (!canvas || canvas.width === 0 || canvas.height === 0) {
-            throw new Error("Canvas not available or invalid");
-          }
-
-          const canvasBlob = await new Promise((resolve, reject) => {
-            canvas.toBlob((blob) => {
-              if (blob) {
-                resolve(blob);
-              } else {
-                reject(new Error("Canvas toBlob returned null"));
-              }
-            }, 'image/png', 1.0);
-          });
-
-          const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
-          const filename = `quantum_sigil_canvas_${timestamp}.png`;
-
-          await downloadBlob(canvasBlob, filename);
-          toast("✨ Sigil downloaded via canvas backup!", 'success');
-
-        } catch (canvasError) {
-          console.error("Canvas fallback failed:", canvasError);
-          toast("❌ Download failed - please regenerate the sigil and try again", 'error', 6000);
+      } catch (error) {
+        console.error("Primary download failed, trying fallback:", error);
+        
+        // Fallback: use canvas download
+        if (canvas && canvas.width > 0 && canvas.height > 0) {
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+              const filename = `quantum_sigil_canvas_${timestamp}.png`;
+              triggerDownload(blob, filename);
+              toast("✨ Sigil downloaded via canvas!", 'success');
+            } else {
+              toast("❌ Download failed - please regenerate the sigil", 'error');
+            }
+          }, 'image/png', 1.0);
+        } else {
+          toast("❌ Download failed - please regenerate the sigil", 'error');
         }
       }
     }
