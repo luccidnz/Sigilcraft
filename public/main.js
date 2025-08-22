@@ -183,20 +183,27 @@ async function renderEnergies() {
         return;
       }
 
-      // Always clear and rebuild selection to ensure consistency
-      if (!comboToggle.checked) {
+      // Check if combo mode is available and enabled
+      const comboMode = userIsPro && comboToggle.checked;
+
+      if (!comboMode) {
         // Single selection mode - replace current selection
         selectedEnergies = [name];
       } else {
-        // Combo mode - toggle selection
+        // Combo mode - toggle selection (only for Pro users)
         if (selectedEnergies.includes(name)) {
           // Remove from selection
           const newSelection = selectedEnergies.filter(e => e !== name);
           // Ensure at least one energy is always selected
           selectedEnergies = newSelection.length > 0 ? newSelection : [FREE_ENERGIES[0]];
         } else {
-          // Add to selection if not already present
-          selectedEnergies = [...selectedEnergies, name];
+          // Add to selection if not already present and not exceeding limit
+          if (selectedEnergies.length < 4) { // Max 4 vibes
+            selectedEnergies = [...selectedEnergies, name];
+          } else {
+            toast("⚠️ Maximum 4 energies can be combined", 'warning');
+            return;
+          }
         }
       }
 
@@ -209,9 +216,49 @@ async function renderEnergies() {
 }
 function highlightSelection() {
   const children = [...energyList.children];
-  children.forEach(div => {
-    const on = selectedEnergies.includes(div.textContent.trim());
-    div.style.borderColor = on ? "#7ee787" : "#30364a";
+  children.forEach((div, index) => {
+    const name = div.textContent.trim();
+    const isSelected = selectedEnergies.includes(name);
+    
+    if (isSelected) {
+      // Show selection order for combo mode
+      const selectionIndex = selectedEnergies.indexOf(name);
+      div.style.borderColor = "#7ee787";
+      div.style.boxShadow = "0 0 15px rgba(126, 231, 135, 0.5)";
+      
+      if (selectedEnergies.length > 1) {
+        // Show combination order
+        div.style.background = `linear-gradient(45deg, rgba(126, 231, 135, 0.2), rgba(0, 255, 255, 0.1))`;
+        if (!div.querySelector('.combo-badge')) {
+          const badge = document.createElement('span');
+          badge.className = 'combo-badge';
+          badge.textContent = `${selectionIndex + 1}`;
+          badge.style.cssText = `
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #7ee787;
+            color: #000;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+          `;
+          div.style.position = 'relative';
+          div.appendChild(badge);
+        }
+      }
+    } else {
+      div.style.borderColor = "#30364a";
+      div.style.boxShadow = "none";
+      div.style.background = "";
+      const badge = div.querySelector('.combo-badge');
+      if (badge) badge.remove();
+    }
   });
 }
 
@@ -252,21 +299,23 @@ async function renderGate() {
 async function updateProButtons() {
   const isPro = await isUserPro();
   const proButtons = document.getElementById("proButtons");
+  const upgradeBtn = document.getElementById("upgradeBtn");
+  const enterKeyBtn = document.getElementById("enterKeyBtn");
 
   console.log("Updating Pro buttons - Pro status:", isPro);
 
   if (isPro) {
-    // Hide pro purchase buttons when user is pro
-    if (proButtons) {
-      proButtons.style.display = 'none';
-      console.log("Pro buttons hidden");
-    }
+    // Hide upgrade button but keep enter key button for new users
+    if (upgradeBtn) upgradeBtn.style.display = 'none';
+    if (enterKeyBtn) enterKeyBtn.style.display = 'none';
+    if (proButtons) proButtons.style.display = 'none';
+    console.log("Pro purchase buttons hidden");
   } else {
     // Show pro purchase buttons when user is not pro
-    if (proButtons) {
-      proButtons.style.display = 'flex';
-      console.log("Pro buttons shown");
-    }
+    if (upgradeBtn) upgradeBtn.style.display = 'inline-block';
+    if (enterKeyBtn) enterKeyBtn.style.display = 'inline-block';
+    if (proButtons) proButtons.style.display = 'flex';
+    console.log("Pro buttons shown");
   }
 }
 
@@ -998,34 +1047,50 @@ function startAnimation() {
   // Store the original image
   const originalImg = new Image();
   originalImg.onload = () => {
+    console.log('Starting sigil animation...');
+    
     const animate = () => {
       if (!isAnimating) return;
 
       const ctx = canvas.getContext('2d');
       
-      // Clear canvas
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Clear canvas with black background
+      ctx.fillStyle = "#0a0b0f";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       // Save context
       ctx.save();
 
-      // Create pulsing and rotation effects
-      const scale = 1 + Math.sin(frame * 0.08) * 0.03;
-      const rotation = Math.sin(frame * 0.04) * 0.01;
-      const opacity = 0.9 + Math.sin(frame * 0.1) * 0.1;
+      // Create magical pulsing and subtle rotation effects
+      const time = frame * 0.02;
+      const scale = 1 + Math.sin(time * 4) * 0.05; // More pronounced pulsing
+      const rotation = Math.sin(time * 2) * 0.02; // Gentle rotation
+      const opacity = 0.85 + Math.sin(time * 6) * 0.15; // Opacity variation
+      
+      // Add magical glow effect
+      const glowIntensity = 0.5 + Math.sin(time * 8) * 0.3;
+      ctx.shadowColor = 'rgba(0, 255, 255, ' + glowIntensity + ')';
+      ctx.shadowBlur = 20 + Math.sin(time * 5) * 10;
 
-      // Apply transformations
+      // Apply transformations from center
       ctx.translate(canvas.width / 2, canvas.height / 2);
       ctx.scale(scale, scale);
       ctx.rotate(rotation);
       ctx.globalAlpha = opacity;
       ctx.translate(-canvas.width / 2, -canvas.height / 2);
 
-      // Draw the image
+      // Draw the image with enhanced smoothing
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(originalImg, 0, 0, canvas.width, canvas.height);
 
       // Restore context
       ctx.restore();
+      
+      // Add magical particles effect
+      if (frame % 10 === 0) { // Every 10 frames
+        addMagicalParticles(ctx, time);
+      }
       
       frame++;
       animationFrame = requestAnimationFrame(animate);
@@ -1034,7 +1099,31 @@ function startAnimation() {
     animate();
   };
   
+  originalImg.onerror = () => {
+    console.error('Failed to load image for animation');
+    toast('❌ Animation failed - image error', 'error');
+    stopAnimation();
+  };
+  
   originalImg.src = lastGeneratedImage;
+}
+
+function addMagicalParticles(ctx, time) {
+  // Add subtle floating particles for magical effect
+  for (let i = 0; i < 5; i++) {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height;
+    const size = 2 + Math.random() * 3;
+    const alpha = 0.3 + Math.random() * 0.4;
+    
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = `hsl(${180 + Math.sin(time + i) * 60}, 80%, 70%)`;
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
 }
 
 function stopAnimation() {
@@ -1105,65 +1194,130 @@ async function shareSigil() {
       return;
     }
 
-    const phrase = intentInput.value;
+    const phrase = intentInput.value || 'Quantum Sigil';
     const vibe = selectedEnergies.join('+');
 
-    // Create share data
-    const shareText = `🔮 I just created a ${vibe} sigil for "${phrase}" using Sigilcraft! ✨`;
+    // Create comprehensive share data
+    const shareText = `🔮 I just created a ${vibe} sigil for "${phrase}" using Sigilcraft! ✨ 
 
+✨ Experience quantum sigil creation: ${window.location.origin}`;
+
+    // Try multiple sharing methods
     if (navigator.share) {
-      // Use Web Share API if available
       try {
-        const blob = await canvasToBlob();
-        
-        if (blob && navigator.canShare && navigator.canShare({ files: [new File([blob], 'sigil.png', { type: 'image/png' })] })) {
-          const file = new File([blob], 'my-sigil.png', { type: 'image/png' });
-          await navigator.share({
-            title: 'My Quantum Sigil',
-            text: shareText,
-            files: [file]
+        // First try with image if supported
+        if (canvas && navigator.canShare) {
+          const blob = await new Promise(resolve => {
+            canvas.toBlob(resolve, 'image/png', 1.0);
           });
-          toast('✨ Sigil shared successfully!', 'success');
-          return;
-        } else {
-          // Fallback to text-only sharing
-          await navigator.share({
-            title: 'My Quantum Sigil',
-            text: shareText
-          });
-          toast('✨ Shared successfully!', 'success');
-          return;
+          
+          if (blob) {
+            const file = new File([blob], 'quantum-sigil.png', { type: 'image/png' });
+            
+            if (navigator.canShare({ files: [file] })) {
+              await navigator.share({
+                title: 'My Quantum Sigil from Sigilcraft',
+                text: shareText,
+                files: [file]
+              });
+              toast('✨ Sigil shared with image!', 'success');
+              return;
+            }
+          }
         }
+        
+        // Fallback to text-only native share
+        await navigator.share({
+          title: 'My Quantum Sigil from Sigilcraft',
+          text: shareText,
+          url: window.location.origin
+        });
+        toast('✨ Sigil shared successfully!', 'success');
+        return;
+        
       } catch (shareError) {
-        console.log('Native share failed, falling back to copy');
-        fallbackShare(shareText);
+        if (shareError.name !== 'AbortError') {
+          console.log('Native share failed:', shareError.message);
+        }
       }
-    } else {
-      fallbackShare(shareText);
     }
+    
+    // Fallback to clipboard copy
+    await fallbackShare(shareText);
+    
   } catch (error) {
     console.error('Share error:', error);
-    toast('❌ Share failed, but you can copy the text!', 'error');
+    await fallbackShare(`🔮 Check out my quantum sigil created with Sigilcraft! ${window.location.origin}`);
   }
 }
 
 // Make function globally available
 window.shareSigil = shareSigil;
 
-function fallbackShare(text) {
-  // Copy to clipboard
-  navigator.clipboard.writeText(text).then(() => {
-    toast('📋 Share text copied to clipboard!', 'success');
-  }).catch(() => {
-    // Create a temporary text area for copying
+async function fallbackShare(text) {
+  try {
+    // Modern clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+      toast('📋 Share text copied to clipboard! Paste it anywhere to share.', 'success', 4000);
+      return;
+    }
+  } catch (clipboardError) {
+    console.log('Modern clipboard failed:', clipboardError);
+  }
+  
+  try {
+    // Legacy clipboard fallback
     const textArea = document.createElement('textarea');
     textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
     document.body.appendChild(textArea);
+    textArea.focus();
     textArea.select();
-    document.execCommand('copy');
+    
+    const successful = document.execCommand('copy');
     document.body.removeChild(textArea);
-    toast('📋 Share text copied!', 'success');
-  });
+    
+    if (successful) {
+      toast('📋 Share text copied to clipboard!', 'success');
+    } else {
+      throw new Error('Copy command failed');
+    }
+  } catch (fallbackError) {
+    console.error('All clipboard methods failed:', fallbackError);
+    
+    // Final fallback - show text for manual copy
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8); display: flex; align-items: center;
+      justify-content: center; z-index: 10000;
+    `;
+    
+    modal.innerHTML = `
+      <div style="background: var(--card-bg); padding: 30px; border-radius: 15px; 
+                  max-width: 500px; color: white; text-align: center;">
+        <h3>📋 Copy Share Text</h3>
+        <textarea readonly style="width: 100%; height: 120px; margin: 15px 0; 
+                                padding: 10px; background: #333; color: white; 
+                                border-radius: 8px; font-family: monospace;">${text}</textarea>
+        <button onclick="this.parentElement.parentElement.remove()" 
+                style="background: #7ee787; border: none; padding: 10px 20px; 
+                       border-radius: 8px; cursor: pointer;">Close</button>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Auto-select text
+    const textarea = modal.querySelector('textarea');
+    textarea.focus();
+    textarea.select();
+    
+    toast('📋 Please copy the text manually', 'info', 3000);
+  }
 }
 
 async function canvasToBlob() {
@@ -1182,33 +1336,86 @@ function showSigilGallery() {
     return;
   }
 
-  // Load saved sigils from localStorage
-  const savedSigils = JSON.parse(localStorage.getItem('saved_sigils') || '[]');
+  try {
+    // Load saved sigils from localStorage
+    const savedSigils = JSON.parse(localStorage.getItem('saved_sigils') || '[]');
 
-  galleryContent.innerHTML = '';
+    galleryContent.innerHTML = '';
 
-  if (savedSigils.length === 0) {
-    galleryContent.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 40px;">No saved sigils yet. Generate and save some!</p>';
-  } else {
-    savedSigils.slice(-12).reverse().forEach((sigil, index) => {
-      const item = document.createElement('div');
-      item.className = 'gallery-item';
-      item.innerHTML = `
-        <img src="${sigil.image}" alt="Sigil ${index + 1}">
-        <div class="gallery-info">
-          <small title="${sigil.phrase}">${sigil.phrase.length > 20 ? sigil.phrase.substring(0, 20) + '...' : sigil.phrase}</small>
-          <small>${sigil.vibe}</small>
+    if (savedSigils.length === 0) {
+      galleryContent.innerHTML = `
+        <div style="text-align: center; color: var(--text-secondary); padding: 40px;">
+          <h3 style="margin-bottom: 15px;">🖼️ No saved sigils yet</h3>
+          <p>Generate some beautiful sigils and save them to build your collection!</p>
         </div>
       `;
+    } else {
+      // Show most recent sigils first
+      const recentSigils = savedSigils.slice(-12).reverse();
       
-      // Add click handler
-      item.onclick = () => loadSigilFromGallery(sigil.id);
-      
-      galleryContent.appendChild(item);
-    });
-  }
+      recentSigils.forEach((sigil, index) => {
+        const item = document.createElement('div');
+        item.className = 'gallery-item';
+        
+        // Create safe image element
+        const img = document.createElement('img');
+        img.alt = `Sigil: ${sigil.phrase}`;
+        img.style.cssText = 'max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 10px;';
+        
+        // Handle image loading errors
+        img.onerror = () => {
+          img.src = 'data:image/svg+xml,' + encodeURIComponent(`
+            <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+              <rect width="100" height="100" fill="#333"/>
+              <text x="50" y="50" text-anchor="middle" fill="#666" font-size="12">No Image</text>
+            </svg>
+          `);
+        };
+        
+        img.src = sigil.image;
+        
+        const info = document.createElement('div');
+        info.className = 'gallery-info';
+        info.innerHTML = `
+          <div style="font-weight: bold; margin-bottom: 5px; color: var(--text-primary);" 
+               title="${sigil.phrase}">
+            ${sigil.phrase.length > 20 ? sigil.phrase.substring(0, 20) + '...' : sigil.phrase}
+          </div>
+          <div style="color: var(--text-secondary); font-size: 0.8rem;">
+            ${sigil.vibe} • ${new Date(sigil.timestamp).toLocaleDateString()}
+          </div>
+        `;
+        
+        item.appendChild(img);
+        item.appendChild(info);
+        
+        // Add click handler to load sigil
+        item.onclick = () => {
+          loadSigilFromGallery(sigil.id);
+        };
+        
+        // Add hover effects
+        item.style.cursor = 'pointer';
+        item.onmouseenter = () => {
+          item.style.transform = 'translateY(-5px)';
+          item.style.boxShadow = '0 15px 30px rgba(0, 255, 255, 0.3)';
+        };
+        item.onmouseleave = () => {
+          item.style.transform = 'translateY(0)';
+          item.style.boxShadow = '';
+        };
+        
+        galleryContent.appendChild(item);
+      });
+    }
 
-  gallery.style.display = 'flex';
+    gallery.style.display = 'flex';
+    console.log(`Gallery opened with ${savedSigils.length} saved sigils`);
+    
+  } catch (error) {
+    console.error('Gallery error:', error);
+    toast('❌ Error loading gallery', 'error');
+  }
 }
 
 // Make function globally available

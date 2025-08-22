@@ -185,7 +185,16 @@ def create_sigil(phrase, vibe="mystical", size=2048):
 
 
 def get_phrase_characteristics(phrase):
-    """Extract unique characteristics from the phrase for variation"""
+    """Extract unique characteristics from the phrase for maximum variation"""
+    if not phrase:
+        phrase = "default"
+    
+    # Create multiple hash variations for enhanced uniqueness
+    phrase_bytes = phrase.encode('utf-8')
+    hash1 = hashlib.sha256(phrase_bytes).hexdigest()
+    hash2 = hashlib.md5(phrase_bytes).hexdigest()
+    hash3 = hashlib.sha256((phrase + "salt").encode()).hexdigest()
+    
     characteristics = {
         'length': len(phrase),
         'word_count': len(phrase.split()),
@@ -195,17 +204,46 @@ def get_phrase_characteristics(phrase):
         'special_count': sum(1 for c in phrase if not c.isalnum() and not c.isspace()),
         'ascii_sum': sum(ord(c) for c in phrase),
         'unique_chars': len(set(phrase.lower())),
-        'first_char_value': ord(phrase[0]) if phrase else 0,
-        'last_char_value': ord(phrase[-1]) if phrase else 0,
+        'first_char_value': ord(phrase[0]) if phrase else 65,
+        'last_char_value': ord(phrase[-1]) if phrase else 90,
         
-        # Enhanced text analysis for better influence
-        'emotional_words': sum(1 for word in phrase.lower().split() if word in ['love', 'peace', 'power', 'strength', 'healing', 'money', 'success', 'joy', 'happiness', 'protection', 'wisdom', 'clarity', 'abundance', 'prosperity', 'freedom']),
+        # Enhanced uniqueness factors
         'phrase_hash': abs(hash(phrase.lower())),
+        'phrase_hash_alt': int(hash1[:8], 16),
+        'phrase_hash_md5': int(hash2[:8], 16),
+        'phrase_hash_salted': int(hash3[:8], 16),
+        
+        # Character position influences
+        'char_positions': [ord(c) * (i + 1) for i, c in enumerate(phrase)],
+        'char_sum_weighted': sum(ord(c) * (i + 1) for i, c in enumerate(phrase)),
+        'middle_char_value': ord(phrase[len(phrase)//2]) if phrase else 77,
+        
+        # Word-level analysis
         'word_lengths': [len(word) for word in phrase.split()],
         'avg_word_length': sum(len(word) for word in phrase.split()) / len(phrase.split()) if phrase.split() else 0,
+        'longest_word': max(len(word) for word in phrase.split()) if phrase.split() else 0,
+        'shortest_word': min(len(word) for word in phrase.split()) if phrase.split() else 0,
+        
+        # Pattern analysis
         'repetition_factor': len(phrase) - len(set(phrase.lower())),
-        'energy_level': sum(ord(c) for c in phrase) % 10 + 1,  # 1-10 scale
-        'complexity_score': len(set(phrase.lower())) + len(phrase.split()) + sum(1 for c in phrase if not c.isalnum())
+        'pattern_score': sum(phrase.count(c) for c in set(phrase.lower())),
+        'alternating_pattern': sum(1 for i in range(len(phrase)-1) if phrase[i].isupper() != phrase[i+1].isupper()),
+        
+        # Semantic influence
+        'emotional_words': sum(1 for word in phrase.lower().split() if word in [
+            'love', 'peace', 'power', 'strength', 'healing', 'money', 'success', 'joy', 
+            'happiness', 'protection', 'wisdom', 'clarity', 'abundance', 'prosperity', 
+            'freedom', 'wealth', 'health', 'beauty', 'truth', 'light', 'dark', 'magic'
+        ]),
+        
+        # Advanced metrics
+        'energy_level': (sum(ord(c) for c in phrase) % 10) + 1,
+        'complexity_score': len(set(phrase.lower())) + len(phrase.split()) + sum(1 for c in phrase if not c.isalnum()),
+        'unique_bigrams': len(set(phrase[i:i+2].lower() for i in range(len(phrase)-1))),
+        'phrase_entropy': len(set(phrase)) / len(phrase) if phrase else 0,
+        
+        # Timing influence for additional uniqueness
+        'generation_factor': int(time.time() * 1000) % 1000
     }
     return characteristics
 
@@ -447,37 +485,109 @@ def create_elemental_sigil(draw, img, center, size, phrase, text_seed, combined_
 
 
 def create_crystal_sigil(draw, img, center, size, phrase, text_seed, combined_seed, pattern_seed, color_seed):
-    """Create geometric crystal sigil with phrase-specific patterns - Enhanced"""
+    """Create stunning geometric crystal sigil with enhanced visual beauty"""
     random.seed(combined_seed)
     char_data = get_phrase_characteristics(phrase)
 
-    # Enhanced crystal colors with more brilliance
-    base_colors = [(230, 255, 255), (180, 230, 255), (255, 230, 255), (230, 255, 230), (255, 255, 230)]
+    # Dramatically enhanced crystal colors with brilliance and variety
+    base_colors = [
+        (255, 230, 250),  # Rose quartz
+        (200, 255, 255),  # Aquamarine  
+        (255, 255, 200),  # Citrine
+        (230, 200, 255),  # Amethyst
+        (200, 255, 200),  # Emerald
+        (255, 200, 200),  # Ruby
+        (180, 220, 255),  # Sapphire
+        (255, 220, 180)   # Topaz
+    ]
+    
     colors = []
     for i, color in enumerate(base_colors):
-        # Text influence on colors
-        text_influence = sum(ord(c) for c in phrase[:3]) if phrase else 0
-        variation = (char_data['ascii_sum'] + i * 50 + text_influence) % 100
+        # Strong text influence on colors for uniqueness
+        text_influence = sum(ord(c) for c in phrase[i % len(phrase):i % len(phrase) + 3]) if phrase else 0
+        variation = (char_data['ascii_sum'] + i * 80 + text_influence) % 120
         new_color = (
-            min(255, max(180, color[0] + variation - 50)),
-            min(255, max(180, color[1] + variation - 50)),
-            min(255, max(180, color[2] + variation - 50))
+            min(255, max(160, color[0] + variation - 60)),
+            min(255, max(160, color[1] + variation - 60)),
+            min(255, max(160, color[2] + variation - 60))
         )
         colors.append(new_color)
 
-    # Create enhanced crystal lattice structure based on phrase
-    lattice_points = []
-    grid_size = 6 + char_data['word_count'] + (char_data['length'] % 8)
-
-    # Use actual phrase characters to influence crystal structure
-    for i in range(grid_size):
-        for j in range(grid_size):
-            char_influence = ord(phrase[(i+j) % len(phrase)]) if phrase else 65
-            x_offset = (char_influence % 40 - 20) / 100
-            y_offset = (char_data['first_char_value'] % 40 - 20) / 100
-            x = (i / (grid_size - 1)) * size * 0.9 + size * 0.05 + x_offset * size
-            y = (j / (grid_size - 1)) * size * 0.9 + size * 0.05 + y_offset * size
-            lattice_points.append((x, y))
+    # Create stunning multi-layered crystal formations
+    crystal_layers = 3 + (char_data['word_count'] % 4)
+    
+    for layer in range(crystal_layers):
+        layer_radius = (size // 6) + (layer * size // 12)
+        crystal_count = 8 + (char_data['length'] % 6) + layer * 2
+        
+        for crystal in range(crystal_count):
+            # Phrase-influenced crystal positioning
+            char_val = ord(phrase[crystal % len(phrase)]) if phrase else 65
+            angle = (crystal * 360 / crystal_count) + (char_val * 7) + (layer * 30)
+            
+            # Add golden ratio spiral influence for natural beauty
+            spiral_factor = crystal * 137.5  # Golden angle
+            distance = layer_radius + (char_val % 50) + (spiral_factor % 100)
+            
+            x = center[0] + distance * math.cos(math.radians(angle))
+            y = center[1] + distance * math.sin(math.radians(angle))
+            
+            # Create beautiful geometric crystal shapes
+            crystal_size = 25 + (char_val % 20) + (layer * 5)
+            crystal_sides = 6 + (char_val % 6)  # 6-12 sided crystals
+            
+            # Generate crystal vertices
+            crystal_points = []
+            for side in range(crystal_sides):
+                side_angle = angle + (side * 360 / crystal_sides)
+                # Add variation for natural crystal irregularity
+                radius_variation = crystal_size + (char_val % 10 - 5) + random.randint(-3, 3)
+                px = x + radius_variation * math.cos(math.radians(side_angle))
+                py = y + radius_variation * math.sin(math.radians(side_angle))
+                crystal_points.append((px, py))
+            
+            # Enhanced crystal rendering with multiple layers
+            color = colors[(crystal + char_val + layer) % len(colors)]
+            
+            try:
+                # Draw crystal base with gradient effect
+                alpha = 140 + (char_data['special_count'] * 10) % 100
+                draw.polygon(crystal_points, fill=(*color, alpha))
+                
+                # Add brilliant crystal highlights
+                highlight_color = (
+                    min(255, color[0] + 80),
+                    min(255, color[1] + 80), 
+                    min(255, color[2] + 80)
+                )
+                
+                # Inner crystal core
+                inner_size = crystal_size * 0.6
+                inner_points = []
+                for side in range(crystal_sides):
+                    side_angle = angle + (side * 360 / crystal_sides) + 180/crystal_sides
+                    px = x + inner_size * math.cos(math.radians(side_angle))
+                    py = y + inner_size * math.sin(math.radians(side_angle))
+                    inner_points.append((px, py))
+                
+                draw.polygon(inner_points, fill=(*highlight_color, alpha + 40))
+                
+                # Add prismatic edges for realism
+                for i in range(len(crystal_points)):
+                    next_i = (i + 1) % len(crystal_points)
+                    edge_color = (
+                        min(255, color[0] + 100),
+                        min(255, color[1] + 100),
+                        min(255, color[2] + 100)
+                    )
+                    draw.line([crystal_points[i], crystal_points[next_i]], 
+                             fill=(*edge_color, 255), width=3)
+                
+                # Add central crystal light point
+                draw.ellipse([x-4, y-4, x+4, y+4], fill=(255, 255, 255, 255))
+                
+            except:
+                pass
 
     # Enhanced connections with text-based patterns
     random.seed(pattern_seed + char_data['ascii_sum'])
