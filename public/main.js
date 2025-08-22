@@ -25,7 +25,10 @@ const canvas = el("sigilCanvas");
 const ctx = canvas.getContext("2d");
 const previewSvg = el("previewSvg");
 
-// --- pro detection ---
+// --- pro detection with caching ---
+let proStatusCache = null;
+let cacheExpiry = 0;
+
 async function serverIsPro() {
   try {
     const r = await fetch("/api/is-pro");
@@ -33,11 +36,36 @@ async function serverIsPro() {
     return !!j.pro;
   } catch { return false; }
 }
+
 function localIsPro() {
   return localStorage.getItem("sigil_pro") === "1";
 }
+
 async function isUserPro() {
-  return (await serverIsPro()) || localIsPro();
+  const now = Date.now();
+  
+  // Use cache if valid (30 second cache)
+  if (proStatusCache !== null && now < cacheExpiry) {
+    return proStatusCache;
+  }
+  
+  // Check both server and local
+  const serverPro = await serverIsPro();
+  const localPro = localIsPro();
+  const isPro = serverPro || localPro;
+  
+  // Cache the result
+  proStatusCache = isPro;
+  cacheExpiry = now + 30000; // 30 seconds
+  
+  console.log("Pro status check:", isPro, "(server:", serverPro, "local:", localPro, ")");
+  return isPro;
+}
+
+// Clear cache when Pro status changes
+function clearProCache() {
+  proStatusCache = null;
+  cacheExpiry = 0;
 }
 
 // --- enhanced toast system ---
@@ -137,13 +165,19 @@ async function renderEnergies() {
     if (!FREE_ENERGIES.includes(name)) {
       if (isPro) {
         div.title = "✨ Pro Energy - Unlocked";
+        div.classList.add('pro-unlocked');
       } else {
         div.title = "🔒 Pro Energy - Upgrade to unlock";
+        div.classList.add('pro-locked');
       }
     }
 
-    div.onclick = () => {
-      if (isLocked) { 
+    div.onclick = async () => {
+      // Check if energy is locked for current user
+      const userIsPro = await isUserPro();
+      const energyIsLocked = !userIsPro && !FREE_ENERGIES.includes(name);
+      
+      if (energyIsLocked) { 
         toast("⚡ " + name + " energy requires Pro upgrade", 'warning'); 
         return; 
       }
@@ -250,13 +284,17 @@ unlockBtn.onclick = async () => {
     const j = await r.json();
     if (j.ok) {
       localStorage.setItem("sigil_pro","1");
+      clearProCache(); // Clear the cache so next check gets fresh data
       keyModal.close();
       proKeyInput.value = ''; // Clear the input
-      toast("✨ Pro unlocked successfully!", 'success', 4000);
+      toast("✨ Pro unlocked successfully! All energies are now available!", 'success', 5000);
 
-      // Force UI refresh
-      await renderGate();
-      await updateProButtons();
+      // Force complete UI refresh
+      setTimeout(async () => {
+        await renderGate();
+        await updateProButtons();
+        await renderEnergies(); // Ensure energies are re-rendered with Pro status
+      }, 100);
     } else {
       toast("❌ Invalid Pro key", 'error');
     }

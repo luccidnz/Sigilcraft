@@ -493,22 +493,40 @@ body::after {
 }
 
 /* Pro energy styling when unlocked */
-.energy:not(.locked):not(:nth-child(-n+3)) {
-  border: 2px solid rgba(255, 215, 0, 0.6);
-  background: rgba(255, 215, 0, 0.05);
+.energy.pro-unlocked {
+  border: 2px solid rgba(255, 215, 0, 0.8);
+  background: rgba(255, 215, 0, 0.1);
   position: relative;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
 }
 
-.energy:not(.locked):not(:nth-child(-n+3))::after {
+.energy.pro-unlocked::after {
   content: "✨";
   position: absolute;
   top: 5px;
   right: 8px;
   font-size: 12px;
   color: var(--neon-gold);
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
 }
 
-.energy:not(.locked):not(:nth-child(-n+3)):hover {
+.energy.pro-locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: rgba(20, 20, 20, 0.6);
+  border: 2px solid rgba(100, 100, 100, 0.5);
+}
+
+.energy.pro-locked::after {
+  content: "🔒";
+  position: absolute;
+  top: 5px;
+  right: 8px;
+  font-size: 12px;
+  color: var(--neon-orange);
+}
+
+.energy.pro-unlocked:hover {
   border-color: var(--neon-gold);
   background: rgba(255, 215, 0, 0.15);
   box-shadow: 
