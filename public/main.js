@@ -427,18 +427,18 @@ async function renderSigil(imageSrc, isSvg = false) {
 
 // Generate sigil using backend with retry logic
 async function generateSigilRequest(phrase = "default", vibe = "mystical", retryCount = 0) {
-  const maxRetries = 3;
-  const retryDelay = 1000 * Math.min(retryCount + 1, 5); // Progressive delay with cap
+  const maxRetries = 2; // Reduced retries for faster response
+  const retryDelay = 500 * Math.min(retryCount + 1, 3); // Faster retry delay
 
   clearCanvas();
 
   try {
     console.log(`Sending sigil generation request (attempt ${retryCount + 1}):`, { phrase, vibe });
 
-    // Add timeout to fetch request with longer timeout for complex requests
+    // Reduced timeout for faster response
     const controller = new AbortController();
     const isComplexRequest = vibe.includes('+') || phrase.length > 50;
-    const timeoutDuration = isComplexRequest ? 45000 : 30000;
+    const timeoutDuration = isComplexRequest ? 25000 : 15000; // Much shorter timeouts
     const timeoutId = setTimeout(() => controller.abort(), timeoutDuration);
 
     const response = await fetch("/generate", {
@@ -453,9 +453,87 @@ async function generateSigilRequest(phrase = "default", vibe = "mystical", retry
     });
     clearTimeout(timeoutId);
 
-    // Enhanced response validation
+    // Enhanced response validation with better error handling
     if (!response) {
       throw new Error("No response received from server");
+    }
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => `HTTP ${response.status}`);
+      throw new Error(`Server error: ${errorText}`);
+    }
+
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      const text = await response.text();
+      console.error("Non-JSON response:", text.substring(0, 500));
+      throw new Error("Server returned invalid response format");
+    }
+
+    const data = await response.json();
+    
+    // Better validation of response data
+    if (!data) {
+      throw new Error("Empty response from server");
+    }
+
+    if (!data.success) {
+      const errorMsg = data.error || "Generation failed";
+      console.error("Generation failed:", errorMsg);
+      
+      // Show user-friendly error message
+      if (errorMsg.includes("timeout") || errorMsg.includes("timed out")) {
+        toast("⏱️ Generation taking longer than expected. Retrying with optimized settings...", 'warning', 3000);
+        throw new Error("timeout");
+      } else if (errorMsg.includes("rate limit")) {
+        toast("⏳ Rate limit reached. Please wait a moment...", 'warning', 3000);
+        throw new Error("rate_limit");
+      } else {
+        toast(`❌ ${errorMsg}`, 'error', 4000);
+        throw new Error(errorMsg);
+      }
+    }
+
+    if (!data.image) {
+      throw new Error("No image data received");
+    }
+
+    // Successfully generated - render the sigil
+    await renderSigil(data.image, phrase, vibe);
+    return data;
+
+  } catch (error) {
+    console.error("Generation request error:", error);
+    
+    // Handle specific error types
+    if (error.name === 'AbortError' || error.message === 'timeout') {
+      if (retryCount < maxRetries) {
+        console.log(`Request timed out, retrying... (${retryCount + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+        return generateSigilRequest(phrase, vibe, retryCount + 1);
+      } else {
+        toast("⏱️ Generation is taking too long. Please try a shorter phrase or simpler vibe.", 'error', 5000);
+        throw new Error("Generation timed out after multiple attempts");
+      }
+    }
+    
+    if (error.message === 'rate_limit') {
+      throw error; // Don't retry rate limit errors
+    }
+    
+    // Only retry on network errors or server errors
+    if (retryCount < maxRetries && (
+      error.message.includes('fetch') || 
+      error.message.includes('network') ||
+      error.message.includes('Server error')
+    )) {
+      console.log(`Retrying due to network/server error... (${retryCount + 1}/${maxRetries})`);
+      await new Promise(resolve => setTimeout(resolve, retryDelay));
+      return generateSigilRequest(phrase, vibe, retryCount + 1);
+    }
+    
+    throw error;
+  }rver");
     }
 
     if (!response.ok) {

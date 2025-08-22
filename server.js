@@ -298,7 +298,7 @@ app.post("/generate", generationLimiter, async (req, res) => {
 
     controller = new AbortController();
     const isComplexRequest = req.body.vibe && req.body.vibe.includes('+');
-    const timeoutDuration = isComplexRequest ? 120000 : 90000; // Increased timeouts further
+    const timeoutDuration = isComplexRequest ? 30000 : 20000; // Much shorter timeouts for faster response
     
     timeoutId = setTimeout(() => {
       console.log("Request timeout reached, aborting...");

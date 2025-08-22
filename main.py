@@ -155,20 +155,15 @@ def create_sigil(phrase, vibe="mystical", size=2048):
         else:
             create_mystical_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
 
-    print("🎨 Applying final enhancements...")
-    img = apply_vibe_effects(img, vibe, original_phrase)
-
-    # Apply additional artistic enhancement
-    img = apply_artistic_enhancement(img, vibe, original_phrase)
-    
-    # Apply new advanced artistic features
-    img = apply_advanced_artistic_features(img, vibe, original_phrase)
+    print("🎨 Applying optimized enhancements...")
+    # Apply only essential vibe effects for speed
+    img = apply_optimized_vibe_effects(img, vibe, original_phrase)
 
     print("💾 Converting to high-quality base64...")
     try:
-        # Apply final quality enhancements
-        print("🎨 Applying final quality pass...")
-        img = apply_final_quality_pass(img, vibe, phrase)
+        # Apply minimal quality enhancements for speed
+        print("🎨 Applying minimal quality pass...")
+        img = apply_minimal_quality_pass(img, vibe, phrase)
 
         img_buffer = io.BytesIO()
         # Use optimized PNG compression for better file size while maintaining quality
@@ -446,7 +441,7 @@ def create_crystal_sigil(draw, img, center, size, phrase, text_seed, combined_se
 
 
 def create_shadow_sigil(draw, img, center, size, phrase, text_seed, combined_seed, pattern_seed, color_seed):
-    """Create mysterious but beautiful shadow sigil with enhanced brightness - optimized"""
+    """Create mysterious but beautiful shadow sigil with enhanced brightness - heavily optimized"""
     random.seed(combined_seed)
     char_data = get_phrase_characteristics(phrase)
 
@@ -462,21 +457,21 @@ def create_shadow_sigil(draw, img, center, size, phrase, text_seed, combined_see
         )
         colors.append(new_color)
 
-    # Reduced tendril count for faster generation
-    tendril_count = min(12, 6 + char_data['length'] + char_data['consonant_count'])
+    # Heavily reduced tendril count for much faster generation
+    tendril_count = min(6, 3 + char_data['length'] // 2)
     for tendril in range(tendril_count):
         random.seed(pattern_seed + tendril + char_data['ascii_sum'])
-        start_angle = (char_data['first_char_value'] + tendril * 25) % 360
+        start_angle = (char_data['first_char_value'] + tendril * 45) % 360
 
         points = []
         current_x, current_y = center
 
-        # Reduced steps for faster generation
-        steps = min(25, 15 + char_data['word_count'] * 2)
+        # Much reduced steps for faster generation
+        steps = min(12, 8 + char_data['word_count'])
         for step in range(steps):
-            distance = step * (size // 40 + char_data['unique_chars'])
+            distance = step * (size // 30 + char_data['unique_chars'] // 2)
             angle_influence = (ord(phrase[step % len(phrase)]) - 32) if phrase else 0
-            angle_variation = random.uniform(-45, 45) + (angle_influence % 30 - 15)
+            angle_variation = random.uniform(-30, 30) + (angle_influence % 20 - 10)
             actual_angle = start_angle + angle_variation
 
             x = current_x + distance * math.cos(math.radians(actual_angle))
@@ -488,7 +483,7 @@ def create_shadow_sigil(draw, img, center, size, phrase, text_seed, combined_see
         # Draw tendril with phrase-influenced properties
         color = colors[tendril % len(colors)]
         for i in range(len(points) - 1):
-            thickness = max(1, 6 + char_data['numeric_count'] - i // 2)
+            thickness = max(1, 4 + char_data['numeric_count'] % 3 - i // 3)
             alpha = 140 + (char_data['special_count'] * 10) % 100
             try:
                 draw.line([points[i], points[i + 1]], fill=(*color, alpha), width=thickness)
@@ -1295,6 +1290,49 @@ def enhance_overall_quality(img, char_data):
 
         return img
     except:
+        return img
+
+def apply_optimized_vibe_effects(img, vibe, phrase):
+    """Apply minimal vibe-specific effects for speed"""
+    char_data = get_phrase_characteristics(phrase)
+    try:
+        if vibe == 'shadow':
+            # Minimal shadow effects
+            brightness_factor = 0.8 + (char_data['consonant_count'] * 0.01)
+            enhancer = ImageEnhance.Brightness(img)
+            img = enhancer.enhance(brightness_factor)
+        elif vibe == 'light':
+            # Minimal light effects
+            brightness_factor = 1.2 + (char_data['vowel_count'] * 0.01)
+            enhancer = ImageEnhance.Brightness(img)
+            img = enhancer.enhance(brightness_factor)
+        elif vibe == 'cosmic':
+            # Minimal cosmic effects
+            contrast_factor = 1.3 + (char_data['length'] * 0.005)
+            enhancer = ImageEnhance.Contrast(img)
+            img = enhancer.enhance(contrast_factor)
+        else:
+            # Minimal enhancement for all other vibes
+            enhancer = ImageEnhance.Color(img)
+            img = enhancer.enhance(1.2)
+    except Exception as e:
+        print(f"Optimized effects warning: {e}")
+    return img
+
+def apply_minimal_quality_pass(img, vibe, phrase):
+    """Apply minimal quality improvements for maximum speed"""
+    try:
+        # Basic sharpening only
+        enhancer = ImageEnhance.Sharpness(img)
+        img = enhancer.enhance(1.3)
+        
+        # Basic contrast
+        enhancer = ImageEnhance.Contrast(img)
+        img = enhancer.enhance(1.2)
+        
+        return img
+    except Exception as e:
+        print(f"Minimal quality pass warning: {e}")
         return img
 
 def apply_final_quality_pass(img, vibe, phrase):
