@@ -1298,86 +1298,60 @@ def enhance_overall_quality(img, char_data):
         return img
 
 def apply_final_quality_pass(img, vibe, phrase):
-    """Apply final quality improvements for maximum visual impact - optimized"""
+    """Apply final quality improvements for maximum visual impact - heavily optimized for speed"""
     try:
         char_data = get_phrase_characteristics(phrase)
         
-        # Skip expensive double-resolution for shadow to prevent timeouts
-        if vibe != 'shadow':
-            # High quality enhancement - double resolution for better detail while managing memory
-            img = img.resize((img.width * 2, img.height * 2), Image.LANCZOS)
-
+        # Skip expensive operations that cause timeouts
+        # No double-resolution for any vibe to prevent memory/time issues
+        
         # Moderate sharpening to prevent processing bottlenecks
         enhancer = ImageEnhance.Sharpness(img)
-        img = enhancer.enhance(1.8 if vibe == 'shadow' else 2.5)
+        img = enhancer.enhance(1.5)  # Reduced from 2.5
 
         # Enhanced contrast for deeper blacks and brighter colors
         enhancer = ImageEnhance.Contrast(img)
-        img = enhancer.enhance(1.4 if vibe == 'shadow' else 1.6)
+        img = enhancer.enhance(1.3)  # Reduced from 1.6
 
-        # Boost color vibrancy significantly
+        # Boost color vibrancy
         enhancer = ImageEnhance.Color(img)
-        img = enhancer.enhance(1.6 if vibe == 'shadow' else 2.0)
+        img = enhancer.enhance(1.4)  # Reduced from 2.0
 
-        # Apply vibe-specific final touches with optimized intensity
+        # Apply simplified vibe-specific final touches
         if vibe == 'light':
-            # Extra brightness and bloom
+            # Simplified light effects
             enhancer = ImageEnhance.Brightness(img)
-            img = enhancer.enhance(1.4)
-            img = add_bloom_effect(img, intensity=2.0)
-            img = add_radiance_boost(img, intensity=1.5)
+            img = enhancer.enhance(1.2)
         elif vibe == 'shadow':
-            # Optimized shadow effects - less processing intensive
+            # Simplified shadow effects
             enhancer = ImageEnhance.Brightness(img)
-            img = enhancer.enhance(0.8)  # Less aggressive darkening
-            # Skip expensive glow effects for shadow to prevent timeout
-            img = add_simple_shadow_glow(img)
+            img = enhancer.enhance(0.9)
         elif vibe == 'cosmic':
-            # Cosmic shimmer and depth
-            img = add_shimmer_effect(img)
-            img = add_stellar_glow(img, intensity=1.4)
+            # Simplified cosmic effects
             enhancer = ImageEnhance.Contrast(img)
-            img = enhancer.enhance(2.0)
+            img = enhancer.enhance(1.4)
         elif vibe == 'crystal':
-            # Ultra sharp and brilliant
+            # Simplified crystal effects
             enhancer = ImageEnhance.Sharpness(img)
-            img = enhancer.enhance(3.0)
-            img = add_refraction_effect(img)
-            img = add_crystal_brilliance(img, intensity=1.6)
-        elif vibe == 'elemental':
-            # Natural vibrancy
-            enhancer = ImageEnhance.Color(img)
-            img = enhancer.enhance(2.2)
-            img = add_elemental_energy(img, intensity=1.4)
-        else:  # mystical
-            # Ethereal glow
-            img = add_aura_effect(img)
-            img = add_mystical_shimmer(img, intensity=1.5)
-            enhancer = ImageEnhance.Color(img)
             img = enhancer.enhance(1.8)
+        elif vibe == 'elemental':
+            # Simplified elemental effects
+            enhancer = ImageEnhance.Color(img)
+            img = enhancer.enhance(1.6)
+        else:  # mystical
+            # Simplified mystical effects
+            enhancer = ImageEnhance.Color(img)
+            img = enhancer.enhance(1.5)
 
-        # Single anti-aliasing pass for shadow to save time
-        if vibe == 'shadow':
-            img = img.filter(ImageFilter.SMOOTH)
-        else:
-            # Multiple anti-aliasing passes for ultra-smooth edges
-            img = img.filter(ImageFilter.SMOOTH_MORE)
-            img = img.filter(ImageFilter.SMOOTH)
+        # Single anti-aliasing pass for all vibes to save time
+        img = img.filter(ImageFilter.SMOOTH)
 
-        # Advanced sharpening after smoothing
+        # Simplified final sharpening
         enhancer = ImageEnhance.Sharpness(img)
-        img = enhancer.enhance(1.5 if vibe == 'shadow' else 1.8)
+        img = enhancer.enhance(1.3)
 
-        # Resize back to target size with highest quality (only if we upscaled)
-        if vibe != 'shadow' and img.width > 2048:
-            target_size = img.width // 2
-            img = img.resize((target_size, target_size), Image.LANCZOS)
-
-        # Simplified detail enhancement for shadow
-        if vibe == 'shadow':
-            img = enhance_fine_details_optimized(img, char_data)
-        else:
-            img = enhance_fine_details(img, char_data)
+        # Use simplified detail enhancement for all vibes
+        img = enhance_fine_details_optimized(img, char_data)
 
         return img
     except Exception as e:

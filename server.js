@@ -291,17 +291,20 @@ app.get("/api/health", async (req, res) => {
 // Proxy sigil generation requests to Python Flask backend
 app.post("/generate", generationLimiter, async (req, res) => {
   let timeoutId = null;
+  let controller = null;
   
   try {
     console.log("Proxying generation request to Flask backend...");
 
-    const controller = new AbortController();
+    controller = new AbortController();
     const isComplexRequest = req.body.vibe && req.body.vibe.includes('+');
-    const timeoutDuration = isComplexRequest ? 90000 : 60000; // Increased timeouts
+    const timeoutDuration = isComplexRequest ? 120000 : 90000; // Increased timeouts further
     
     timeoutId = setTimeout(() => {
       console.log("Request timeout reached, aborting...");
-      controller.abort();
+      if (controller) {
+        controller.abort();
+      }
     }, timeoutDuration);
 
     // Try multiple Flask ports for generation
@@ -310,6 +313,10 @@ app.post("/generate", generationLimiter, async (req, res) => {
     
     for (const port of [5001, 5002, 5003, 5004, 5005]) {
       try {
+        if (controller.signal.aborted) {
+          throw new Error('Request was aborted due to timeout');
+        }
+
         response = await fetch(`http://127.0.0.1:${port}/generate`, {
           method: "POST",
           headers: {
@@ -320,6 +327,14 @@ app.post("/generate", generationLimiter, async (req, res) => {
           },
           body: JSON.stringify(req.body),
           signal: controller.signal
+        }).catch(fetchError => {
+          // Wrap fetch errors to prevent unhandled rejections
+          if (fetchError.name === 'AbortError') {
+            const wrappedError = new Error('Request timed out');
+            wrappedError.name = 'TimeoutError';
+            throw wrappedError;
+          }
+          throw fetchError;
         });
         
         if (response && response.ok) {
@@ -327,17 +342,31 @@ app.post("/generate", generationLimiter, async (req, res) => {
           break;
         }
       } catch (error) {
-        if (error.name !== 'AbortError') {
+        if (error.name === 'AbortError' || error.name === 'TimeoutError') {
+          lastError = new Error('Request timed out');
+          lastError.name = 'TimeoutError';
+          break; // Don't try other ports if we timed out
+        } else {
           console.log(`Port ${port} failed: ${error.message}`);
+          lastError = error;
+          continue;
         }
-        lastError = error;
-        continue;
       }
     }
     
+    // Clean up timeout
     if (timeoutId) {
       clearTimeout(timeoutId);
       timeoutId = null;
+    }
+    
+    // Check if we were aborted
+    if (controller && controller.signal.aborted) {
+      console.log("Request was aborted due to timeout");
+      return res.status(408).json({
+        success: false,
+        error: "Generation timed out. Please try a simpler phrase or try again."
+      });
     }
     
     if (!response) {
@@ -354,15 +383,17 @@ app.post("/generate", generationLimiter, async (req, res) => {
     res.json(data);
 
   } catch (error) {
+    // Always clean up timeout
     if (timeoutId) {
       clearTimeout(timeoutId);
+      timeoutId = null;
     }
     
     console.error("Flask backend proxy error:", error.message);
 
-    // Handle AbortError specifically to prevent server crashes
-    if (error.name === 'AbortError') {
-      console.log("Request was aborted due to timeout");
+    // Handle timeout/abort errors specifically to prevent server crashes
+    if (error.name === 'AbortError' || error.name === 'TimeoutError' || error.message.includes('timeout')) {
+      console.log("Request timed out or was aborted");
       return res.status(408).json({
         success: false,
         error: "Generation timed out. Please try a simpler phrase or try again."
@@ -393,6 +424,17 @@ app.post("/generate", generationLimiter, async (req, res) => {
 // -------- Fallback
 app.get("*", (_, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// Global error handlers to prevent server crashes
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Don't exit the process - just log the error
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  // Don't exit the process - just log the error
 });
 
 const PORT = process.env.PORT || 5000;
