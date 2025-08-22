@@ -260,6 +260,17 @@ function highlightSelection() {
       if (badge) badge.remove();
     }
   });
+  
+  // Update combo display
+  updateComboDisplay();
+}
+
+function updateComboDisplay() {
+  const comboDisplay = document.getElementById('comboDisplay');
+  if (comboDisplay) {
+    comboDisplay.textContent = selectedEnergies.join(' + ');
+    comboDisplay.style.color = selectedEnergies.length > 1 ? 'var(--neon-pink)' : 'var(--neon-cyan)';
+  }
 }
 
 // --- gating view ---
@@ -301,26 +312,65 @@ async function updateProButtons() {
   const proButtons = document.getElementById("proButtons");
   const upgradeBtn = document.getElementById("upgradeBtn");
   const enterKeyBtn = document.getElementById("enterKeyBtn");
+  const proUnlock = document.getElementById("proUnlock");
 
   console.log("Updating Pro buttons - Pro status:", isPro);
 
   if (isPro) {
-    // Hide upgrade button but keep enter key button for new users
-    if (upgradeBtn) upgradeBtn.style.display = 'none';
-    if (enterKeyBtn) enterKeyBtn.style.display = 'none';
+    // Hide upgrade buttons and show pro controls
     if (proButtons) proButtons.style.display = 'none';
+    if (proUnlock) proUnlock.style.display = 'none';
     console.log("Pro purchase buttons hidden");
   } else {
     // Show pro purchase buttons when user is not pro
-    if (upgradeBtn) upgradeBtn.style.display = 'inline-block';
-    if (enterKeyBtn) enterKeyBtn.style.display = 'inline-block';
     if (proButtons) proButtons.style.display = 'flex';
+    if (proUnlock) proUnlock.style.display = 'block';
     console.log("Pro buttons shown");
   }
 }
 
 // --- key modal ---
 enterKeyBtn.onclick = () => keyModal.showModal();
+
+// Pro unlock function
+async function unlockProFeatures() {
+  const keyInput = document.getElementById("proKeyInput2");
+  const key = keyInput.value.trim();
+  
+  if (!key) {
+    toast("Enter a Pro key", 'warning');
+    return;
+  }
+
+  try {
+    const r = await fetch("/api/verify-pro", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ key })
+    });
+    const j = await r.json();
+    if (j.ok) {
+      localStorage.setItem("sigil_pro","1");
+      clearProCache();
+      keyInput.value = '';
+      toast("✨ Pro unlocked! All features available!", 'success', 5000);
+      
+      setTimeout(async () => {
+        await renderGate();
+        await updateProButtons();
+        await renderEnergies();
+      }, 100);
+    } else {
+      toast("❌ Invalid Pro key", 'error');
+    }
+  } catch (error) {
+    console.error("Pro unlock error:", error);
+    toast("❌ Error unlocking. Please try again.", 'error');
+  }
+}
+
+// Make globally available
+window.unlockProFeatures = unlockProFeatures;
 unlockBtn.onclick = async () => {
   const key = proKeyInput.value.trim();
   if (!key) return toast("Enter a key", 'warning');
@@ -1062,15 +1112,15 @@ function startAnimation() {
       ctx.save();
 
       // Create magical pulsing and subtle rotation effects
-      const time = frame * 0.02;
-      const scale = 1 + Math.sin(time * 4) * 0.05; // More pronounced pulsing
-      const rotation = Math.sin(time * 2) * 0.02; // Gentle rotation
-      const opacity = 0.85 + Math.sin(time * 6) * 0.15; // Opacity variation
+      const time = frame * 0.03;
+      const scale = 1 + Math.sin(time * 3) * 0.08; // More pronounced pulsing
+      const rotation = Math.sin(time * 1.5) * 0.03; // Gentle rotation
+      const opacity = 0.9 + Math.sin(time * 5) * 0.1; // Opacity variation
       
-      // Add magical glow effect
-      const glowIntensity = 0.5 + Math.sin(time * 8) * 0.3;
-      ctx.shadowColor = 'rgba(0, 255, 255, ' + glowIntensity + ')';
-      ctx.shadowBlur = 20 + Math.sin(time * 5) * 10;
+      // Add enhanced magical glow effect
+      const glowIntensity = 0.6 + Math.sin(time * 6) * 0.4;
+      ctx.shadowColor = `rgba(0, 255, 255, ${glowIntensity})`;
+      ctx.shadowBlur = 25 + Math.sin(time * 4) * 15;
 
       // Apply transformations from center
       ctx.translate(canvas.width / 2, canvas.height / 2);
@@ -1087,10 +1137,8 @@ function startAnimation() {
       // Restore context
       ctx.restore();
       
-      // Add magical particles effect
-      if (frame % 10 === 0) { // Every 10 frames
-        addMagicalParticles(ctx, time);
-      }
+      // Add enhanced magical particles effect
+      addEnhancedMagicalParticles(ctx, time, frame);
       
       frame++;
       animationFrame = requestAnimationFrame(animate);
@@ -1106,6 +1154,45 @@ function startAnimation() {
   };
   
   originalImg.src = lastGeneratedImage;
+}
+
+function addEnhancedMagicalParticles(ctx, time, frame) {
+  // Add enhanced floating particles for magical effect
+  for (let i = 0; i < 8; i++) {
+    const angle = (time + i) * 0.5;
+    const radius = 50 + Math.sin(time * 2 + i) * 30;
+    const x = canvas.width / 2 + Math.cos(angle) * radius;
+    const y = canvas.height / 2 + Math.sin(angle) * radius;
+    const size = 3 + Math.sin(time * 3 + i) * 2;
+    const alpha = 0.4 + Math.sin(time * 4 + i) * 0.3;
+    
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = `hsl(${(180 + Math.sin(time + i) * 120) % 360}, 80%, 70%)`;
+    ctx.shadowColor = ctx.fillStyle;
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+  
+  // Add sparkle effects
+  if (frame % 15 === 0) {
+    for (let i = 0; i < 3; i++) {
+      const x = Math.random() * canvas.width;
+      const y = Math.random() * canvas.height;
+      const alpha = 0.8 + Math.random() * 0.2;
+      
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = '#00ffff';
+      ctx.shadowBlur = 15;
+      ctx.fillRect(x - 1, y - 1, 2, 2);
+      ctx.restore();
+    }
+  }
 }
 
 function addMagicalParticles(ctx, time) {
@@ -1195,12 +1282,14 @@ async function shareSigil() {
     }
 
     const phrase = intentInput.value || 'Quantum Sigil';
-    const vibe = selectedEnergies.join('+');
+    const vibe = selectedEnergies.join(' + ');
 
     // Create comprehensive share data
     const shareText = `🔮 I just created a ${vibe} sigil for "${phrase}" using Sigilcraft! ✨ 
 
-✨ Experience quantum sigil creation: ${window.location.origin}`;
+Experience quantum sigil creation: ${window.location.origin}
+
+#sigilcraft #quantumsigil #manifestation`;
 
     // Try multiple sharing methods
     if (navigator.share) {
@@ -1208,11 +1297,11 @@ async function shareSigil() {
         // First try with image if supported
         if (canvas && navigator.canShare) {
           const blob = await new Promise(resolve => {
-            canvas.toBlob(resolve, 'image/png', 1.0);
+            canvas.toBlob(resolve, 'image/png', 0.9);
           });
           
-          if (blob) {
-            const file = new File([blob], 'quantum-sigil.png', { type: 'image/png' });
+          if (blob && blob.size > 0) {
+            const file = new File([blob], `${phrase.replace(/[^a-zA-Z0-9]/g, '_')}_sigil.png`, { type: 'image/png' });
             
             if (navigator.canShare({ files: [file] })) {
               await navigator.share({
@@ -1347,6 +1436,7 @@ function showSigilGallery() {
         <div style="text-align: center; color: var(--text-secondary); padding: 40px;">
           <h3 style="margin-bottom: 15px;">🖼️ No saved sigils yet</h3>
           <p>Generate some beautiful sigils and save them to build your collection!</p>
+          <button onclick="hideSigilGallery()" style="margin-top: 20px; padding: 10px 20px; background: var(--neon-cyan); color: var(--dark-bg); border: none; border-radius: 8px; cursor: pointer;">Start Creating</button>
         </div>
       `;
     } else {
@@ -1356,18 +1446,28 @@ function showSigilGallery() {
       recentSigils.forEach((sigil, index) => {
         const item = document.createElement('div');
         item.className = 'gallery-item';
+        item.style.cssText = `
+          background: rgba(0, 20, 40, 0.6);
+          border: 2px solid var(--border-glow);
+          border-radius: 12px;
+          padding: 15px;
+          text-align: center;
+          transition: all 0.3s ease;
+          cursor: pointer;
+          margin: 10px;
+        `;
         
         // Create safe image element
         const img = document.createElement('img');
         img.alt = `Sigil: ${sigil.phrase}`;
-        img.style.cssText = 'max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 10px;';
+        img.style.cssText = 'max-width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;';
         
         // Handle image loading errors
         img.onerror = () => {
           img.src = 'data:image/svg+xml,' + encodeURIComponent(`
-            <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
-              <rect width="100" height="100" fill="#333"/>
-              <text x="50" y="50" text-anchor="middle" fill="#666" font-size="12">No Image</text>
+            <svg width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+              <rect width="120" height="120" fill="#333"/>
+              <text x="60" y="60" text-anchor="middle" fill="#666" font-size="12">Sigil</text>
             </svg>
           `);
         };
@@ -1377,13 +1477,18 @@ function showSigilGallery() {
         const info = document.createElement('div');
         info.className = 'gallery-info';
         info.innerHTML = `
-          <div style="font-weight: bold; margin-bottom: 5px; color: var(--text-primary);" 
+          <div style="font-weight: bold; margin-bottom: 5px; color: var(--text-primary); font-size: 0.9rem;" 
                title="${sigil.phrase}">
-            ${sigil.phrase.length > 20 ? sigil.phrase.substring(0, 20) + '...' : sigil.phrase}
+            ${sigil.phrase.length > 15 ? sigil.phrase.substring(0, 15) + '...' : sigil.phrase}
           </div>
-          <div style="color: var(--text-secondary); font-size: 0.8rem;">
-            ${sigil.vibe} • ${new Date(sigil.timestamp).toLocaleDateString()}
+          <div style="color: var(--text-secondary); font-size: 0.7rem;">
+            ${sigil.vibe.replace('+', ' + ')} <br>
+            ${new Date(sigil.timestamp).toLocaleDateString()}
           </div>
+          <button onclick="event.stopPropagation(); deleteSigil('${sigil.id}')" 
+                  style="margin-top: 8px; padding: 4px 8px; background: rgba(255, 0, 0, 0.3); color: white; border: 1px solid #ff4444; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">
+            🗑️ Delete
+          </button>
         `;
         
         item.appendChild(img);
@@ -1395,14 +1500,15 @@ function showSigilGallery() {
         };
         
         // Add hover effects
-        item.style.cursor = 'pointer';
         item.onmouseenter = () => {
           item.style.transform = 'translateY(-5px)';
           item.style.boxShadow = '0 15px 30px rgba(0, 255, 255, 0.3)';
+          item.style.borderColor = 'var(--neon-cyan)';
         };
         item.onmouseleave = () => {
           item.style.transform = 'translateY(0)';
           item.style.boxShadow = '';
+          item.style.borderColor = 'var(--border-glow)';
         };
         
         galleryContent.appendChild(item);
@@ -1417,6 +1523,22 @@ function showSigilGallery() {
     toast('❌ Error loading gallery', 'error');
   }
 }
+
+function deleteSigil(id) {
+  try {
+    const savedSigils = JSON.parse(localStorage.getItem('saved_sigils') || '[]');
+    const updatedSigils = savedSigils.filter(s => s.id !== id);
+    localStorage.setItem('saved_sigils', JSON.stringify(updatedSigils));
+    toast('🗑️ Sigil deleted', 'success');
+    showSigilGallery(); // Refresh gallery
+  } catch (error) {
+    console.error('Delete error:', error);
+    toast('❌ Error deleting sigil', 'error');
+  }
+}
+
+// Make globally available
+window.deleteSigil = deleteSigil;
 
 // Make function globally available
 window.showSigilGallery = showSigilGallery;

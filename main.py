@@ -78,17 +78,19 @@ def create_sigil(phrase, vibe="mystical", size=2048):
     if not original_phrase:
         return None, "Please enter text with at least one character"
 
-    # Create comprehensive hash for maximum uniqueness
-    phrase_hash = hashlib.sha256(original_phrase.encode()).hexdigest()
-    vibe_hash = hashlib.sha256(vibe.encode()).hexdigest()
-    combined_hash = hashlib.sha256((original_phrase + vibe + str(len(original_phrase))).encode()).hexdigest()
+    # Create comprehensive hash for maximum uniqueness with time factor
+    time_factor = str(int(time.time() * 1000) % 10000)  # Small time variation
+    phrase_hash = hashlib.sha256((original_phrase + time_factor).encode()).hexdigest()
+    vibe_hash = hashlib.sha256((vibe + original_phrase).encode()).hexdigest()
+    combined_hash = hashlib.sha256((original_phrase + vibe + str(len(original_phrase)) + str(sum(ord(c) for c in original_phrase))).encode()).hexdigest()
 
-    # Generate multiple seeds from different parts of the hash
-    text_seed = int(phrase_hash[:8], 16) % 2147483647
-    vibe_seed = int(vibe_hash[:8], 16) % 2147483647
-    combined_seed = int(combined_hash[:8], 16) % 2147483647
-    pattern_seed = int(phrase_hash[8:16], 16) % 2147483647
-    color_seed = int(phrase_hash[16:24], 16) % 2147483647
+    # Generate multiple seeds with enhanced phrase influence
+    ascii_sum = sum(ord(c) for c in original_phrase)
+    text_seed = (int(phrase_hash[:8], 16) + ascii_sum * 1000) % 2147483647
+    vibe_seed = (int(vibe_hash[:8], 16) + len(original_phrase) * 5000) % 2147483647
+    combined_seed = (int(combined_hash[:8], 16) + ascii_sum * len(original_phrase)) % 2147483647
+    pattern_seed = (int(phrase_hash[8:16], 16) + ascii_sum * 100) % 2147483647
+    color_seed = (int(phrase_hash[16:24], 16) + len(original_phrase) * ascii_sum) % 2147483647
 
     print(f"🌱 Using seeds - Text: {text_seed}, Vibe: {vibe_seed}, Combined: {combined_seed}")
     print(f"🎨 Pattern: {pattern_seed}, Color: {color_seed}")
@@ -486,19 +488,19 @@ def create_elemental_sigil(draw, img, center, size, phrase, text_seed, combined_
 
 def create_crystal_sigil(draw, img, center, size, phrase, text_seed, combined_seed, pattern_seed, color_seed):
     """Create stunning geometric crystal sigil with enhanced visual beauty"""
-    random.seed(combined_seed)
+    random.seed(combined_seed + len(phrase) * 1000)  # More phrase influence
     char_data = get_phrase_characteristics(phrase)
 
-    # Dramatically enhanced crystal colors with brilliance and variety
+    # Enhanced crystal colors with more vibrant, beautiful hues
     base_colors = [
-        (255, 230, 250),  # Rose quartz
-        (200, 255, 255),  # Aquamarine  
-        (255, 255, 200),  # Citrine
-        (230, 200, 255),  # Amethyst
-        (200, 255, 200),  # Emerald
-        (255, 200, 200),  # Ruby
-        (180, 220, 255),  # Sapphire
-        (255, 220, 180)   # Topaz
+        (255, 140, 255),  # Brilliant magenta
+        (140, 255, 255),  # Cyan crystal  
+        (255, 255, 140),  # Golden citrine
+        (200, 140, 255),  # Deep amethyst
+        (140, 255, 200),  # Emerald green
+        (255, 140, 140),  # Ruby red
+        (140, 200, 255),  # Sapphire blue
+        (255, 200, 140)   # Warm topaz
     ]
     
     colors = []
@@ -513,12 +515,13 @@ def create_crystal_sigil(draw, img, center, size, phrase, text_seed, combined_se
         )
         colors.append(new_color)
 
-    # Create stunning multi-layered crystal formations
-    crystal_layers = 3 + (char_data['word_count'] % 4)
+    # Create stunning multi-layered crystal formations with phrase-specific geometry
+    crystal_layers = 4 + (char_data['word_count'] % 5)
+    base_radius = size // 8 + (char_data['ascii_sum'] % 100)
     
     for layer in range(crystal_layers):
-        layer_radius = (size // 6) + (layer * size // 12)
-        crystal_count = 8 + (char_data['length'] % 6) + layer * 2
+        layer_radius = base_radius + (layer * (size // 15 + char_data['unique_chars'] * 3))
+        crystal_count = 6 + (char_data['length'] % 8) + layer * 3 + (char_data['vowel_count'] % 4)
         
         for crystal in range(crystal_count):
             # Phrase-influenced crystal positioning

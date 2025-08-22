@@ -838,6 +838,15 @@
             <button class="pro-button" id="enterKeyBtn">🔑 Enter Pro Key</button>
         </div>
 
+        <div class="pro-unlock" id="proUnlock" style="display: none;">
+            <div class="unlock-container">
+                <h3>🔑 Unlock Pro Features</h3>
+                <p>Enter your Pro key to unlock all energy types and advanced features!</p>
+                <input type="text" id="proKeyInput2" placeholder="Enter Pro Key" style="width: 100%; padding: 15px; margin: 10px 0; background: rgba(0, 20, 40, 0.8); border: 2px solid var(--neon-cyan); border-radius: 12px; color: var(--text-primary);" />
+                <button onclick="unlockProFeatures()" class="pro-button">✨ Unlock Pro</button>
+            </div>
+        </div>
+
         <div class="form-container">
             <div class="input-group">
                 <label for="intentInput">Neural Intent Interface:</label>
@@ -853,13 +862,22 @@
             <div id="energyList" class="energies"></div>
 
             <div id="proControls" class="pro-only">
-                <div class="pro-control-row">
-                    <label class="pro-control-label">
-                        <input type="checkbox" id="comboToggle"> 
-                        🌟 <strong>Combo Mode</strong> - Mix Multiple Energies (Max 4)
-                    </label>
-                    <div class="combo-help" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 5px;">
-                        ✨ Select multiple energies below to create unique combinations
+                <div class="combo-section" style="background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(255, 0, 255, 0.1)); border: 2px solid var(--neon-cyan); border-radius: 15px; padding: 20px; margin: 20px 0;">
+                    <h3 style="font-family: 'Orbitron', monospace; color: var(--neon-cyan); margin-bottom: 15px; text-align: center;">🌟 Energy Combination Matrix</h3>
+                    
+                    <div class="pro-control-row">
+                        <label class="pro-control-label">
+                            <input type="checkbox" id="comboToggle"> 
+                            <strong>Multi-Energy Mode</strong> - Combine up to 4 energies
+                        </label>
+                        <div class="combo-help" style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 8px; text-align: center;">
+                            ✨ Click multiple energy types below to create powerful combinations
+                        </div>
+                    </div>
+                    
+                    <div id="selectedCombo" style="margin-top: 15px; padding: 10px; background: rgba(0, 0, 0, 0.3); border-radius: 8px; text-align: center; font-family: 'Orbitron', monospace;">
+                        <span style="color: var(--neon-green);">Selected: </span>
+                        <span id="comboDisplay" style="color: var(--neon-cyan);">mystical</span>
                     </div>
                 </div>
                 
