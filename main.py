@@ -446,7 +446,7 @@ def create_crystal_sigil(draw, img, center, size, phrase, text_seed, combined_se
 
 
 def create_shadow_sigil(draw, img, center, size, phrase, text_seed, combined_seed, pattern_seed, color_seed):
-    """Create mysterious but beautiful shadow sigil with enhanced brightness"""
+    """Create mysterious but beautiful shadow sigil with enhanced brightness - optimized"""
     random.seed(combined_seed)
     char_data = get_phrase_characteristics(phrase)
 
@@ -462,8 +462,8 @@ def create_shadow_sigil(draw, img, center, size, phrase, text_seed, combined_see
         )
         colors.append(new_color)
 
-    # Create shadow tendrils with phrase characteristics
-    tendril_count = 8 + char_data['length'] + char_data['consonant_count']
+    # Reduced tendril count for faster generation
+    tendril_count = min(12, 6 + char_data['length'] + char_data['consonant_count'])
     for tendril in range(tendril_count):
         random.seed(pattern_seed + tendril + char_data['ascii_sum'])
         start_angle = (char_data['first_char_value'] + tendril * 25) % 360
@@ -471,7 +471,8 @@ def create_shadow_sigil(draw, img, center, size, phrase, text_seed, combined_see
         points = []
         current_x, current_y = center
 
-        steps = 20 + char_data['word_count'] * 3
+        # Reduced steps for faster generation
+        steps = min(25, 15 + char_data['word_count'] * 2)
         for step in range(steps):
             distance = step * (size // 40 + char_data['unique_chars'])
             angle_influence = (ord(phrase[step % len(phrase)]) - 32) if phrase else 0
@@ -494,11 +495,11 @@ def create_shadow_sigil(draw, img, center, size, phrase, text_seed, combined_see
             except:
                 pass
 
-    # Add shadow runes
-    create_shadow_runes(draw, center, size, phrase, colors, text_seed, char_data)
+    # Simplified shadow runes for faster generation
+    create_shadow_runes_optimized(draw, center, size, phrase, colors, text_seed, char_data)
 
-    # Add void spaces
-    create_void_effect(draw, center, size, phrase, combined_seed, char_data)
+    # Simplified void spaces
+    create_void_effect_optimized(draw, center, size, phrase, combined_seed, char_data)
 
 
 def create_light_sigil(draw, img, center, size, phrase, text_seed, combined_seed, pattern_seed, color_seed):
@@ -883,11 +884,47 @@ def create_shadow_runes(draw, center, size, phrase, colors, seed, char_data):
                     pass
 
 
-def create_void_effect(draw, center, size, phrase, seed, char_data):
-    """Create void spaces in shadow sigil with phrase characteristics"""
+def create_shadow_runes_optimized(draw, center, size, phrase, colors, seed, char_data):
+    """Create dark runic symbols with phrase characteristics - optimized"""
     random.seed(seed + char_data['ascii_sum'])
 
-    void_count = 2 + char_data['word_count'] + (char_data['length'] % 4)
+    # Limit rune count for faster generation
+    rune_chars = [char for char in phrase if char.isalnum()][:8]  # Max 8 runes
+    
+    for i, char in enumerate(rune_chars):
+        angle = (360 / len(rune_chars)) * i + ord(char) * 3
+        distance = size // 6 + char_data['word_count'] * 8
+        x = center[0] + distance * math.cos(math.radians(angle))
+        y = center[1] + distance * math.sin(math.radians(angle))
+
+        # Simplified rune complexity
+        rune_complexity = min(4, 2 + (ord(char) % 3))
+        color = colors[(ord(char) + i + char_data['vowel_count']) % len(colors)]
+
+        for rune_line in range(rune_complexity):
+            line_angle = angle + rune_line * 45 + char_data['first_char_value']
+            line_length = 12 + (ord(char) % 12) + char_data['unique_chars']
+
+            start_x = x + (line_length // 2) * math.cos(math.radians(line_angle))
+            start_y = y + (line_length // 2) * math.sin(math.radians(line_angle))
+            end_x = x - (line_length // 2) * math.cos(math.radians(line_angle))
+            end_y = y - (line_length // 2) * math.sin(math.radians(line_angle))
+
+            width = 2 + (char_data['numeric_count'] % 3)
+            alpha = 200 + (char_data['special_count'] * 10) % 55
+
+            try:
+                draw.line([(start_x, start_y), (end_x, end_y)],
+                         fill=(*color, alpha), width=width)
+            except:
+                pass
+
+def create_void_effect_optimized(draw, center, size, phrase, seed, char_data):
+    """Create void spaces in shadow sigil with phrase characteristics - optimized"""
+    random.seed(seed + char_data['ascii_sum'])
+
+    # Reduced void count for faster generation
+    void_count = min(6, 2 + char_data['word_count'] + (char_data['length'] % 4))
     for void in range(void_count):
         void_x = random.randint(size//6, size - size//6) + (char_data['first_char_value'] % 30 - 15)
         void_y = random.randint(size//6, size - size//6) + (char_data['last_char_value'] % 30 - 15)
@@ -902,6 +939,10 @@ def create_void_effect(draw, center, size, phrase, seed, char_data):
                         fill=(0, 0, 0, 255), outline=(40, 40, 40, outline_alpha))
         except:
             pass
+
+def create_void_effect(draw, center, size, phrase, seed, char_data):
+    """Create void spaces in shadow sigil with phrase characteristics"""
+    return create_void_effect_optimized(draw, center, size, phrase, seed, char_data)
 
 
 def create_light_orbs(draw, center, size, phrase, colors, seed, char_data):
@@ -1257,26 +1298,28 @@ def enhance_overall_quality(img, char_data):
         return img
 
 def apply_final_quality_pass(img, vibe, phrase):
-    """Apply final quality improvements for maximum visual impact"""
+    """Apply final quality improvements for maximum visual impact - optimized"""
     try:
         char_data = get_phrase_characteristics(phrase)
+        
+        # Skip expensive double-resolution for shadow to prevent timeouts
+        if vibe != 'shadow':
+            # High quality enhancement - double resolution for better detail while managing memory
+            img = img.resize((img.width * 2, img.height * 2), Image.LANCZOS)
 
-        # High quality enhancement - double resolution for better detail while managing memory
-        img = img.resize((img.width * 2, img.height * 2), Image.LANCZOS)
-
-        # Advanced multi-pass sharpening
+        # Moderate sharpening to prevent processing bottlenecks
         enhancer = ImageEnhance.Sharpness(img)
-        img = enhancer.enhance(2.5)
+        img = enhancer.enhance(1.8 if vibe == 'shadow' else 2.5)
 
         # Enhanced contrast for deeper blacks and brighter colors
         enhancer = ImageEnhance.Contrast(img)
-        img = enhancer.enhance(1.6)
+        img = enhancer.enhance(1.4 if vibe == 'shadow' else 1.6)
 
         # Boost color vibrancy significantly
         enhancer = ImageEnhance.Color(img)
-        img = enhancer.enhance(2.0)
+        img = enhancer.enhance(1.6 if vibe == 'shadow' else 2.0)
 
-        # Apply vibe-specific final touches with enhanced intensity
+        # Apply vibe-specific final touches with optimized intensity
         if vibe == 'light':
             # Extra brightness and bloom
             enhancer = ImageEnhance.Brightness(img)
@@ -1284,11 +1327,11 @@ def apply_final_quality_pass(img, vibe, phrase):
             img = add_bloom_effect(img, intensity=2.0)
             img = add_radiance_boost(img, intensity=1.5)
         elif vibe == 'shadow':
-            # Deeper shadows and mysterious glow
+            # Optimized shadow effects - less processing intensive
             enhancer = ImageEnhance.Brightness(img)
-            img = enhancer.enhance(0.7)
-            img = add_glow_effect(img, (60, 20, 60), intensity=1.5)
-            img = add_shadow_depth(img, intensity=1.3)
+            img = enhancer.enhance(0.8)  # Less aggressive darkening
+            # Skip expensive glow effects for shadow to prevent timeout
+            img = add_simple_shadow_glow(img)
         elif vibe == 'cosmic':
             # Cosmic shimmer and depth
             img = add_shimmer_effect(img)
@@ -1313,24 +1356,54 @@ def apply_final_quality_pass(img, vibe, phrase):
             enhancer = ImageEnhance.Color(img)
             img = enhancer.enhance(1.8)
 
-        # Multiple anti-aliasing passes for ultra-smooth edges
-        img = img.filter(ImageFilter.SMOOTH_MORE)
-        img = img.filter(ImageFilter.SMOOTH)
+        # Single anti-aliasing pass for shadow to save time
+        if vibe == 'shadow':
+            img = img.filter(ImageFilter.SMOOTH)
+        else:
+            # Multiple anti-aliasing passes for ultra-smooth edges
+            img = img.filter(ImageFilter.SMOOTH_MORE)
+            img = img.filter(ImageFilter.SMOOTH)
 
         # Advanced sharpening after smoothing
         enhancer = ImageEnhance.Sharpness(img)
-        img = enhancer.enhance(1.8)
+        img = enhancer.enhance(1.5 if vibe == 'shadow' else 1.8)
 
-        # Resize back to target size with highest quality
-        target_size = img.width // 2
-        img = img.resize((target_size, target_size), Image.LANCZOS)
+        # Resize back to target size with highest quality (only if we upscaled)
+        if vibe != 'shadow' and img.width > 2048:
+            target_size = img.width // 2
+            img = img.resize((target_size, target_size), Image.LANCZOS)
 
-        # Final detail enhancement
-        img = enhance_fine_details(img, char_data)
+        # Simplified detail enhancement for shadow
+        if vibe == 'shadow':
+            img = enhance_fine_details_optimized(img, char_data)
+        else:
+            img = enhance_fine_details(img, char_data)
 
         return img
     except Exception as e:
         print(f"Final quality pass warning: {e}")
+        return img
+
+def add_simple_shadow_glow(img):
+    """Simple shadow glow effect to prevent timeouts"""
+    try:
+        enhancer = ImageEnhance.Brightness(img)
+        return enhancer.enhance(1.1)
+    except:
+        return img
+
+def enhance_fine_details_optimized(img, char_data):
+    """Optimized fine detail enhancement"""
+    try:
+        # Simplified enhancement for faster processing
+        enhancer = ImageEnhance.Sharpness(img)
+        img = enhancer.enhance(1.2)
+        
+        enhancer = ImageEnhance.Contrast(img)
+        img = enhancer.enhance(1.15)
+        
+        return img
+    except:
         return img
 
 def apply_artistic_enhancement(img, vibe, phrase):

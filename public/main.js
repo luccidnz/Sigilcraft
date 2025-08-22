@@ -43,21 +43,21 @@ function localIsPro() {
 
 async function isUserPro() {
   const now = Date.now();
-  
+
   // Use cache if valid (30 second cache)
   if (proStatusCache !== null && now < cacheExpiry) {
     return proStatusCache;
   }
-  
+
   // Check both server and local
   const serverPro = await serverIsPro();
   const localPro = localIsPro();
   const isPro = serverPro || localPro;
-  
+
   // Cache the result
   proStatusCache = isPro;
   cacheExpiry = now + 30000; // 30 seconds
-  
+
   console.log("Pro status check:", isPro, "(server:", serverPro, "local:", localPro, ")");
   return isPro;
 }
@@ -72,7 +72,7 @@ function clearProCache() {
 let toastTimer;
 function toast(msg, type = 'info', duration = 3000) {
   toastEl.textContent = msg;
-  toastEl.className = 'toast show';
+  toastEl.classList.add('toast', 'show'); // Ensure 'toast' class is always present
 
   // Remove existing type classes
   toastEl.classList.remove('error', 'success', 'warning', 'info');
@@ -88,6 +88,7 @@ function toast(msg, type = 'info', duration = 3000) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => {
     toastEl.classList.remove('show');
+    // Remove the 'toast' class only after the transition is complete
     setTimeout(() => {
       toastEl.className = 'toast';
     }, 300);
@@ -176,10 +177,10 @@ async function renderEnergies() {
       // Check if energy is locked for current user
       const userIsPro = await isUserPro();
       const energyIsLocked = !userIsPro && !FREE_ENERGIES.includes(name);
-      
-      if (energyIsLocked) { 
-        toast("⚡ " + name + " energy requires Pro upgrade", 'warning'); 
-        return; 
+
+      if (energyIsLocked) {
+        toast("⚡ " + name + " energy requires Pro upgrade", 'warning');
+        return;
       }
 
       // Always clear and rebuild selection to ensure consistency
@@ -400,9 +401,9 @@ async function generateSigilRequest(phrase = "default", vibe = "mystical", retry
 
     if (!response.ok) {
       if (response.status === 429) {
-        throw new Error("Rate limit exceeded. Please wait before generating another sigil.");
+        throw new Error("Rate limit exceeded."); // Simpler error for rate limit
       } else if (response.status === 503) {
-        throw new Error("Sigil generation service temporarily unavailable. Please try again.");
+        throw new Error("503 Service Unavailable."); // Explicit error for 503
       } else {
         // Attempt to get error message from response body
         const errorData = await response.json().catch(() => ({ error: `Server error: ${response.status}` }));
@@ -428,34 +429,34 @@ async function generateSigilRequest(phrase = "default", vibe = "mystical", retry
   } catch (error) {
     console.error("Sigil generation error:", error);
 
-    // Retry logic for network errors or timeouts
-    if (retryCount < maxRetries && (
-      error.name === 'AbortError' ||
-      error.message.includes('Failed to fetch') ||
-      error.message.includes('temporarily unavailable') ||
-      error.message.includes('NetworkError') || // Common for fetch issues
-      error.message.includes('timeout') ||
-      error.message.includes('Rate limit exceeded') // Explicitly catch rate limit for retries
-    )) {
-      console.log(`Retrying generation (attempt ${retryCount + 1}/${maxRetries})... Delay: ${retryDelay}ms`);
-      await new Promise(resolve => setTimeout(resolve, retryDelay)); // Use progressive delay
-      return generateSigilRequest(phrase, vibe, retryCount + 1);
-    }
-
     // Handle specific error messages for user feedback
     let errorMessage = '⚠️ Generation failed. Please try again.';
-    if (error.message.includes('timeout')) {
+    let retryable = true;
+
+    if (error.name === 'AbortError' || error.message.includes('timeout')) {
       errorMessage = '⏱️ Generation timed out. Try a simpler phrase or try again.';
+      retryable = true;
+    } else if (error.message.includes('408')) {
+      errorMessage = '⏱️ Request timed out. Please try again with a simpler phrase.';
+      retryable = true;
     } else if (error.message.includes('503')) {
       errorMessage = '🔄 Service starting up. Please wait a moment and try again.';
-    } else if (error.message.includes('rate limit')) {
+      retryable = true;
+    } else if (error.message.includes('rate limit') || error.message.includes('429')) {
       errorMessage = '⏳ Too many requests. Please wait before trying again.';
+      retryable = false;
     } else if (error.message.includes('Invalid characters detected')) {
       errorMessage = '🚫 Invalid characters in your intent. Please remove them.';
+      retryable = false;
     } else if (error.message.includes('Intent is too long') || error.message.includes('Intent is too short')) {
       errorMessage = `📝 ${error.message}`;
+      retryable = false;
     } else if (error.message.includes('not available')) {
       errorMessage = `⚡ ${error.message}`;
+      retryable = true;
+    } else if (error.message.includes('Failed to fetch')) {
+      errorMessage = '🌐 Network error. Please check your connection and try again.';
+      retryable = true;
     }
 
     // Display error message in the designated display area or via toast
@@ -469,7 +470,7 @@ async function generateSigilRequest(phrase = "default", vibe = "mystical", retry
     return {
       success: false,
       error: errorMessage,
-      retryable: false
+      retryable: retryable
     };
   }
 }
@@ -741,7 +742,7 @@ let isAnimating = false;
 
 function toggleSigilAnimation() {
   const animateBtn = document.getElementById('animateBtn');
-  
+
   if (isAnimating) {
     stopAnimation();
     animateBtn.textContent = '✨ Animate Sigil';
@@ -756,38 +757,38 @@ function startAnimation() {
     toast('⚠️ Generate a sigil first to animate', 'warning');
     return;
   }
-  
+
   isAnimating = true;
   let frame = 0;
-  
+
   const animate = () => {
     if (!isAnimating) return;
-    
+
     const ctx = canvas.getContext('2d');
     ctx.save();
-    
+
     // Create pulsing effect
     const scale = 1 + Math.sin(frame * 0.1) * 0.05;
     const rotation = Math.sin(frame * 0.05) * 0.02;
-    
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.translate(canvas.width / 2, canvas.height / 2);
     ctx.scale(scale, scale);
     ctx.rotate(rotation);
     ctx.translate(-canvas.width / 2, -canvas.height / 2);
-    
+
     // Redraw the image
     const img = new Image();
     img.onload = () => {
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     };
     img.src = lastGeneratedImage;
-    
+
     ctx.restore();
     frame++;
     animationFrame = requestAnimationFrame(animate);
   };
-  
+
   animate();
 }
 
@@ -797,7 +798,7 @@ function stopAnimation() {
     cancelAnimationFrame(animationFrame);
     animationFrame = null;
   }
-  
+
   // Restore original image
   if (lastGeneratedImage) {
     const img = new Image();
@@ -816,7 +817,7 @@ function rateSigil(rating) {
   stars.forEach((star, index) => {
     star.classList.toggle('active', index < rating);
   });
-  
+
   // Store rating
   const sigilData = {
     phrase: document.getElementById("intentInput").value,
@@ -824,12 +825,12 @@ function rateSigil(rating) {
     rating: rating,
     timestamp: Date.now()
   };
-  
+
   // Save to local storage
   const ratings = JSON.parse(localStorage.getItem('sigil_ratings') || '[]');
   ratings.push(sigilData);
   localStorage.setItem('sigil_ratings', JSON.stringify(ratings.slice(-50))); // Keep last 50
-  
+
   toast(`✨ Rated ${rating} star${rating !== 1 ? 's' : ''}! Thank you!`, 'success');
   updateAverageRating();
 }
@@ -837,7 +838,7 @@ function rateSigil(rating) {
 function updateAverageRating() {
   const ratings = JSON.parse(localStorage.getItem('sigil_ratings') || '[]');
   if (ratings.length === 0) return;
-  
+
   const average = ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length;
   const avgDisplay = document.getElementById('averageRating');
   if (avgDisplay) {
@@ -852,19 +853,19 @@ async function shareSigil() {
       toast('⚠️ Generate a sigil first to share', 'warning');
       return;
     }
-    
+
     const phrase = document.getElementById("intentInput").value;
     const vibe = selectedEnergies.join('+');
-    
+
     // Create share data
     const shareText = `🔮 I just created a ${vibe} sigil for "${phrase}" using Sigilcraft! ✨`;
-    
+
     if (navigator.share && navigator.canShare) {
       // Use Web Share API if available
       try {
         const blob = await canvasToBlob();
         const file = new File([blob], 'my-sigil.png', { type: 'image/png' });
-        
+
         await navigator.share({
           title: 'My Quantum Sigil',
           text: shareText,
@@ -909,12 +910,12 @@ async function canvasToBlob() {
 function showSigilGallery() {
   const gallery = document.getElementById('sigilGallery');
   const galleryContent = document.getElementById('galleryContent');
-  
+
   // Load saved sigils from localStorage
   const savedSigils = JSON.parse(localStorage.getItem('saved_sigils') || '[]');
-  
+
   galleryContent.innerHTML = '';
-  
+
   if (savedSigils.length === 0) {
     galleryContent.innerHTML = '<p>No saved sigils yet. Generate and save some!</p>';
   } else {
@@ -931,7 +932,7 @@ function showSigilGallery() {
       galleryContent.appendChild(item);
     });
   }
-  
+
   gallery.style.display = 'block';
 }
 
@@ -944,10 +945,10 @@ function saveSigilToGallery() {
     toast('⚠️ Generate a sigil first to save', 'warning');
     return;
   }
-  
+
   const phrase = document.getElementById("intentInput").value;
   const vibe = selectedEnergies.join('+');
-  
+
   const sigilData = {
     id: Date.now().toString(),
     phrase: phrase,
@@ -955,28 +956,28 @@ function saveSigilToGallery() {
     image: lastGeneratedImage,
     timestamp: Date.now()
   };
-  
+
   const savedSigils = JSON.parse(localStorage.getItem('saved_sigils') || '[]');
   savedSigils.push(sigilData);
-  
+
   // Keep only last 50 sigils
   localStorage.setItem('saved_sigils', JSON.stringify(savedSigils.slice(-50)));
-  
+
   toast('💾 Sigil saved to gallery!', 'success');
 }
 
 function loadSigilFromGallery(id) {
   const savedSigils = JSON.parse(localStorage.getItem('saved_sigils') || '[]');
   const sigil = savedSigils.find(s => s.id === id);
-  
+
   if (sigil) {
     lastGeneratedImage = sigil.image;
     document.getElementById("intentInput").value = sigil.phrase;
-    
+
     // Update selected energies
     selectedEnergies = sigil.vibe.split('+');
     highlightSelection();
-    
+
     // Display the sigil
     const img = new Image();
     img.onload = () => {
@@ -985,7 +986,7 @@ function loadSigilFromGallery(id) {
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     };
     img.src = sigil.image;
-    
+
     downloadBtn.style.display = 'block';
     hideSigilGallery();
     toast('✨ Sigil loaded from gallery!', 'success');
@@ -1010,7 +1011,7 @@ window.goPremiumCheckout = goPremiumCheckout;
 window.addEventListener("load", async () => {
   try {
     await renderGate();
-    
+
     // Initialize new features
     updateAverageRating();
 
@@ -1021,12 +1022,12 @@ window.addEventListener("load", async () => {
     } else if (p.get("purchase") === "cancel") {
       toast("Purchase cancelled.", 'warning');
     }
-    
+
     // Welcome message for new features
     setTimeout(() => {
       toast("✨ New features added: Animation, Gallery, Rating & Sharing!", 'success', 4000);
     }, 2000);
-    
+
   } catch (error) {
     console.error("Initialization error:", error);
     toast("⚠️ App initialization error. Please refresh the page.", 'error');

@@ -290,13 +290,19 @@ app.get("/api/health", async (req, res) => {
 
 // Proxy sigil generation requests to Python Flask backend
 app.post("/generate", generationLimiter, async (req, res) => {
+  let timeoutId = null;
+  
   try {
     console.log("Proxying generation request to Flask backend...");
 
     const controller = new AbortController();
     const isComplexRequest = req.body.vibe && req.body.vibe.includes('+');
-    const timeoutDuration = isComplexRequest ? 60000 : 45000;
-    const timeoutId = setTimeout(() => controller.abort(), timeoutDuration);
+    const timeoutDuration = isComplexRequest ? 90000 : 60000; // Increased timeouts
+    
+    timeoutId = setTimeout(() => {
+      console.log("Request timeout reached, aborting...");
+      controller.abort();
+    }, timeoutDuration);
 
     // Try multiple Flask ports for generation
     let response = null;
@@ -316,23 +322,31 @@ app.post("/generate", generationLimiter, async (req, res) => {
           signal: controller.signal
         });
         
-        if (response.ok) {
+        if (response && response.ok) {
+          console.log(`Successfully connected to Flask on port ${port}`);
           break;
         }
       } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.log(`Port ${port} failed: ${error.message}`);
+        }
         lastError = error;
         continue;
       }
+    }
+    
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      timeoutId = null;
     }
     
     if (!response) {
       throw lastError || new Error("Flask backend not available on any port");
     }
 
-    clearTimeout(timeoutId);
-
     if (!response.ok) {
-      throw new Error(`Flask backend returned ${response.status}: ${response.statusText}`);
+      const errorText = await response.text().catch(() => 'Unknown error');
+      throw new Error(`Flask backend returned ${response.status}: ${errorText}`);
     }
 
     const data = await response.json();
@@ -340,30 +354,39 @@ app.post("/generate", generationLimiter, async (req, res) => {
     res.json(data);
 
   } catch (error) {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    
     console.error("Flask backend proxy error:", error.message);
-    console.error("Error stack:", error.stack);
 
+    // Handle AbortError specifically to prevent server crashes
     if (error.name === 'AbortError') {
-      res.status(408).json({
+      console.log("Request was aborted due to timeout");
+      return res.status(408).json({
         success: false,
-        error: "Request timed out. Please try a simpler sigil or try again."
+        error: "Generation timed out. Please try a simpler phrase or try again."
       });
-    } else if (error.message.includes('ECONNREFUSED') || error.code === 'ECONNREFUSED') {
-      res.status(503).json({
+    }
+    
+    if (error.message.includes('ECONNREFUSED') || error.code === 'ECONNREFUSED') {
+      return res.status(503).json({
         success: false,
         error: "Sigil generation service is starting up. Please try again in a moment."
       });
-    } else if (error.message.includes('fetch')) {
-      res.status(503).json({
+    }
+    
+    if (error.message.includes('fetch')) {
+      return res.status(503).json({
         success: false,
         error: "Network error connecting to generation service. Please try again."
       });
-    } else {
-      res.status(500).json({
-        success: false,
-        error: "Sigil generation temporarily unavailable. Please try again."
-      });
     }
+    
+    return res.status(500).json({
+      success: false,
+      error: "Sigil generation temporarily unavailable. Please try again."
+    });
   }
 });
 
