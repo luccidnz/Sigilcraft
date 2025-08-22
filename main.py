@@ -160,6 +160,9 @@ def create_sigil(phrase, vibe="mystical", size=2048):
 
     # Apply additional artistic enhancement
     img = apply_artistic_enhancement(img, vibe, original_phrase)
+    
+    # Apply new advanced artistic features
+    img = apply_advanced_artistic_features(img, vibe, original_phrase)
 
     print("💾 Converting to high-quality base64...")
     try:
@@ -177,8 +180,12 @@ def create_sigil(phrase, vibe="mystical", size=2048):
         print(f"✅ High-quality image created successfully: {len(img_base64)} characters")
         return img_base64, None
 
+    except MemoryError as e:
+        print(f"❌ Memory error: {str(e)}")
+        return None, "Image too complex. Try a shorter phrase or simpler vibe combination."
     except Exception as e:
         print(f"❌ Error converting image: {str(e)}")
+        print(f"Full traceback: {traceback.format_exc()}")
         return None, f"Error creating image: {str(e)}"
 
 
@@ -200,19 +207,19 @@ def get_phrase_characteristics(phrase):
 
 
 def create_mystical_sigil(draw, img, center, size, phrase, text_seed, combined_seed, pattern_seed, color_seed):
-    """Create flowing, ethereal mystical sigil with phrase-specific variations"""
+    """Create flowing, ethereal mystical sigil with enhanced artistic detail"""
     random.seed(combined_seed)
     char_data = get_phrase_characteristics(phrase)
 
-    # Mystical colors with phrase-based variations
-    base_colors = [(150, 60, 220), (255, 100, 255), (120, 200, 255), (200, 150, 255), (180, 120, 255)]
+    # Enhanced mystical colors - more vibrant and magical
+    base_colors = [(180, 100, 255), (255, 140, 255), (140, 220, 255), (220, 180, 255), (200, 140, 255)]
     colors = []
     for i, color in enumerate(base_colors):
-        variation = (char_data['ascii_sum'] + i * 50) % 100
+        variation = (char_data['ascii_sum'] + i * 60) % 120
         new_color = (
-            min(255, max(0, color[0] + variation - 50)),
-            min(255, max(0, color[1] + variation - 50)),
-            min(255, max(0, color[2] + variation - 50))
+            min(255, max(100, color[0] + variation - 60)),
+            min(255, max(100, color[1] + variation - 60)),
+            min(255, max(100, color[2] + variation - 60))
         )
         colors.append(new_color)
 
@@ -285,18 +292,37 @@ def create_cosmic_sigil(draw, img, center, size, phrase, text_seed, combined_see
         )
         colors.append(new_color)
 
-    # Create star field with phrase-based density
-    star_count = 150 + char_data['length'] * 8 + char_data['word_count'] * 20
+    # Create enhanced star field with multiple star types
+    star_count = 200 + char_data['length'] * 12 + char_data['word_count'] * 25
     for star in range(star_count):
         random.seed(pattern_seed + star + char_data['first_char_value'])
         x = random.randint(0, size)
         y = random.randint(0, size)
-        brightness = 80 + (char_data['vowel_count'] * 20) % 175 + random.randint(0, 50)
-        star_size = 1 + (char_data['consonant_count'] % 4) + random.randint(0, 2)
-
+        brightness = 120 + (char_data['vowel_count'] * 25) % 135 + random.randint(0, 60)
+        star_size = 1 + (char_data['consonant_count'] % 6) + random.randint(0, 3)
+        
+        # Create different star types
+        star_type = star % 4
+        
         try:
-            draw.ellipse([x-star_size, y-star_size, x+star_size, y+star_size],
-                        fill=(brightness, brightness, brightness, 200))
+            if star_type == 0:  # Regular star
+                draw.ellipse([x-star_size, y-star_size, x+star_size, y+star_size],
+                            fill=(brightness, brightness, brightness, 220))
+            elif star_type == 1:  # Cross star
+                draw.line([(x-star_size*2, y), (x+star_size*2, y)], 
+                         fill=(brightness, brightness, brightness, 200), width=2)
+                draw.line([(x, y-star_size*2), (x, y+star_size*2)], 
+                         fill=(brightness, brightness, brightness, 200), width=2)
+            elif star_type == 2:  # Diamond star
+                points = [(x, y-star_size*2), (x+star_size*2, y), (x, y+star_size*2), (x-star_size*2, y)]
+                draw.polygon(points, fill=(brightness, brightness, brightness, 180))
+            else:  # Pulsing star with color
+                color = colors[star % len(colors)]
+                for pulse in range(3):
+                    pulse_size = star_size + pulse
+                    alpha = 200 - pulse * 50
+                    draw.ellipse([x-pulse_size, y-pulse_size, x+pulse_size, y+pulse_size],
+                               fill=(*color, alpha))
         except:
             pass
 
@@ -420,19 +446,19 @@ def create_crystal_sigil(draw, img, center, size, phrase, text_seed, combined_se
 
 
 def create_shadow_sigil(draw, img, center, size, phrase, text_seed, combined_seed, pattern_seed, color_seed):
-    """Create dark, mysterious shadow sigil with phrase-specific variations"""
+    """Create mysterious but beautiful shadow sigil with enhanced brightness"""
     random.seed(combined_seed)
     char_data = get_phrase_characteristics(phrase)
 
-    # Shadow colors with phrase variations
-    base_colors = [(80, 20, 80), (120, 60, 120), (60, 20, 60), (100, 40, 100), (40, 40, 80)]
+    # Enhanced shadow colors - much brighter and more vibrant
+    base_colors = [(180, 120, 180), (220, 160, 220), (160, 120, 160), (200, 140, 200), (140, 140, 180)]
     colors = []
     for i, color in enumerate(base_colors):
-        variation = (char_data['ascii_sum'] + i * 30) % 60
+        variation = (char_data['ascii_sum'] + i * 40) % 80
         new_color = (
-            min(150, max(20, color[0] + variation - 30)),
-            min(150, max(20, color[1] + variation - 30)),
-            min(150, max(20, color[2] + variation - 30))
+            min(255, max(120, color[0] + variation - 40)),
+            min(255, max(120, color[1] + variation - 40)),
+            min(255, max(120, color[2] + variation - 40))
         )
         colors.append(new_color)
 
@@ -1313,36 +1339,115 @@ def apply_artistic_enhancement(img, vibe, phrase):
     try:
         # Enhance artistic elements based on vibe
         if vibe == 'mystical':
-            # Add a soft, glowing aura
+            # Add enhanced mystical effects
             img = add_aura_effect(img)
+            img = add_mystical_shimmer(img, intensity=1.8)
         elif vibe == 'cosmic':
-            # Add subtle star-like shimmer and depth
+            # Add enhanced cosmic effects
             img = add_shimmer_effect(img)
             img = add_depth_effect(img, char_data)
+            img = add_stellar_glow(img, intensity=1.6)
         elif vibe == 'elemental':
-            # Enhance vibrancy and add a touch of energy
+            # Enhanced elemental vibrancy
             img = add_energy_effect(img)
-            img = ImageEnhance.Color(img).enhance(1.15)
+            img = ImageEnhance.Color(img).enhance(1.25)
+            img = add_elemental_energy(img, intensity=1.6)
         elif vibe == 'crystal':
-            # Increase sharpness and add refraction-like effects
-            img = ImageEnhance.Sharpness(img).enhance(1.5)
+            # Enhanced crystal effects
+            img = ImageEnhance.Sharpness(img).enhance(1.8)
             img = add_refraction_effect(img)
+            img = add_crystal_brilliance(img, intensity=1.8)
         elif vibe == 'shadow':
-            # Deepen shadows and add a subtle vignette effect
-            img = ImageEnhance.Brightness(img).enhance(0.9)
-            img = add_shadow_glow_effect(img) # Assuming a new function for shadow glow
+            # Enhanced shadow effects (much brighter now)
+            img = ImageEnhance.Brightness(img).enhance(1.2)  # Brightened
+            img = add_shadow_glow_effect(img)
+            img = add_mystical_shimmer(img, intensity=1.4)  # Add shimmer to shadows
         elif vibe == 'light':
-            # Increase bloom and add a soft light diffusion
-            img = add_bloom_effect(img, intensity=1.3)
-            img = ImageEnhance.Brightness(img).enhance(1.1)
+            # Enhanced light effects
+            img = add_bloom_effect(img, intensity=1.5)
+            img = ImageEnhance.Brightness(img).enhance(1.15)
+            img = add_radiance_boost(img, intensity=1.8)
 
-        # Apply a final sharpening pass for clarity
-        img = ImageEnhance.Sharpness(img).enhance(1.3)
+        # Apply enhanced sharpening for all vibes
+        img = ImageEnhance.Sharpness(img).enhance(1.5)
 
     except Exception as e:
         print(f"Artistic enhancement warning: {e}")
 
     return img
+
+def apply_advanced_artistic_features(img, vibe, phrase):
+    """Apply new advanced artistic features for premium quality"""
+    char_data = get_phrase_characteristics(phrase)
+    try:
+        print("🎨 Applying advanced artistic features...")
+        
+        # Add fractal enhancement for complexity
+        img = add_fractal_enhancement(img, char_data)
+        
+        # Add holographic effect for premium feel
+        img = add_holographic_effect(img, intensity=0.8)
+        
+        # Vibe-specific advanced features
+        if '+' in vibe:
+            # Combined vibes get extra enhancement
+            img = add_combo_enhancement(img, vibe, char_data)
+        
+        # Final artistic polish
+        img = add_artistic_polish(img, char_data)
+        
+        print("✨ Advanced artistic features applied")
+        return img
+        
+    except Exception as e:
+        print(f"Advanced artistic features warning: {e}")
+        return img
+
+def add_combo_enhancement(img, vibe, char_data):
+    """Special enhancement for combined vibes"""
+    try:
+        # Create rainbow gradient overlay for combo vibes
+        overlay = Image.new('RGBA', img.size, (0, 0, 0, 0))
+        width, height = img.size
+        
+        for y in range(height):
+            for x in range(width):
+                # Create rainbow effect
+                hue = (x + y + char_data['ascii_sum']) % 360
+                r = int(127 * (1 + math.sin(math.radians(hue))))
+                g = int(127 * (1 + math.sin(math.radians(hue + 120))))
+                b = int(127 * (1 + math.sin(math.radians(hue + 240))))
+                
+                # Apply only to bright areas
+                original_pixel = img.getpixel((x, y))
+                if isinstance(original_pixel, tuple) and len(original_pixel) >= 3:
+                    brightness = sum(original_pixel[:3]) / 3
+                    if brightness > 80:
+                        alpha = int(30 * (brightness / 255))
+                        overlay.putpixel((x, y), (r, g, b, alpha))
+        
+        return Image.alpha_composite(img.convert('RGBA'), overlay).convert('RGB')
+    except:
+        return img
+
+def add_artistic_polish(img, char_data):
+    """Final artistic polish for premium quality"""
+    try:
+        # Enhanced color saturation
+        enhancer = ImageEnhance.Color(img)
+        img = enhancer.enhance(1.4)
+        
+        # Enhanced contrast for depth
+        enhancer = ImageEnhance.Contrast(img)
+        img = enhancer.enhance(1.3)
+        
+        # Final sharpness for crisp details
+        enhancer = ImageEnhance.Sharpness(img)
+        img = enhancer.enhance(1.6)
+        
+        return img
+    except:
+        return img
 
 # Placeholder for a potential new function, if not already defined
 def add_shadow_glow_effect(img):
@@ -1440,15 +1545,109 @@ def enhance_fine_details(img, char_data):
     """Enhance fine details based on phrase characteristics"""
     try:
         # Detail enhancement based on phrase complexity
-        detail_factor = 1.2 + (char_data['unique_chars'] * 0.02)
+        detail_factor = 1.3 + (char_data['unique_chars'] * 0.03)
         enhancer = ImageEnhance.Sharpness(img)
         img = enhancer.enhance(detail_factor)
 
         # Micro-contrast enhancement
         enhancer = ImageEnhance.Contrast(img)
-        img = enhancer.enhance(1.15)
+        img = enhancer.enhance(1.25)
+
+        # Add artistic texture enhancement
+        img = add_artistic_texture(img, char_data)
 
         return img
+    except:
+        return img
+
+def add_artistic_texture(img, char_data):
+    """Add sophisticated artistic texture to the image"""
+    try:
+        # Create subtle artistic noise for texture
+        img_array = np.array(img)
+        if len(img_array.shape) == 3:
+            # Add sophisticated texture based on phrase characteristics
+            texture_intensity = 5 + (char_data['unique_chars'] % 10)
+            texture = np.random.normal(0, texture_intensity, img_array.shape[:2])
+            
+            # Apply texture differently to each color channel for artistic effect
+            for i in range(3):
+                channel_variation = (char_data['ascii_sum'] + i * 100) % 50
+                img_array[:, :, i] = np.clip(
+                    img_array[:, :, i] + texture + channel_variation - 25, 
+                    0, 255
+                )
+
+        return Image.fromarray(img_array.astype(np.uint8))
+    except:
+        return img
+
+def add_holographic_effect(img, intensity=1.0):
+    """Add holographic shimmer effect for premium quality"""
+    try:
+        # Create rainbow shimmer effect
+        img_array = np.array(img)
+        if len(img_array.shape) == 3 and img_array.shape[2] >= 3:
+            height, width = img_array.shape[:2]
+            
+            # Create holographic pattern
+            for y in range(height):
+                for x in range(width):
+                    # Create rainbow interference pattern
+                    wave = np.sin((x + y) * 0.02) * intensity * 20
+                    
+                    # Apply holographic effect to bright areas only
+                    brightness = np.mean(img_array[y, x, :3])
+                    if brightness > 100:
+                        img_array[y, x, 0] = np.clip(img_array[y, x, 0] + wave, 0, 255)
+                        img_array[y, x, 1] = np.clip(img_array[y, x, 1] + wave * 0.8, 0, 255)
+                        img_array[y, x, 2] = np.clip(img_array[y, x, 2] + wave * 1.2, 0, 255)
+
+        return Image.fromarray(img_array.astype(np.uint8))
+    except:
+        return img
+
+def add_fractal_enhancement(img, char_data):
+    """Add fractal patterns for enhanced complexity"""
+    try:
+        overlay = Image.new('RGBA', img.size, (0, 0, 0, 0))
+        draw = ImageDraw.Draw(overlay)
+        
+        # Create fractal-like patterns based on phrase
+        center_x, center_y = img.size[0] // 2, img.size[1] // 2
+        
+        # Generate multiple fractal branches
+        branch_count = 8 + char_data['word_count'] * 3
+        for branch in range(branch_count):
+            angle = (360 / branch_count) * branch + char_data['first_char_value']
+            
+            # Create recursive branching pattern
+            for depth in range(4):
+                length = (img.size[0] // 8) * (0.7 ** depth)
+                x = center_x + length * math.cos(math.radians(angle))
+                y = center_y + length * math.sin(math.radians(angle))
+                
+                # Draw fractal branch with fading alpha
+                alpha = 150 - depth * 30
+                color = (
+                    150 + char_data['vowel_count'] * 10,
+                    100 + char_data['consonant_count'] * 8,
+                    200 + char_data['unique_chars'] * 5,
+                    alpha
+                )
+                
+                width = max(1, 4 - depth)
+                try:
+                    draw.line([(center_x, center_y), (x, y)], fill=color, width=width)
+                except:
+                    pass
+                
+                # Update for next iteration
+                center_x, center_y = x, y
+                angle += 45 + char_data['numeric_count'] * 5
+        
+        # Blend fractal overlay
+        return Image.alpha_composite(img.convert('RGBA'), overlay).convert('RGB')
     except:
         return img
 
@@ -1515,6 +1714,15 @@ def generate():
 
         if len(phrase) > 200:
             return jsonify({'success': False, 'error': 'Intent too long (maximum 200 characters)'})
+            
+        # Check for potentially problematic characters
+        if any(ord(c) > 1114111 for c in phrase):
+            return jsonify({'success': False, 'error': 'Invalid characters detected'})
+            
+        # Limit complex vibe combinations to prevent timeouts
+        vibe_count = len(vibe.split('+')) if '+' in vibe else 1
+        if vibe_count > 4:
+            return jsonify({'success': False, 'error': 'Maximum 4 vibes can be combined'})
 
         # Sanitize phrase
         phrase = ''.join(char for char in phrase if char.isprintable() or char.isspace())

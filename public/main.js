@@ -733,6 +733,265 @@ function triggerDownload(blob, filename) {
   downloadFile(blob, filename);
 }
 
+// === NEW POPULAR FEATURES ===
+
+// Sigil Animation Feature
+let animationFrame = null;
+let isAnimating = false;
+
+function toggleSigilAnimation() {
+  const animateBtn = document.getElementById('animateBtn');
+  
+  if (isAnimating) {
+    stopAnimation();
+    animateBtn.textContent = '✨ Animate Sigil';
+  } else {
+    startAnimation();
+    animateBtn.textContent = '⏸️ Stop Animation';
+  }
+}
+
+function startAnimation() {
+  if (!canvas || !lastGeneratedImage) {
+    toast('⚠️ Generate a sigil first to animate', 'warning');
+    return;
+  }
+  
+  isAnimating = true;
+  let frame = 0;
+  
+  const animate = () => {
+    if (!isAnimating) return;
+    
+    const ctx = canvas.getContext('2d');
+    ctx.save();
+    
+    // Create pulsing effect
+    const scale = 1 + Math.sin(frame * 0.1) * 0.05;
+    const rotation = Math.sin(frame * 0.05) * 0.02;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.scale(scale, scale);
+    ctx.rotate(rotation);
+    ctx.translate(-canvas.width / 2, -canvas.height / 2);
+    
+    // Redraw the image
+    const img = new Image();
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+    img.src = lastGeneratedImage;
+    
+    ctx.restore();
+    frame++;
+    animationFrame = requestAnimationFrame(animate);
+  };
+  
+  animate();
+}
+
+function stopAnimation() {
+  isAnimating = false;
+  if (animationFrame) {
+    cancelAnimationFrame(animationFrame);
+    animationFrame = null;
+  }
+  
+  // Restore original image
+  if (lastGeneratedImage) {
+    const img = new Image();
+    img.onload = () => {
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+    img.src = lastGeneratedImage;
+  }
+}
+
+// Sigil Rating System
+function rateSigil(rating) {
+  const stars = document.querySelectorAll('.star-rating .star');
+  stars.forEach((star, index) => {
+    star.classList.toggle('active', index < rating);
+  });
+  
+  // Store rating
+  const sigilData = {
+    phrase: document.getElementById("intentInput").value,
+    vibe: selectedEnergies.join('+'),
+    rating: rating,
+    timestamp: Date.now()
+  };
+  
+  // Save to local storage
+  const ratings = JSON.parse(localStorage.getItem('sigil_ratings') || '[]');
+  ratings.push(sigilData);
+  localStorage.setItem('sigil_ratings', JSON.stringify(ratings.slice(-50))); // Keep last 50
+  
+  toast(`✨ Rated ${rating} star${rating !== 1 ? 's' : ''}! Thank you!`, 'success');
+  updateAverageRating();
+}
+
+function updateAverageRating() {
+  const ratings = JSON.parse(localStorage.getItem('sigil_ratings') || '[]');
+  if (ratings.length === 0) return;
+  
+  const average = ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length;
+  const avgDisplay = document.getElementById('averageRating');
+  if (avgDisplay) {
+    avgDisplay.textContent = `Average: ${average.toFixed(1)}⭐ (${ratings.length} ratings)`;
+  }
+}
+
+// Enhanced Sharing Feature
+async function shareSigil() {
+  try {
+    if (!lastGeneratedImage) {
+      toast('⚠️ Generate a sigil first to share', 'warning');
+      return;
+    }
+    
+    const phrase = document.getElementById("intentInput").value;
+    const vibe = selectedEnergies.join('+');
+    
+    // Create share data
+    const shareText = `🔮 I just created a ${vibe} sigil for "${phrase}" using Sigilcraft! ✨`;
+    
+    if (navigator.share && navigator.canShare) {
+      // Use Web Share API if available
+      try {
+        const blob = await canvasToBlob();
+        const file = new File([blob], 'my-sigil.png', { type: 'image/png' });
+        
+        await navigator.share({
+          title: 'My Quantum Sigil',
+          text: shareText,
+          files: [file]
+        });
+        toast('✨ Sigil shared successfully!', 'success');
+      } catch (shareError) {
+        fallbackShare(shareText);
+      }
+    } else {
+      fallbackShare(shareText);
+    }
+  } catch (error) {
+    console.error('Share error:', error);
+    toast('❌ Share failed, but you can copy the text!', 'error');
+  }
+}
+
+function fallbackShare(text) {
+  // Copy to clipboard
+  navigator.clipboard.writeText(text).then(() => {
+    toast('📋 Share text copied to clipboard!', 'success');
+  }).catch(() => {
+    // Create a temporary text area for copying
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    toast('📋 Share text copied!', 'success');
+  });
+}
+
+async function canvasToBlob() {
+  return new Promise((resolve) => {
+    canvas.toBlob(resolve, 'image/png', 1.0);
+  });
+}
+
+// Sigil Gallery Feature
+function showSigilGallery() {
+  const gallery = document.getElementById('sigilGallery');
+  const galleryContent = document.getElementById('galleryContent');
+  
+  // Load saved sigils from localStorage
+  const savedSigils = JSON.parse(localStorage.getItem('saved_sigils') || '[]');
+  
+  galleryContent.innerHTML = '';
+  
+  if (savedSigils.length === 0) {
+    galleryContent.innerHTML = '<p>No saved sigils yet. Generate and save some!</p>';
+  } else {
+    savedSigils.slice(-12).reverse().forEach((sigil, index) => {
+      const item = document.createElement('div');
+      item.className = 'gallery-item';
+      item.innerHTML = `
+        <img src="${sigil.image}" alt="Sigil ${index + 1}" onclick="loadSigilFromGallery('${sigil.id}')">
+        <div class="gallery-info">
+          <small>${sigil.phrase}</small>
+          <small>${sigil.vibe}</small>
+        </div>
+      `;
+      galleryContent.appendChild(item);
+    });
+  }
+  
+  gallery.style.display = 'block';
+}
+
+function hideSigilGallery() {
+  document.getElementById('sigilGallery').style.display = 'none';
+}
+
+function saveSigilToGallery() {
+  if (!lastGeneratedImage) {
+    toast('⚠️ Generate a sigil first to save', 'warning');
+    return;
+  }
+  
+  const phrase = document.getElementById("intentInput").value;
+  const vibe = selectedEnergies.join('+');
+  
+  const sigilData = {
+    id: Date.now().toString(),
+    phrase: phrase,
+    vibe: vibe,
+    image: lastGeneratedImage,
+    timestamp: Date.now()
+  };
+  
+  const savedSigils = JSON.parse(localStorage.getItem('saved_sigils') || '[]');
+  savedSigils.push(sigilData);
+  
+  // Keep only last 50 sigils
+  localStorage.setItem('saved_sigils', JSON.stringify(savedSigils.slice(-50)));
+  
+  toast('💾 Sigil saved to gallery!', 'success');
+}
+
+function loadSigilFromGallery(id) {
+  const savedSigils = JSON.parse(localStorage.getItem('saved_sigils') || '[]');
+  const sigil = savedSigils.find(s => s.id === id);
+  
+  if (sigil) {
+    lastGeneratedImage = sigil.image;
+    document.getElementById("intentInput").value = sigil.phrase;
+    
+    // Update selected energies
+    selectedEnergies = sigil.vibe.split('+');
+    highlightSelection();
+    
+    // Display the sigil
+    const img = new Image();
+    img.onload = () => {
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+    img.src = sigil.image;
+    
+    downloadBtn.style.display = 'block';
+    hideSigilGallery();
+    toast('✨ Sigil loaded from gallery!', 'success');
+  }
+}
+
 // -------- Stripe Checkout --------
 async function goPremiumCheckout() {
   try {
@@ -751,6 +1010,9 @@ window.goPremiumCheckout = goPremiumCheckout;
 window.addEventListener("load", async () => {
   try {
     await renderGate();
+    
+    // Initialize new features
+    updateAverageRating();
 
     // Check for purchase success/cancel
     const p = new URLSearchParams(location.search);
@@ -759,6 +1021,12 @@ window.addEventListener("load", async () => {
     } else if (p.get("purchase") === "cancel") {
       toast("Purchase cancelled.", 'warning');
     }
+    
+    // Welcome message for new features
+    setTimeout(() => {
+      toast("✨ New features added: Animation, Gallery, Rating & Sharing!", 'success', 4000);
+    }, 2000);
+    
   } catch (error) {
     console.error("Initialization error:", error);
     toast("⚠️ App initialization error. Please refresh the page.", 'error');
