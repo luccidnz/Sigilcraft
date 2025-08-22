@@ -968,6 +968,11 @@ let isAnimating = false;
 
 function toggleSigilAnimation() {
   const animateBtn = document.getElementById('animateBtn');
+  
+  if (!animateBtn) {
+    console.error('Animate button not found');
+    return;
+  }
 
   if (isAnimating) {
     stopAnimation();
@@ -978,6 +983,9 @@ function toggleSigilAnimation() {
   }
 }
 
+// Make function globally available
+window.toggleSigilAnimation = toggleSigilAnimation;
+
 function startAnimation() {
   if (!canvas || !lastGeneratedImage) {
     toast('⚠️ Generate a sigil first to animate', 'warning');
@@ -986,36 +994,47 @@ function startAnimation() {
 
   isAnimating = true;
   let frame = 0;
+  
+  // Store the original image
+  const originalImg = new Image();
+  originalImg.onload = () => {
+    const animate = () => {
+      if (!isAnimating) return;
 
-  const animate = () => {
-    if (!isAnimating) return;
+      const ctx = canvas.getContext('2d');
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Save context
+      ctx.save();
 
-    const ctx = canvas.getContext('2d');
-    ctx.save();
+      // Create pulsing and rotation effects
+      const scale = 1 + Math.sin(frame * 0.08) * 0.03;
+      const rotation = Math.sin(frame * 0.04) * 0.01;
+      const opacity = 0.9 + Math.sin(frame * 0.1) * 0.1;
 
-    // Create pulsing effect
-    const scale = 1 + Math.sin(frame * 0.1) * 0.05;
-    const rotation = Math.sin(frame * 0.05) * 0.02;
+      // Apply transformations
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.scale(scale, scale);
+      ctx.rotate(rotation);
+      ctx.globalAlpha = opacity;
+      ctx.translate(-canvas.width / 2, -canvas.height / 2);
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.translate(canvas.width / 2, canvas.height / 2);
-    ctx.scale(scale, scale);
-    ctx.rotate(rotation);
-    ctx.translate(-canvas.width / 2, -canvas.height / 2);
+      // Draw the image
+      ctx.drawImage(originalImg, 0, 0, canvas.width, canvas.height);
 
-    // Redraw the image
-    const img = new Image();
-    img.onload = () => {
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      // Restore context
+      ctx.restore();
+      
+      frame++;
+      animationFrame = requestAnimationFrame(animate);
     };
-    img.src = lastGeneratedImage;
 
-    ctx.restore();
-    frame++;
-    animationFrame = requestAnimationFrame(animate);
+    animate();
   };
-
-  animate();
+  
+  originalImg.src = lastGeneratedImage;
 }
 
 function stopAnimation() {
@@ -1080,25 +1099,43 @@ async function shareSigil() {
       return;
     }
 
-    const phrase = document.getElementById("intentInput").value;
+    const intentInput = document.getElementById("intentInput");
+    if (!intentInput) {
+      toast('⚠️ Cannot find input field', 'error');
+      return;
+    }
+
+    const phrase = intentInput.value;
     const vibe = selectedEnergies.join('+');
 
     // Create share data
     const shareText = `🔮 I just created a ${vibe} sigil for "${phrase}" using Sigilcraft! ✨`;
 
-    if (navigator.share && navigator.canShare) {
+    if (navigator.share) {
       // Use Web Share API if available
       try {
         const blob = await canvasToBlob();
-        const file = new File([blob], 'my-sigil.png', { type: 'image/png' });
-
-        await navigator.share({
-          title: 'My Quantum Sigil',
-          text: shareText,
-          files: [file]
-        });
-        toast('✨ Sigil shared successfully!', 'success');
+        
+        if (blob && navigator.canShare && navigator.canShare({ files: [new File([blob], 'sigil.png', { type: 'image/png' })] })) {
+          const file = new File([blob], 'my-sigil.png', { type: 'image/png' });
+          await navigator.share({
+            title: 'My Quantum Sigil',
+            text: shareText,
+            files: [file]
+          });
+          toast('✨ Sigil shared successfully!', 'success');
+          return;
+        } else {
+          // Fallback to text-only sharing
+          await navigator.share({
+            title: 'My Quantum Sigil',
+            text: shareText
+          });
+          toast('✨ Shared successfully!', 'success');
+          return;
+        }
       } catch (shareError) {
+        console.log('Native share failed, falling back to copy');
         fallbackShare(shareText);
       }
     } else {
@@ -1109,6 +1146,9 @@ async function shareSigil() {
     toast('❌ Share failed, but you can copy the text!', 'error');
   }
 }
+
+// Make function globally available
+window.shareSigil = shareSigil;
 
 function fallbackShare(text) {
   // Copy to clipboard
@@ -1136,6 +1176,11 @@ async function canvasToBlob() {
 function showSigilGallery() {
   const gallery = document.getElementById('sigilGallery');
   const galleryContent = document.getElementById('galleryContent');
+  
+  if (!gallery || !galleryContent) {
+    toast('⚠️ Gallery not available', 'error');
+    return;
+  }
 
   // Load saved sigils from localStorage
   const savedSigils = JSON.parse(localStorage.getItem('saved_sigils') || '[]');
@@ -1143,24 +1188,31 @@ function showSigilGallery() {
   galleryContent.innerHTML = '';
 
   if (savedSigils.length === 0) {
-    galleryContent.innerHTML = '<p>No saved sigils yet. Generate and save some!</p>';
+    galleryContent.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 40px;">No saved sigils yet. Generate and save some!</p>';
   } else {
     savedSigils.slice(-12).reverse().forEach((sigil, index) => {
       const item = document.createElement('div');
       item.className = 'gallery-item';
       item.innerHTML = `
-        <img src="${sigil.image}" alt="Sigil ${index + 1}" onclick="loadSigilFromGallery('${sigil.id}')">
+        <img src="${sigil.image}" alt="Sigil ${index + 1}">
         <div class="gallery-info">
-          <small>${sigil.phrase}</small>
+          <small title="${sigil.phrase}">${sigil.phrase.length > 20 ? sigil.phrase.substring(0, 20) + '...' : sigil.phrase}</small>
           <small>${sigil.vibe}</small>
         </div>
       `;
+      
+      // Add click handler
+      item.onclick = () => loadSigilFromGallery(sigil.id);
+      
       galleryContent.appendChild(item);
     });
   }
 
-  gallery.style.display = 'block';
+  gallery.style.display = 'flex';
 }
+
+// Make function globally available
+window.showSigilGallery = showSigilGallery;
 
 function hideSigilGallery() {
   document.getElementById('sigilGallery').style.display = 'none';
@@ -1198,7 +1250,10 @@ function loadSigilFromGallery(id) {
 
   if (sigil) {
     lastGeneratedImage = sigil.image;
-    document.getElementById("intentInput").value = sigil.phrase;
+    const intentInput = document.getElementById("intentInput");
+    if (intentInput) {
+      intentInput.value = sigil.phrase;
+    }
 
     // Update selected energies
     selectedEnergies = sigil.vibe.split('+');
@@ -1206,10 +1261,11 @@ function loadSigilFromGallery(id) {
 
     // Display the sigil
     const img = new Image();
-    img.onload = () => {
+    img.onload = async () => {
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      await drawWatermarkIfFree();
     };
     img.src = sigil.image;
 
@@ -1218,6 +1274,88 @@ function loadSigilFromGallery(id) {
     toast('✨ Sigil loaded from gallery!', 'success');
   }
 }
+
+function hideSigilGallery() {
+  const gallery = document.getElementById('sigilGallery');
+  if (gallery) {
+    gallery.style.display = 'none';
+  }
+}
+
+function saveSigilToGallery() {
+  if (!lastGeneratedImage) {
+    toast('⚠️ Generate a sigil first to save', 'warning');
+    return;
+  }
+
+  const intentInput = document.getElementById("intentInput");
+  if (!intentInput) {
+    toast('⚠️ Cannot find input field', 'error');
+    return;
+  }
+
+  const phrase = intentInput.value || 'Untitled Sigil';
+  const vibe = selectedEnergies.join('+');
+
+  const sigilData = {
+    id: Date.now().toString(),
+    phrase: phrase,
+    vibe: vibe,
+    image: lastGeneratedImage,
+    timestamp: Date.now()
+  };
+
+  const savedSigils = JSON.parse(localStorage.getItem('saved_sigils') || '[]');
+  savedSigils.push(sigilData);
+
+  // Keep only last 50 sigils
+  localStorage.setItem('saved_sigils', JSON.stringify(savedSigils.slice(-50)));
+
+  toast('💾 Sigil saved to gallery!', 'success');
+}
+
+// Sigil Rating System
+function rateSigil(rating) {
+  const stars = document.querySelectorAll('.star-rating .star');
+  stars.forEach((star, index) => {
+    star.classList.toggle('active', index < rating);
+  });
+
+  const intentInput = document.getElementById("intentInput");
+  const phrase = intentInput ? intentInput.value : 'Unknown';
+
+  // Store rating
+  const sigilData = {
+    phrase: phrase,
+    vibe: selectedEnergies.join('+'),
+    rating: rating,
+    timestamp: Date.now()
+  };
+
+  // Save to local storage
+  const ratings = JSON.parse(localStorage.getItem('sigil_ratings') || '[]');
+  ratings.push(sigilData);
+  localStorage.setItem('sigil_ratings', JSON.stringify(ratings.slice(-50))); // Keep last 50
+
+  toast(`✨ Rated ${rating} star${rating !== 1 ? 's' : ''}! Thank you!`, 'success');
+  updateAverageRating();
+}
+
+function updateAverageRating() {
+  const ratings = JSON.parse(localStorage.getItem('sigil_ratings') || '[]');
+  if (ratings.length === 0) return;
+
+  const average = ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length;
+  const avgDisplay = document.getElementById('averageRating');
+  if (avgDisplay) {
+    avgDisplay.textContent = `Average: ${average.toFixed(1)}⭐ (${ratings.length} ratings)`;
+  }
+}
+
+// Make functions globally available
+window.hideSigilGallery = hideSigilGallery;
+window.saveSigilToGallery = saveSigilToGallery;
+window.rateSigil = rateSigil;
 
 // -------- Stripe Checkout --------
 async function goPremiumCheckout() {

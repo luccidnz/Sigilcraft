@@ -196,7 +196,16 @@ def get_phrase_characteristics(phrase):
         'ascii_sum': sum(ord(c) for c in phrase),
         'unique_chars': len(set(phrase.lower())),
         'first_char_value': ord(phrase[0]) if phrase else 0,
-        'last_char_value': ord(phrase[-1]) if phrase else 0
+        'last_char_value': ord(phrase[-1]) if phrase else 0,
+        
+        # Enhanced text analysis for better influence
+        'emotional_words': sum(1 for word in phrase.lower().split() if word in ['love', 'peace', 'power', 'strength', 'healing', 'money', 'success', 'joy', 'happiness', 'protection', 'wisdom', 'clarity', 'abundance', 'prosperity', 'freedom']),
+        'phrase_hash': abs(hash(phrase.lower())),
+        'word_lengths': [len(word) for word in phrase.split()],
+        'avg_word_length': sum(len(word) for word in phrase.split()) / len(phrase.split()) if phrase.split() else 0,
+        'repetition_factor': len(phrase) - len(set(phrase.lower())),
+        'energy_level': sum(ord(c) for c in phrase) % 10 + 1,  # 1-10 scale
+        'complexity_score': len(set(phrase.lower())) + len(phrase.split()) + sum(1 for c in phrase if not c.isalnum())
     }
     return characteristics
 
@@ -271,87 +280,137 @@ def create_mystical_sigil(draw, img, center, size, phrase, text_seed, combined_s
 
 
 def create_cosmic_sigil(draw, img, center, size, phrase, text_seed, combined_seed, pattern_seed, color_seed):
-    """Create stellar, galactic cosmic sigil with phrase-specific variations"""
+    """Create stellar, galactic cosmic sigil with enhanced text influence"""
     random.seed(combined_seed)
     char_data = get_phrase_characteristics(phrase)
 
-    # Cosmic colors with phrase variations
-    base_colors = [(20, 20, 80), (100, 150, 255), (200, 100, 255), (255, 200, 100), (50, 255, 200)]
+    # Enhanced cosmic colors with text influence
+    base_colors = [(40, 40, 120), (120, 180, 255), (220, 120, 255), (255, 220, 120), (80, 255, 220)]
     colors = []
     for i, color in enumerate(base_colors):
-        variation = (char_data['ascii_sum'] + i * 75) % 120
+        # Strong text influence on cosmic colors
+        text_influence = sum(ord(c) for c in phrase[:3]) if phrase else 0
+        variation = (char_data['ascii_sum'] + i * 80 + text_influence) % 140
         new_color = (
-            min(255, max(20, color[0] + variation - 60)),
-            min(255, max(20, color[1] + variation - 60)),
-            min(255, max(20, color[2] + variation - 60))
+            min(255, max(40, color[0] + variation - 70)),
+            min(255, max(40, color[1] + variation - 70)),
+            min(255, max(40, color[2] + variation - 70))
         )
         colors.append(new_color)
 
-    # Create enhanced star field with multiple star types
-    star_count = 200 + char_data['length'] * 12 + char_data['word_count'] * 25
+    # Enhanced star field with text-based positioning
+    star_count = 300 + char_data['length'] * 15 + char_data['word_count'] * 30
     for star in range(star_count):
-        random.seed(pattern_seed + star + char_data['first_char_value'])
-        x = random.randint(0, size)
-        y = random.randint(0, size)
-        brightness = 120 + (char_data['vowel_count'] * 25) % 135 + random.randint(0, 60)
-        star_size = 1 + (char_data['consonant_count'] % 6) + random.randint(0, 3)
+        # Use phrase characters to influence star placement
+        char_index = star % len(phrase) if phrase else 0
+        char_val = ord(phrase[char_index]) if phrase else 65
         
-        # Create different star types
-        star_type = star % 4
+        random.seed(pattern_seed + star + char_val)
+        # Text influences star positioning
+        x = (char_val * 13 + star * 7) % size
+        y = (char_val * 17 + star * 11) % size
+        
+        brightness = 140 + (char_val % 100) + random.randint(0, 80)
+        star_size = 1 + (char_val % 8) + random.randint(0, 4)
+        
+        # Enhanced star types with text influence
+        star_type = (char_val + star) % 5
         
         try:
-            if star_type == 0:  # Regular star
-                draw.ellipse([x-star_size, y-star_size, x+star_size, y+star_size],
-                            fill=(brightness, brightness, brightness, 220))
-            elif star_type == 1:  # Cross star
-                draw.line([(x-star_size*2, y), (x+star_size*2, y)], 
-                         fill=(brightness, brightness, brightness, 200), width=2)
-                draw.line([(x, y-star_size*2), (x, y+star_size*2)], 
-                         fill=(brightness, brightness, brightness, 200), width=2)
-            elif star_type == 2:  # Diamond star
-                points = [(x, y-star_size*2), (x+star_size*2, y), (x, y+star_size*2), (x-star_size*2, y)]
-                draw.polygon(points, fill=(brightness, brightness, brightness, 180))
-            else:  # Pulsing star with color
-                color = colors[star % len(colors)]
-                for pulse in range(3):
-                    pulse_size = star_size + pulse
-                    alpha = 200 - pulse * 50
+            if star_type == 0:  # Supernova star
+                color = colors[char_val % len(colors)]
+                for ring in range(4):
+                    ring_size = star_size + ring * 2
+                    ring_alpha = 255 - ring * 40
+                    draw.ellipse([x-ring_size, y-ring_size, x+ring_size, y+ring_size],
+                               fill=(*color, ring_alpha))
+            elif star_type == 1:  # Cross star with text-influenced arms
+                arm_length = star_size * (2 + char_val % 4)
+                draw.line([(x-arm_length, y), (x+arm_length, y)], 
+                         fill=(brightness, brightness, brightness, 220), width=3)
+                draw.line([(x, y-arm_length), (x, y+arm_length)], 
+                         fill=(brightness, brightness, brightness, 220), width=3)
+            elif star_type == 2:  # Multi-pointed star
+                points = []
+                point_count = 6 + (char_val % 6)
+                for p in range(point_count):
+                    angle = (360 / point_count) * p
+                    px = x + star_size * 3 * math.cos(math.radians(angle))
+                    py = y + star_size * 3 * math.sin(math.radians(angle))
+                    points.append((px, py))
+                draw.polygon(points, fill=(brightness, brightness, brightness, 200))
+            elif star_type == 3:  # Pulsing star with multiple colors
+                base_color = colors[char_val % len(colors)]
+                for pulse in range(4):
+                    pulse_size = star_size + pulse * 2
+                    alpha = 220 - pulse * 40
+                    pulse_color = (
+                        min(255, base_color[0] + pulse * 20),
+                        min(255, base_color[1] + pulse * 20),
+                        min(255, base_color[2] + pulse * 20)
+                    )
                     draw.ellipse([x-pulse_size, y-pulse_size, x+pulse_size, y+pulse_size],
-                               fill=(*color, alpha))
+                               fill=(*pulse_color, alpha))
+            else:  # Binary star system
+                companion_x = x + (char_val % 20 - 10)
+                companion_y = y + (char_val % 20 - 10)
+                color = colors[char_val % len(colors)]
+                draw.ellipse([x-star_size, y-star_size, x+star_size, y+star_size],
+                           fill=(*color, 255))
+                draw.ellipse([companion_x-star_size//2, companion_y-star_size//2, 
+                            companion_x+star_size//2, companion_y+star_size//2],
+                           fill=(*color, 180))
+                # Connection between binary stars
+                draw.line([(x, y), (companion_x, companion_y)], 
+                         fill=(*color, 100), width=1)
         except:
             pass
 
-    # Create galactic spiral with phrase characteristics
-    spiral_count = 2 + (char_data['word_count'] % 4)
+    # Enhanced galactic spirals with text influence
+    spiral_count = 3 + (char_data['word_count'] % 5)
     for spiral in range(spiral_count):
-        random.seed(combined_seed + spiral + char_data['last_char_value'])
-        start_radius = size // 12 + (char_data['length'] % 20)
+        spiral_char = phrase[spiral % len(phrase)] if phrase else 'a'
+        spiral_influence = ord(spiral_char)
+        
+        random.seed(combined_seed + spiral + spiral_influence)
+        start_radius = size // 10 + (spiral_influence % 30)
 
         points = []
-        angle_step = 3 + (char_data['unique_chars'] % 8)
-        for angle in range(0, 720 + char_data['length'] * 20, angle_step):
-            radius = start_radius + (angle / 720) * (size // 4 + char_data['numeric_count'] * 5)
-            actual_angle = angle + spiral * 120 + char_data['ascii_sum'] % 180
+        angle_step = 2 + (char_data['unique_chars'] % 6)
+        max_angle = 1080 + char_data['length'] * 30 + spiral_influence * 2
+        
+        for angle in range(0, max_angle, angle_step):
+            radius = start_radius + (angle / max_angle) * (size // 3 + spiral_influence % 50)
+            actual_angle = angle + spiral * 120 + spiral_influence % 180
             x = center[0] + radius * math.cos(math.radians(actual_angle))
             y = center[1] + radius * math.sin(math.radians(actual_angle))
             points.append((x, y))
 
-        # Draw spiral arms with phrase-influenced properties
-        color = colors[spiral % len(colors)]
-        width = 3 + (char_data['special_count'] % 3)
-        alpha = 120 + (char_data['vowel_count'] * 15) % 120
+        # Draw enhanced spiral arms
+        color = colors[(spiral + spiral_influence) % len(colors)]
+        width = 4 + (char_data['special_count'] % 4)
+        alpha = 140 + (spiral_influence % 100)
 
         for i in range(len(points) - 1):
             try:
+                # Main spiral arm
                 draw.line([points[i], points[i + 1]], fill=(*color, alpha), width=width)
+                
+                # Add stellar dust trail
+                dust_color = (
+                    max(0, color[0] - 50),
+                    max(0, color[1] - 50),
+                    max(0, color[2] - 50)
+                )
+                draw.line([points[i], points[i + 1]], fill=(*dust_color, alpha//2), width=width*2)
             except:
                 pass
 
-    # Add constellation based on phrase
-    create_constellation(draw, center, size, phrase, colors, text_seed, char_data)
+    # Enhanced constellation with text content
+    create_enhanced_constellation(draw, center, size, phrase, colors, text_seed, char_data)
 
-    # Add nebula clouds with phrase variation
-    create_nebula_effect(img, colors, combined_seed, char_data)
+    # Enhanced nebula clouds with text influence
+    create_enhanced_nebula_effect(img, colors, combined_seed, char_data)
 
 
 def create_elemental_sigil(draw, img, center, size, phrase, text_seed, combined_seed, pattern_seed, color_seed):
@@ -388,91 +447,119 @@ def create_elemental_sigil(draw, img, center, size, phrase, text_seed, combined_
 
 
 def create_crystal_sigil(draw, img, center, size, phrase, text_seed, combined_seed, pattern_seed, color_seed):
-    """Create geometric crystal sigil with phrase-specific patterns"""
+    """Create geometric crystal sigil with phrase-specific patterns - Enhanced"""
     random.seed(combined_seed)
     char_data = get_phrase_characteristics(phrase)
 
-    # Crystal colors with phrase variations
-    base_colors = [(200, 255, 255), (150, 200, 255), (255, 200, 255), (200, 255, 200), (255, 255, 200)]
+    # Enhanced crystal colors with more brilliance
+    base_colors = [(230, 255, 255), (180, 230, 255), (255, 230, 255), (230, 255, 230), (255, 255, 230)]
     colors = []
     for i, color in enumerate(base_colors):
-        variation = (char_data['ascii_sum'] + i * 40) % 80
+        # Text influence on colors
+        text_influence = sum(ord(c) for c in phrase[:3]) if phrase else 0
+        variation = (char_data['ascii_sum'] + i * 50 + text_influence) % 100
         new_color = (
-            min(255, max(150, color[0] + variation - 40)),
-            min(255, max(150, color[1] + variation - 40)),
-            min(255, max(150, color[2] + variation - 40))
+            min(255, max(180, color[0] + variation - 50)),
+            min(255, max(180, color[1] + variation - 50)),
+            min(255, max(180, color[2] + variation - 50))
         )
         colors.append(new_color)
 
-    # Create crystal lattice structure based on phrase
+    # Create enhanced crystal lattice structure based on phrase
     lattice_points = []
-    grid_size = 4 + char_data['word_count'] + (char_data['length'] % 6)
+    grid_size = 6 + char_data['word_count'] + (char_data['length'] % 8)
 
+    # Use actual phrase characters to influence crystal structure
     for i in range(grid_size):
         for j in range(grid_size):
-            x_offset = (char_data['first_char_value'] % 20 - 10) / 100
-            y_offset = (char_data['last_char_value'] % 20 - 10) / 100
-            x = (i / (grid_size - 1)) * size * 0.8 + size * 0.1 + x_offset * size
-            y = (j / (grid_size - 1)) * size * 0.8 + size * 0.1 + y_offset * size
+            char_influence = ord(phrase[(i+j) % len(phrase)]) if phrase else 65
+            x_offset = (char_influence % 40 - 20) / 100
+            y_offset = (char_data['first_char_value'] % 40 - 20) / 100
+            x = (i / (grid_size - 1)) * size * 0.9 + size * 0.05 + x_offset * size
+            y = (j / (grid_size - 1)) * size * 0.9 + size * 0.05 + y_offset * size
             lattice_points.append((x, y))
 
-    # Connect lattice points in phrase-influenced patterns
+    # Enhanced connections with text-based patterns
     random.seed(pattern_seed + char_data['ascii_sum'])
     for i, point in enumerate(lattice_points):
-        connections = 2 + (char_data['unique_chars'] % 4)
+        connections = 3 + (char_data['unique_chars'] % 5)
         for conn in range(connections):
-            target_idx = (i + conn * char_data['consonant_count'] + char_data['vowel_count']) % len(lattice_points)
+            # Use phrase content to determine connections
+            char_val = ord(phrase[i % len(phrase)]) if phrase else 65
+            target_idx = (i + conn * char_val + char_data['vowel_count']) % len(lattice_points)
             target_point = lattice_points[target_idx]
 
-            color = colors[(i + char_data['numeric_count']) % len(colors)]
-            width = 1 + (char_data['special_count'] % 3)
-            alpha = 100 + (char_data['length'] * 5) % 120
+            color = colors[(i + char_val) % len(colors)]
+            width = 2 + (char_data['special_count'] % 4)
+            alpha = 150 + (char_data['length'] * 8) % 100
 
             try:
+                # Add crystal refraction effect
                 draw.line([point, target_point], fill=(*color, alpha), width=width)
+                
+                # Add prismatic edges
+                offset_x = (char_val % 6 - 3)
+                offset_y = (char_val % 6 - 3)
+                offset_point = (point[0] + offset_x, point[1] + offset_y)
+                offset_target = (target_point[0] + offset_x, target_point[1] + offset_y)
+                
+                prism_color = (
+                    min(255, color[0] + 30),
+                    min(255, color[1] + 30),
+                    min(255, color[2] + 30)
+                )
+                draw.line([offset_point, offset_target], fill=(*prism_color, alpha//2), width=1)
             except:
                 pass
 
-    # Add crystal facets with phrase variation
-    create_crystal_facets(draw, center, size, phrase, colors, combined_seed, char_data)
+    # Add enhanced crystal facets
+    create_enhanced_crystal_facets(draw, center, size, phrase, colors, combined_seed, char_data)
 
-    # Add geometric patterns
-    create_geometric_patterns(draw, center, size, phrase, colors, text_seed, char_data)
+    # Add crystalline formations based on text
+    create_text_influenced_crystals(draw, center, size, phrase, colors, text_seed, char_data)
 
 
 def create_shadow_sigil(draw, img, center, size, phrase, text_seed, combined_seed, pattern_seed, color_seed):
-    """Create mysterious but beautiful shadow sigil with enhanced brightness - heavily optimized"""
+    """Create mysterious but beautiful shadow sigil with enhanced brightness and text influence"""
     random.seed(combined_seed)
     char_data = get_phrase_characteristics(phrase)
 
-    # Enhanced shadow colors - much brighter and more vibrant
-    base_colors = [(180, 120, 180), (220, 160, 220), (160, 120, 160), (200, 140, 200), (140, 140, 180)]
+    # Enhanced shadow colors - brighter with text influence
+    base_colors = [(200, 140, 200), (240, 180, 240), (180, 140, 180), (220, 160, 220), (160, 160, 200)]
     colors = []
     for i, color in enumerate(base_colors):
-        variation = (char_data['ascii_sum'] + i * 40) % 80
+        # Strong text influence on shadow colors
+        text_influence = sum(ord(c) for c in phrase[:2]) if phrase else 0
+        variation = (char_data['ascii_sum'] + i * 50 + text_influence) % 100
         new_color = (
-            min(255, max(120, color[0] + variation - 40)),
-            min(255, max(120, color[1] + variation - 40)),
-            min(255, max(120, color[2] + variation - 40))
+            min(255, max(140, color[0] + variation - 50)),
+            min(255, max(140, color[1] + variation - 50)),
+            min(255, max(140, color[2] + variation - 50))
         )
         colors.append(new_color)
 
-    # Heavily reduced tendril count for much faster generation
-    tendril_count = min(6, 3 + char_data['length'] // 2)
+    # Enhanced tendril system with text influence
+    tendril_count = min(10, 4 + char_data['length'] // 2 + char_data['word_count'])
     for tendril in range(tendril_count):
         random.seed(pattern_seed + tendril + char_data['ascii_sum'])
-        start_angle = (char_data['first_char_value'] + tendril * 45) % 360
+        
+        # Use phrase characters to influence tendril direction
+        char_influence = ord(phrase[tendril % len(phrase)]) if phrase else 65
+        start_angle = (char_influence * 5 + tendril * 36) % 360
 
         points = []
         current_x, current_y = center
 
-        # Much reduced steps for faster generation
-        steps = min(12, 8 + char_data['word_count'])
+        # More detailed steps with text influence
+        steps = min(16, 10 + char_data['word_count'] + char_data['unique_chars'])
         for step in range(steps):
-            distance = step * (size // 30 + char_data['unique_chars'] // 2)
-            angle_influence = (ord(phrase[step % len(phrase)]) - 32) if phrase else 0
-            angle_variation = random.uniform(-30, 30) + (angle_influence % 20 - 10)
-            actual_angle = start_angle + angle_variation
+            # Use phrase content to create unique patterns
+            step_char = phrase[step % len(phrase)] if phrase else 'a'
+            step_influence = ord(step_char)
+            
+            distance = step * (size // 25 + (step_influence % 15))
+            angle_variation = random.uniform(-40, 40) + (step_influence % 30 - 15)
+            actual_angle = start_angle + angle_variation + (step * 3)
 
             x = current_x + distance * math.cos(math.radians(actual_angle))
             y = current_y + distance * math.sin(math.radians(actual_angle))
@@ -480,21 +567,30 @@ def create_shadow_sigil(draw, img, center, size, phrase, text_seed, combined_see
 
             current_x, current_y = x, y
 
-        # Draw tendril with phrase-influenced properties
-        color = colors[tendril % len(colors)]
+        # Draw enhanced tendril with text-influenced properties
+        color = colors[(tendril + char_influence) % len(colors)]
         for i in range(len(points) - 1):
-            thickness = max(1, 4 + char_data['numeric_count'] % 3 - i // 3)
-            alpha = 140 + (char_data['special_count'] * 10) % 100
+            thickness = max(2, 5 + char_data['numeric_count'] % 4 - i // 4)
+            alpha = 160 + (char_data['special_count'] * 12) % 80
             try:
+                # Main tendril
                 draw.line([points[i], points[i + 1]], fill=(*color, alpha), width=thickness)
+                
+                # Add shadow glow effect
+                glow_color = (
+                    min(255, color[0] + 40),
+                    min(255, color[1] + 40),
+                    min(255, color[2] + 40)
+                )
+                draw.line([points[i], points[i + 1]], fill=(*glow_color, alpha//3), width=thickness*2)
             except:
                 pass
 
-    # Simplified shadow runes for faster generation
-    create_shadow_runes_optimized(draw, center, size, phrase, colors, text_seed, char_data)
+    # Enhanced shadow runes with text content
+    create_enhanced_shadow_runes(draw, center, size, phrase, colors, text_seed, char_data)
 
-    # Simplified void spaces
-    create_void_effect_optimized(draw, center, size, phrase, combined_seed, char_data)
+    # Enhanced void spaces with text influence
+    create_enhanced_void_effect(draw, center, size, phrase, combined_seed, char_data)
 
 
 def create_light_sigil(draw, img, center, size, phrase, text_seed, combined_seed, pattern_seed, color_seed):
@@ -1417,6 +1513,282 @@ def enhance_fine_details_optimized(img, char_data):
         return img
     except:
         return img
+
+def create_enhanced_crystal_facets(draw, center, size, phrase, colors, seed, char_data):
+    """Create enhanced crystal facets with text influence"""
+    random.seed(seed + char_data['ascii_sum'])
+
+    facet_count = 6 + char_data['length'] + char_data['word_count'] * 3
+    for facet in range(facet_count):
+        # Use phrase characters to influence facet placement
+        char_val = ord(phrase[facet % len(phrase)]) if phrase else 65
+        angle = (char_val * 3 + facet * 36) % 360
+        distance = random.randint(size//6, size//2) + (char_val % 30)
+
+        facet_x = center[0] + distance * math.cos(math.radians(angle))
+        facet_y = center[1] + distance * math.sin(math.radians(angle))
+
+        facet_size = 20 + char_data['consonant_count'] + (char_val % 25)
+
+        # Create enhanced crystal facet
+        points = []
+        sides = 6 + (char_val % 4)
+        for i in range(sides):
+            point_angle = angle + i * (360 / sides) + char_data['last_char_value']
+            px = facet_x + facet_size * math.cos(math.radians(point_angle))
+            py = facet_y + facet_size * math.sin(math.radians(point_angle))
+            points.append((px, py))
+
+        color = colors[(facet + char_val) % len(colors)]
+        alpha = 160 + (char_data['special_count'] * 12) % 80
+        outline_alpha = 220 + (char_data['word_count'] * 15) % 35
+
+        try:
+            # Main facet
+            draw.polygon(points, fill=(*color, alpha), outline=(*color, outline_alpha))
+            
+            # Add crystal highlights
+            highlight_color = (
+                min(255, color[0] + 60),
+                min(255, color[1] + 60),
+                min(255, color[2] + 60)
+            )
+            
+            # Inner highlight
+            inner_points = []
+            for i, point in enumerate(points):
+                inner_x = facet_x + (point[0] - facet_x) * 0.6
+                inner_y = facet_y + (point[1] - facet_y) * 0.6
+                inner_points.append((inner_x, inner_y))
+            
+            draw.polygon(inner_points, fill=(*highlight_color, alpha//2))
+        except:
+            pass
+
+def create_text_influenced_crystals(draw, center, size, phrase, colors, seed, char_data):
+    """Create crystal formations based on text content"""
+    if not phrase:
+        return
+        
+    for i, char in enumerate(phrase):
+        if char.isalnum():
+            char_val = ord(char)
+            angle = (char_val * 5 + i * 25) % 360
+            distance = size // 8 + (char_val % 60) + i * 10
+            
+            x = center[0] + distance * math.cos(math.radians(angle))
+            y = center[1] + distance * math.sin(math.radians(angle))
+            
+            # Create character-specific crystal
+            crystal_size = 15 + (char_val % 20)
+            crystal_sides = 4 + (char_val % 4)
+            
+            points = []
+            for side in range(crystal_sides):
+                side_angle = angle + side * (360 / crystal_sides)
+                px = x + crystal_size * math.cos(math.radians(side_angle))
+                py = y + crystal_size * math.sin(math.radians(side_angle))
+                points.append((px, py))
+            
+            color = colors[(char_val + i) % len(colors)]
+            alpha = 180 + (char_val % 60)
+            
+            try:
+                draw.polygon(points, fill=(*color, alpha))
+                
+                # Add text-based inner pattern
+                inner_size = crystal_size * 0.5
+                inner_points = []
+                for side in range(crystal_sides):
+                    side_angle = angle + side * (360 / crystal_sides) + 180/crystal_sides
+                    px = x + inner_size * math.cos(math.radians(side_angle))
+                    py = y + inner_size * math.sin(math.radians(side_angle))
+                    inner_points.append((px, py))
+                
+                inner_color = (
+                    min(255, color[0] + 40),
+                    min(255, color[1] + 40),
+                    min(255, color[2] + 40)
+                )
+                draw.polygon(inner_points, fill=(*inner_color, alpha))
+            except:
+                pass
+
+def create_enhanced_shadow_runes(draw, center, size, phrase, colors, seed, char_data):
+    """Create enhanced shadow runes based on text content"""
+    random.seed(seed + char_data['ascii_sum'])
+
+    # Create runes for each significant character
+    rune_chars = [char for char in phrase if char.isalnum()][:12]
+    
+    for i, char in enumerate(rune_chars):
+        char_val = ord(char)
+        angle = (char_val * 7 + i * 30) % 360
+        distance = size // 5 + char_data['word_count'] * 12 + (char_val % 40)
+        
+        x = center[0] + distance * math.cos(math.radians(angle))
+        y = center[1] + distance * math.sin(math.radians(angle))
+
+        # Create complex character-based rune
+        rune_complexity = 4 + (char_val % 8)
+        color = colors[(char_val + i) % len(colors)]
+
+        for rune_line in range(rune_complexity):
+            line_angle = angle + rune_line * 45 + char_data['first_char_value'] + char_val
+            line_length = 15 + (char_val % 15) + char_data['unique_chars']
+
+            # Create branching rune lines
+            start_x = x + (line_length // 3) * math.cos(math.radians(line_angle))
+            start_y = y + (line_length // 3) * math.sin(math.radians(line_angle))
+            end_x = x - (line_length // 3) * math.cos(math.radians(line_angle))
+            end_y = y - (line_length // 3) * math.sin(math.radians(line_angle))
+
+            width = 3 + (char_data['numeric_count'] % 3)
+            alpha = 220 + (char_val % 35)
+
+            try:
+                # Main rune line
+                draw.line([(start_x, start_y), (end_x, end_y)], fill=(*color, alpha), width=width)
+                
+                # Add rune branches for complexity
+                branch_angle = line_angle + 90
+                branch_length = line_length // 3
+                branch_x = start_x + branch_length * math.cos(math.radians(branch_angle))
+                branch_y = start_y + branch_length * math.sin(math.radians(branch_angle))
+                
+                draw.line([(start_x, start_y), (branch_x, branch_y)], fill=(*color, alpha), width=width-1)
+                
+                # Add mystical dots
+                dot_x = x + (char_val % 10 - 5)
+                dot_y = y + (char_val % 10 - 5)
+                dot_size = 2 + (char_val % 3)
+                draw.ellipse([dot_x-dot_size, dot_y-dot_size, dot_x+dot_size, dot_y+dot_size],
+                           fill=(*color, alpha))
+            except:
+                pass
+
+def create_enhanced_void_effect(draw, center, size, phrase, seed, char_data):
+    """Create enhanced void spaces with text influence"""
+    random.seed(seed + char_data['ascii_sum'])
+
+    void_count = 4 + char_data['word_count'] + (char_data['length'] % 6)
+    for void in range(void_count):
+        # Use phrase to influence void placement
+        char_val = ord(phrase[void % len(phrase)]) if phrase else 65
+        void_x = (char_val * 13 + void * 47) % size
+        void_y = (char_val * 17 + void * 31) % size
+        
+        void_radius = 12 + char_data['vowel_count'] * 3 + (char_val % 25)
+
+        # Create void with enhanced properties
+        outline_alpha = 180 + (char_val % 60)
+        
+        # Create void gradient
+        for ring in range(void_radius, 0, -3):
+            ring_alpha = int(outline_alpha * (ring / void_radius))
+            ring_color = (60 + char_val % 40, 20 + char_val % 30, 60 + char_val % 40)
+            
+            try:
+                draw.ellipse([void_x-ring, void_y-ring, void_x+ring, void_y+ring],
+                           fill=(*ring_color, ring_alpha))
+            except:
+                pass
+
+def create_enhanced_constellation(draw, center, size, phrase, colors, seed, char_data):
+    """Create enhanced constellation pattern based on phrase content"""
+    random.seed(seed + char_data['ascii_sum'])
+
+    # Create star positions based on each character in phrase
+    star_positions = []
+    for i, char in enumerate(phrase):
+        if char.isalnum():
+            char_value = ord(char)
+            angle = (char_value * 11 + i * 37) % 360
+            distance = (size // 6) + (char_value % 100) + char_data['word_count'] * 15
+            x = center[0] + distance * math.cos(math.radians(angle))
+            y = center[1] + distance * math.sin(math.radians(angle))
+            star_positions.append((x, y, char_value, char))
+
+    # Enhanced connections based on character relationships
+    for i in range(len(star_positions)):
+        for j in range(i + 1, len(star_positions)):
+            char1_val = star_positions[i][2]
+            char2_val = star_positions[j][2]
+            char1 = star_positions[i][3]
+            char2 = star_positions[j][3]
+            
+            # Create connections based on character similarities
+            char_diff = abs(char1_val - char2_val)
+            should_connect = (
+                char_diff % 5 == 0 or  # ASCII value relationship
+                char1.lower() == char2.lower() or  # Same character
+                (char1.isalpha() and char2.isalpha() and abs(ord(char1.lower()) - ord(char2.lower())) <= 3)
+            )
+            
+            if should_connect:
+                color = colors[(char1_val + char2_val) % len(colors)]
+                connection_strength = max(50, 200 - char_diff * 2)
+                
+                try:
+                    draw.line([star_positions[i][:2], star_positions[j][:2]],
+                             fill=(*color, connection_strength), width=2)
+                except:
+                    pass
+
+        # Draw enhanced star based on character
+        pos = star_positions[i][:2]
+        char_val = star_positions[i][2]
+        color = colors[(char_val + char_data['numeric_count']) % len(colors)]
+        radius = 6 + (char_val % 8)
+        
+        try:
+            # Multi-layered star
+            for layer in range(3):
+                layer_radius = radius - layer * 2
+                layer_alpha = 255 - layer * 60
+                if layer_radius > 0:
+                    draw.ellipse([pos[0]-layer_radius, pos[1]-layer_radius, 
+                                pos[0]+layer_radius, pos[1]+layer_radius],
+                               fill=(*color, layer_alpha))
+        except:
+            pass
+
+def create_enhanced_nebula_effect(img, colors, seed, char_data):
+    """Create enhanced nebula cloud effect with text influence"""
+    random.seed(seed + char_data['ascii_sum'])
+
+    cloud_count = 4 + char_data['word_count'] + (char_data['length'] % 6)
+    for cloud in range(cloud_count):
+        cloud_x = random.randint(0, img.width)
+        cloud_y = random.randint(0, img.height)
+        cloud_size = 60 + char_data['vowel_count'] * 12 + random.randint(0, 100)
+        color = colors[(cloud + char_data['numeric_count']) % len(colors)]
+
+        # Enhanced nebula with multiple layers
+        for layer in range(3):
+            layer_radius = cloud_size - layer * 20
+            layer_alpha = int(100 * ((layer_radius / cloud_size) ** 2)) + (char_data['unique_chars'] % 30)
+            
+            if layer_radius > 0:
+                # Create organic cloud shape
+                for angle in range(0, 360, 12):
+                    variation = random.randint(-layer_radius//4, layer_radius//4)
+                    actual_radius = layer_radius + variation
+                    x = cloud_x + actual_radius * math.cos(math.radians(angle))
+                    y = cloud_y + actual_radius * math.sin(math.radians(angle))
+
+                    if 0 <= x < img.width and 0 <= y < img.height:
+                        current_pixel = img.getpixel((int(x), int(y)))
+                        if len(current_pixel) == 4:
+                            r, g, b, a = current_pixel
+                            
+                            # Enhanced color blending
+                            blend_factor = layer_alpha / 255
+                            blend_r = min(255, int(r + color[0] * blend_factor))
+                            blend_g = min(255, int(g + color[1] * blend_factor))
+                            blend_b = min(255, int(b + color[2] * blend_factor))
+                            
+                            img.putpixel((int(x), int(y)), (blend_r, blend_g, blend_b, a))
 
 def apply_artistic_enhancement(img, vibe, phrase):
     """Apply artistic enhancements to improve image quality and aesthetics."""
