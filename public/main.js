@@ -125,14 +125,14 @@ async function renderEnergies() {
   const isPro = await isUserPro();
   const allowed = isPro ? ALL_ENERGIES : FREE_ENERGIES;
   console.log("Rendering energies - Pro:", isPro, "Allowed:", allowed);
-  
+
   energyList.innerHTML = "";
   ALL_ENERGIES.forEach(name => {
     const div = document.createElement("div");
     const isLocked = !allowed.includes(name);
     div.className = "energy" + (isLocked ? " locked" : "");
     div.textContent = name;
-    
+
     // Add visual indicator for pro energies
     if (!FREE_ENERGIES.includes(name)) {
       if (isPro) {
@@ -141,7 +141,7 @@ async function renderEnergies() {
         div.title = "🔒 Pro Energy - Upgrade to unlock";
       }
     }
-    
+
     div.onclick = () => {
       if (isLocked) { 
         toast("⚡ " + name + " energy requires Pro upgrade", 'warning'); 
@@ -184,21 +184,21 @@ function highlightSelection() {
 async function renderGate() {
   const isPro = await isUserPro();
   console.log("Rendering gate with Pro status:", isPro);
-  
+
   // Pro badge visibility - show when pro, hide when not
   if (isPro) {
     proBadge.classList.remove("hidden");
   } else {
     proBadge.classList.add("hidden");
   }
-  
+
   // Pro controls visibility
   if (isPro) {
     proControls.classList.remove("hidden");
   } else {
     proControls.classList.add("hidden");
   }
-  
+
   exportType.value = "png";
   if (isPro) {
     canvas.width = 2048; canvas.height = 2048;
@@ -217,9 +217,9 @@ async function renderGate() {
 async function updateProButtons() {
   const isPro = await isUserPro();
   const proButtons = document.getElementById("proButtons");
-  
+
   console.log("Updating Pro buttons - Pro status:", isPro);
-  
+
   if (isPro) {
     // Hide pro purchase buttons when user is pro
     if (proButtons) {
@@ -240,7 +240,7 @@ enterKeyBtn.onclick = () => keyModal.showModal();
 unlockBtn.onclick = async () => {
   const key = proKeyInput.value.trim();
   if (!key) return toast("Enter a key", 'warning');
-  
+
   try {
     const r = await fetch("/api/verify-pro", {
       method: "POST",
@@ -253,7 +253,7 @@ unlockBtn.onclick = async () => {
       keyModal.close();
       proKeyInput.value = ''; // Clear the input
       toast("✨ Pro unlocked successfully!", 'success', 4000);
-      
+
       // Force UI refresh
       await renderGate();
       await updateProButtons();

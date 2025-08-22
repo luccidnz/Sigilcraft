@@ -496,6 +496,16 @@ body::after {
 .energy:not(.locked):not(:nth-child(-n+3)) {
   border: 2px solid rgba(255, 215, 0, 0.6);
   background: rgba(255, 215, 0, 0.05);
+  position: relative;
+}
+
+.energy:not(.locked):not(:nth-child(-n+3))::after {
+  content: "✨";
+  position: absolute;
+  top: 5px;
+  right: 8px;
+  font-size: 12px;
+  color: var(--neon-gold);
 }
 
 .energy:not(.locked):not(:nth-child(-n+3)):hover {
