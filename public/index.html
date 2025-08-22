@@ -1,122 +1,683 @@
-<!doctype html>
-<html>
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sigilcraft</title>
-  <link rel="stylesheet" href="./style.css" />
-  <!-- JSZip for Pro batch export -->
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔮 Sigil Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --neon-cyan: #00ffff;
+            --neon-pink: #ff00ff;
+            --neon-green: #00ff41;
+            --neon-purple: #8a2be2;
+            --neon-orange: #ff4500;
+            --neon-gold: #ffd700;
+            --dark-bg: #0a0a0f;
+            --darker-bg: #050508;
+            --card-bg: rgba(10, 20, 30, 0.8);
+            --border-glow: rgba(0, 255, 255, 0.5);
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+        }
+
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background: linear-gradient(135deg, var(--dark-bg), var(--darker-bg), #1a0033);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background grid */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* Floating particles */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 80%, rgba(0, 255, 65, 0.1) 0%, transparent 50%);
+            animation: floatParticles 15s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes floatParticles {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink), var(--neon-green));
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 3s ease-in-out infinite;
+            text-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            position: relative;
+        }
+
+        .pro-badge {
+            display: none;
+            background: linear-gradient(45deg, var(--neon-gold), #ffaa00);
+            color: var(--dark-bg);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            animation: pulseGold 2s ease-in-out infinite alternate;
+        }
+
+        .pro-badge.visible {
+            display: inline-block;
+        }
+
+        @keyframes pulseGold {
+            0% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+            100% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.8); }
+        }
+
+        .pro-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .pro-button {
+            padding: 10px 20px;
+            background: linear-gradient(45deg, var(--neon-purple), var(--neon-pink));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Orbitron', monospace;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 0.9rem;
+        }
+
+        .pro-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(138, 43, 226, 0.4);
+        }
+
+        .pro-button.hidden {
+            display: none;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .form-container {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--border-glow);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 
+                0 0 50px rgba(0, 255, 255, 0.2),
+                inset 0 0 50px rgba(0, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink), var(--neon-green), var(--neon-purple));
+            border-radius: 20px;
+            z-index: -1;
+            animation: borderRotate 4s linear infinite;
+        }
+
+        @keyframes borderRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .input-group {
+            margin-bottom: 2.5rem;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 12px;
+            font-size: 1.2em;
+            font-weight: 600;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'Orbitron', monospace;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 20px;
+            font-size: 1.1rem;
+            font-family: 'Exo 2', sans-serif;
+            border: 2px solid var(--neon-cyan);
+            border-radius: 15px;
+            background: rgba(0, 20, 40, 0.8);
+            color: var(--text-primary);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+        }
+
+        input::placeholder {
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--neon-pink);
+            box-shadow: 
+                0 0 30px rgba(255, 0, 255, 0.4),
+                inset 0 0 20px rgba(255, 0, 255, 0.1);
+            transform: scale(1.02);
+        }
+
+        .energies {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .energy {
+            padding: 15px;
+            background: rgba(0, 20, 40, 0.6);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            text-align: center;
+            font-family: 'Orbitron', monospace;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .energy.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: rgba(20, 20, 20, 0.6);
+        }
+
+        .energy::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .energy:not(.locked):hover::before {
+            left: 100%;
+        }
+
+        .energy:not(.locked):hover {
+            border-color: var(--neon-cyan);
+            background: rgba(0, 255, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 255, 255, 0.2);
+        }
+
+        .pro-only {
+            display: none;
+            margin: 25px 0;
+            padding: 20px;
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid var(--neon-gold);
+            border-radius: 15px;
+        }
+
+        .pro-only.visible {
+            display: block;
+        }
+
+        .pro-only label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+            font-family: 'Orbitron', monospace;
+            font-weight: 500;
+            color: var(--neon-gold);
+            cursor: pointer;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 20px;
+            font-size: 1.3rem;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink));
+            color: var(--dark-bg);
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.4);
+        }
+
+        .generate-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .generate-btn:hover::before {
+            left: 100%;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 255, 255, 0.6);
+            background: linear-gradient(45deg, var(--neon-pink), var(--neon-cyan));
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            background: linear-gradient(45deg, #666, #888);
+        }
+
+        .loading-spinner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 8, 0.95);
+            backdrop-filter: blur(15px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .spinner {
+            width: 80px;
+            height: 80px;
+            border: 4px solid rgba(0, 255, 255, 0.1);
+            border-top: 4px solid var(--neon-cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 25px;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.4);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--neon-cyan);
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: 2px;
+            animation: textPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes textPulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        .canvas-container {
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        #sigilCanvas {
+            max-width: 100%;
+            height: auto;
+            border: 3px solid var(--border-glow);
+            border-radius: 20px;
+            background: var(--dark-bg);
+            box-shadow: 
+                0 0 50px rgba(0, 255, 255, 0.3),
+                inset 0 0 30px rgba(0, 0, 0, 0.8);
+        }
+
+        .downloads {
+            margin: 25px 0;
+            text-align: center;
+        }
+
+        .download-btn {
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            background: linear-gradient(45deg, var(--neon-green), var(--neon-cyan));
+            border: none;
+            color: var(--dark-bg);
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Orbitron', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .download-btn:hover {
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-green));
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0, 255, 65, 0.6);
+        }
+
+        #cooldown {
+            background: linear-gradient(45deg, var(--neon-orange), #ff6b35);
+            color: var(--dark-bg);
+            padding: 15px 20px;
+            border-radius: 12px;
+            text-align: center;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin: 20px 0;
+            box-shadow: 0 0 20px rgba(255, 69, 0, 0.5);
+            animation: cooldownPulse 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes cooldownPulse {
+            0% { box-shadow: 0 0 20px rgba(255, 69, 0, 0.5); }
+            100% { box-shadow: 0 0 40px rgba(255, 69, 0, 0.8); }
+        }
+
+        .toast {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            padding: 20px 30px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--neon-green);
+            border-radius: 15px;
+            color: var(--text-primary);
+            font-family: 'Orbitron', monospace;
+            font-weight: 600;
+            font-size: 1rem;
+            z-index: 1000;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+            opacity: 0;
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .toast.error {
+            border-color: var(--neon-orange);
+            box-shadow: 0 0 20px rgba(255, 69, 0, 0.5);
+        }
+
+        .toast.success {
+            border-color: var(--neon-green);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Modal Styles */
+        dialog {
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            border: 2px solid var(--border-glow);
+            border-radius: 20px;
+            color: var(--text-primary);
+            padding: 40px;
+            max-width: 450px;
+            margin: auto;
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.4);
+        }
+
+        dialog::backdrop {
+            background: rgba(0, 0, 8, 0.8);
+            backdrop-filter: blur(8px);
+        }
+
+        dialog h3 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            text-align: center;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Orbitron', monospace;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn.primary {
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink));
+            color: var(--dark-bg);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Responsive design */
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .form-container {
+                padding: 20px;
+            }
+
+            input {
+                padding: 15px;
+                font-size: 1rem;
+            }
+
+            .generate-btn {
+                padding: 15px;
+                font-size: 1.1rem;
+            }
+
+            .energies {
+                grid-template-columns: 1fr;
+            }
+
+            .pro-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
 </head>
 <body>
-  <header class="topbar">
-    <h1>Sigilcraft <span id="proBadge" class="pro-badge hidden">PRO</span></h1>
-    <div class="actions">
-      <button class="btn btn-ghost" id="upgradeBtn" onclick="goPremiumCheckout()">Upgrade to Pro</button>
-      <button class="btn" id="enterKeyBtn">Enter Pro Key</button>
+    <div class="container">
+        <div class="header">
+            <h1>🔮 Sigilcraft</h1>
+            <div class="pro-badge" id="proBadge">✨ PRO</div>
+        </div>
+
+        <div class="pro-buttons" id="proButtons">
+            <button class="pro-button" id="upgradeBtn" onclick="goPremiumCheckout()">
+                ⚡ Upgrade to Pro
+            </button>
+            <button class="pro-button" id="enterKeyBtn">🔑 Enter Pro Key</button>
+        </div>
+
+        <div class="form-container">
+            <div class="input-group">
+                <label for="intentInput">Neural Intent Interface:</label>
+                <input 
+                    type="text" 
+                    id="intentInput" 
+                    placeholder="Upload your quantum desire matrix..."
+                    maxlength="200"
+                    required
+                />
+            </div>
+
+            <div id="energyList" class="energies"></div>
+
+            <div id="proControls" class="pro-only">
+                <label><input type="checkbox" id="comboToggle"> 🌟 Combo Mode (Mix Multiple Energies)</label>
+                <label>Quantum Seed: <input type="number" id="seedInput" value="0" step="1" style="width: 100px; margin-left: 10px;" /></label>
+                <label><input type="checkbox" id="batchToggle"> 📦 Batch x5 (Generate 5 Variants)</label>
+                <label>Export Format: 
+                    <select id="exportType" style="background: rgba(0, 20, 40, 0.8); border: 1px solid var(--neon-gold); border-radius: 8px; color: var(--text-primary); padding: 8px;">
+                        <option value="png">PNG</option>
+                        <option value="svg">SVG (Pro)</option>
+                    </select>
+                </label>
+            </div>
+
+            <button id="genBtn" class="generate-btn">Initialize Quantum Sigil</button>
+            <div id="cooldown" class="hidden"></div>
+
+            <div class="canvas-container">
+                <canvas id="sigilCanvas" width="512" height="512"></canvas>
+            </div>
+
+            <div class="downloads">
+                <button id="downloadBtn" class="download-btn">⬇ Download Neural Sigil</button>
+            </div>
+        </div>
     </div>
-  </header>
-
-  <main class="wrap">
-    <section class="panel">
-      <h2>Neural Intent Interface</h2>
-
-      <div class="input-group">
-        <label for="intentInput">Enter Your Intent or Desire:</label>
-        <input type="text" id="intentInput" placeholder="I manifest abundance and success..." maxlength="200" required>
-      </div>
-
-      <div id="energyList" class="energies"></div>
-
-      <div id="proControls" class="pro-only hidden">
-        <label><input type="checkbox" id="comboToggle"> Combo mode</label>
-        <label>Seed <input type="number" id="seedInput" value="0" step="1" /></label>
-        <label><input type="checkbox" id="batchToggle"> Batch x5</label>
-        <label>Export: 
-          <select id="exportType">
-            <option value="png">PNG</option>
-            <option value="svg">SVG (Pro)</option>
-          </select>
-        </label>
-        <label><input type="checkbox" id="animatedToggle"> Animated GIF</label>
-        <label>Style Intensity: <input type="range" id="intensitySlider" min="1" max="10" value="5" /></label>
-      </div>
-
-      <!-- New Features Section -->
-      <div class="features-panel">
-        <h3>✨ Magical Features</h3>
-        <div class="feature-grid">
-          <button class="feature-btn" id="shareBtn">🔗 Share Sigil</button>
-          <button class="feature-btn" id="galleryBtn">🖼️ Gallery</button>
-          <button class="feature-btn" id="randomBtn">🎲 Random Intent</button>
-          <button class="feature-btn" id="favoriteBtn">⭐ Favorite</button>
-        </div>
-        
-        <div class="inspiration-section">
-          <h4>🌟 Daily Inspiration</h4>
-          <div id="dailyQuote" class="daily-quote">
-            "Your thoughts shape your reality. Focus your intent."
-          </div>
-          <button class="btn btn-secondary" id="newQuoteBtn">New Quote</button>
-        </div>
-
-        <div class="stats-section">
-          <h4>📊 Your Journey</h4>
-          <div class="stats-grid">
-            <div class="stat-item">
-              <span class="stat-number" id="sigilCount">0</span>
-              <span class="stat-label">Sigils Created</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-number" id="streakCount">0</span>
-              <span class="stat-label">Day Streak</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-number" id="favoriteCount">0</span>
-              <span class="stat-label">Favorites</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <button id="genBtn" class="btn primary">Initialize Quantum Sigil</button>
-      <div id="cooldown" class="hidden" style="color: var(--warning); margin-top: 10px;"></div>
 
     <!-- Loading Spinner -->
     <div id="loadingSpinner" class="loading-spinner hidden">
-      <div class="spinner"></div>
-      <div class="loading-text">Generating quantum sigil...</div>
-      <div class="loading-progress">
-        <div class="progress-bar">
-          <div class="progress-fill"></div>
-        </div>
-      </div>
+        <div class="spinner"></div>
+        <div class="loading-text">Generating quantum sigil...</div>
     </div>
 
-      <div class="downloads">
-        <button id="downloadBtn" class="btn">⬇ Download Neural Sigil</button>
-      </div>
+    <!-- Enter Key Modal -->
+    <dialog id="keyModal">
+        <h3>🔑 Enter Pro Key</h3>
+        <input id="proKeyInput" placeholder="Paste your key" style="width: 100%; padding: 15px; background: rgba(0, 20, 40, 0.8); border: 2px solid var(--border-glow); border-radius: 12px; color: var(--text-primary); margin-bottom: 20px; text-align: center;" />
+        <div class="modal-buttons">
+            <button id="unlockBtn" class="btn primary" type="button">🚀 Unlock</button>
+            <button class="btn" onclick="document.getElementById('keyModal').close()">Cancel</button>
+        </div>
+    </dialog>
 
-      <canvas id="sigilCanvas" width="512" height="512"></canvas>
-      <div id="previewSvg" class="hidden"></div>
-    </section>
-  </main>
+    <div id="toast" class="toast"></div>
 
-  <!-- Enter Key Modal -->
-  <dialog id="keyModal">
-    <form method="dialog" class="modal">
-      <h3>Enter Pro Key</h3>
-      <input id="proKeyInput" placeholder="Paste your key" />
-      <div class="row">
-        <button id="unlockBtn" class="btn primary" type="button">Unlock</button>
-        <button class="btn" value="cancel">Cancel</button>
-      </div>
-      <small>Buy a key via Upgrade to Pro.</small>
-    </form>
-  </dialog>
-
-  <div id="toast" class="toast"></div>
-
-  <script src="./main.js" type="module"></script>
+    <script src="./main.js" type="module"></script>
 </body>
 </html>
