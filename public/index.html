@@ -127,7 +127,7 @@
             animation: pulseGold 2s ease-in-out infinite alternate;
         }
 
-        .pro-badge.visible {
+        .pro-badge:not(.hidden) {
             display: inline-block;
         }
 
@@ -611,7 +611,7 @@
     <div class="container">
         <div class="header">
             <h1>🔮 Sigilcraft</h1>
-            <div class="pro-badge" id="proBadge">✨ PRO</div>
+            <div class="pro-badge hidden" id="proBadge">✨ PRO</div>
         </div>
 
         <div class="pro-buttons" id="proButtons">

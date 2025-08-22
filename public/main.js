@@ -178,26 +178,53 @@ async function renderGate() {
     batchToggle.checked = false;
   }
   await renderEnergies();
+  await updateProButtons();
+}
+
+// --- pro button management ---
+async function updateProButtons() {
+  const isPro = await isUserPro();
+  const proButtons = document.getElementById("proButtons");
+  const upgradeBtn = document.getElementById("upgradeBtn");
+  const enterKeyBtn = document.getElementById("enterKeyBtn");
+  
+  if (isPro) {
+    // Hide pro purchase buttons when user is pro
+    if (proButtons) proButtons.style.display = 'none';
+  } else {
+    // Show pro purchase buttons when user is not pro
+    if (proButtons) proButtons.style.display = 'flex';
+  }
 }
 
 // --- key modal ---
 enterKeyBtn.onclick = () => keyModal.showModal();
 unlockBtn.onclick = async () => {
   const key = proKeyInput.value.trim();
-  if (!key) return toast("Enter a key");
-  const r = await fetch("/api/verify-pro", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ key })
-  });
-  const j = await r.json();
-  if (j.ok) {
-    localStorage.setItem("sigil_pro","1");
-    keyModal.close();
-    toast("Pro unlocked");
-    await renderGate();
-  } else {
-    toast("Invalid key");
+  if (!key) return toast("Enter a key", 'warning');
+  
+  try {
+    const r = await fetch("/api/verify-pro", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ key })
+    });
+    const j = await r.json();
+    if (j.ok) {
+      localStorage.setItem("sigil_pro","1");
+      keyModal.close();
+      proKeyInput.value = ''; // Clear the input
+      toast("✨ Pro unlocked successfully!", 'success', 4000);
+      
+      // Force UI refresh
+      await renderGate();
+      await updateProButtons();
+    } else {
+      toast("❌ Invalid Pro key", 'error');
+    }
+  } catch (error) {
+    console.error("Pro key verification error:", error);
+    toast("❌ Error verifying key. Please try again.", 'error');
   }
 };
 
@@ -646,14 +673,19 @@ window.goPremiumCheckout = goPremiumCheckout;
 
 // init
 window.addEventListener("load", async () => {
-  await renderGate();
+  try {
+    await renderGate();
 
-  // Check for purchase success/cancel
-  const p = new URLSearchParams(location.search);
-  if (p.get("purchase") === "success") {
-    toast("Chur! Payment successful. Check your email for your Pro key.");
-  } else if (p.get("purchase") === "cancel") {
-    toast("Purchase cancelled.");
+    // Check for purchase success/cancel
+    const p = new URLSearchParams(location.search);
+    if (p.get("purchase") === "success") {
+      toast("🎉 Payment successful! Check your email for your Pro key.", 'success', 5000);
+    } else if (p.get("purchase") === "cancel") {
+      toast("Purchase cancelled.", 'warning');
+    }
+  } catch (error) {
+    console.error("Initialization error:", error);
+    toast("⚠️ App initialization error. Please refresh the page.", 'error');
   }
 });
 
