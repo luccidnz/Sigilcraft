@@ -124,13 +124,29 @@ function hideLoading() {
 async function renderEnergies() {
   const isPro = await isUserPro();
   const allowed = isPro ? ALL_ENERGIES : FREE_ENERGIES;
+  console.log("Rendering energies - Pro:", isPro, "Allowed:", allowed);
+  
   energyList.innerHTML = "";
   ALL_ENERGIES.forEach(name => {
     const div = document.createElement("div");
-    div.className = "energy" + (allowed.includes(name) ? "" : " locked");
+    const isLocked = !allowed.includes(name);
+    div.className = "energy" + (isLocked ? " locked" : "");
     div.textContent = name;
+    
+    // Add visual indicator for pro energies
+    if (!FREE_ENERGIES.includes(name)) {
+      if (isPro) {
+        div.title = "✨ Pro Energy - Unlocked";
+      } else {
+        div.title = "🔒 Pro Energy - Upgrade to unlock";
+      }
+    }
+    
     div.onclick = () => {
-      if (!allowed.includes(name)) { toast("Pro feature"); return; }
+      if (isLocked) { 
+        toast("⚡ " + name + " energy requires Pro upgrade", 'warning'); 
+        return; 
+      }
 
       // Always clear and rebuild selection to ensure consistency
       if (!comboToggle.checked) {
@@ -167,15 +183,31 @@ function highlightSelection() {
 // --- gating view ---
 async function renderGate() {
   const isPro = await isUserPro();
-  proBadge.classList.toggle("hidden", !isPro);
-  proControls.classList.toggle("hidden", !isPro);
+  console.log("Rendering gate with Pro status:", isPro);
+  
+  // Pro badge visibility - show when pro, hide when not
+  if (isPro) {
+    proBadge.classList.remove("hidden");
+  } else {
+    proBadge.classList.add("hidden");
+  }
+  
+  // Pro controls visibility
+  if (isPro) {
+    proControls.classList.remove("hidden");
+  } else {
+    proControls.classList.add("hidden");
+  }
+  
   exportType.value = "png";
   if (isPro) {
     canvas.width = 2048; canvas.height = 2048;
+    console.log("Pro mode: canvas set to 2048x2048");
   } else {
     canvas.width = 1200; canvas.height = 1200;
     comboToggle.checked = false;
     batchToggle.checked = false;
+    console.log("Free mode: canvas set to 1200x1200");
   }
   await renderEnergies();
   await updateProButtons();
@@ -185,15 +217,21 @@ async function renderGate() {
 async function updateProButtons() {
   const isPro = await isUserPro();
   const proButtons = document.getElementById("proButtons");
-  const upgradeBtn = document.getElementById("upgradeBtn");
-  const enterKeyBtn = document.getElementById("enterKeyBtn");
+  
+  console.log("Updating Pro buttons - Pro status:", isPro);
   
   if (isPro) {
     // Hide pro purchase buttons when user is pro
-    if (proButtons) proButtons.style.display = 'none';
+    if (proButtons) {
+      proButtons.style.display = 'none';
+      console.log("Pro buttons hidden");
+    }
   } else {
     // Show pro purchase buttons when user is not pro
-    if (proButtons) proButtons.style.display = 'flex';
+    if (proButtons) {
+      proButtons.style.display = 'flex';
+      console.log("Pro buttons shown");
+    }
   }
 }
 

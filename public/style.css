@@ -492,6 +492,20 @@ body::after {
   text-shadow: var(--glow-intensity) rgba(255, 69, 0, 0.6);
 }
 
+/* Pro energy styling when unlocked */
+.energy:not(.locked):not(:nth-child(-n+3)) {
+  border: 2px solid rgba(255, 215, 0, 0.6);
+  background: rgba(255, 215, 0, 0.05);
+}
+
+.energy:not(.locked):not(:nth-child(-n+3)):hover {
+  border-color: var(--neon-gold);
+  background: rgba(255, 215, 0, 0.15);
+  box-shadow: 
+    0 15px 30px rgba(255, 215, 0, 0.3),
+    var(--glow-intensity) rgba(255, 215, 0, 0.5);
+}
+
 /* Pro Controls */
 .pro-only {
   margin: 25px 0;
