@@ -1,10 +1,13 @@
-// ---- simple state ----
+// ---- Application State ----
 const FREE_ENERGIES = ["mystical","elemental","light"];
 const ALL_ENERGIES  = ["mystical","cosmic","elemental","crystal","shadow","light"];
 let selectedEnergies = [FREE_ENERGIES[0]];
 let lastGenAt = 0;
 let lastGeneratedImage = null;
+let isAnimating = false;
+let animationFrame = null;
 
+// DOM Element References
 const el = (id) => document.getElementById(id);
 const genBtn = el("genBtn");
 const cooldownEl = el("cooldown");
@@ -23,7 +26,8 @@ const downloadBtn = el("downloadBtn");
 const toastEl = el("toast");
 const canvas = el("sigilCanvas");
 const ctx = canvas.getContext("2d");
-const previewSvg = el("previewSvg");
+const intentInput = el("intentInput");
+const charCounter = el("charCounter");
 
 // --- pro detection with caching ---
 let proStatusCache = null;
@@ -134,19 +138,34 @@ function playNotificationSound(type) {
   }
 }
 
-// Loading spinner utilities
+// Enhanced Loading System
 const loadingSpinner = el("loadingSpinner");
 
 function showLoading(text = "Generating quantum sigil...") {
   const loadingText = loadingSpinner.querySelector('.loading-text');
+  const progressBar = loadingSpinner.querySelector('.progress-bar');
+  
   if (loadingText) loadingText.textContent = text;
+  
+  // Animate progress bar
+  if (progressBar) {
+    progressBar.style.animation = 'none';
+    setTimeout(() => {
+      progressBar.style.animation = 'progressFlow 3s ease-in-out infinite';
+    }, 10);
+  }
+  
   loadingSpinner.classList.remove('hidden');
-  document.body.style.overflow = 'hidden'; // Prevent scrolling
+  document.body.style.overflow = 'hidden';
+  
+  // Add pulsing effect to body
+  document.body.classList.add('loading-active');
 }
 
 function hideLoading() {
   loadingSpinner.classList.add('hidden');
-  document.body.style.overflow = ''; // Restore scrolling
+  document.body.style.overflow = '';
+  document.body.classList.remove('loading-active');
 }
 
 // --- energy grid ---
@@ -220,48 +239,57 @@ function highlightSelection() {
     const name = div.textContent.trim();
     const isSelected = selectedEnergies.includes(name);
     
+    // Clear previous styling
+    div.classList.remove('selected', 'combo-selected');
+    const badge = div.querySelector('.combo-badge');
+    if (badge) badge.remove();
+    
     if (isSelected) {
-      // Show selection order for combo mode
+      div.classList.add('selected');
       const selectionIndex = selectedEnergies.indexOf(name);
-      div.style.borderColor = "#7ee787";
-      div.style.boxShadow = "0 0 15px rgba(126, 231, 135, 0.5)";
+      
+      // Enhanced selection styling
+      div.style.borderColor = "var(--neon-green)";
+      div.style.background = "rgba(0, 255, 65, 0.2)";
+      div.style.boxShadow = "0 0 20px rgba(0, 255, 65, 0.6)";
+      div.style.transform = "scale(1.05)";
       
       if (selectedEnergies.length > 1) {
-        // Show combination order
-        div.style.background = `linear-gradient(45deg, rgba(126, 231, 135, 0.2), rgba(0, 255, 255, 0.1))`;
-        if (!div.querySelector('.combo-badge')) {
-          const badge = document.createElement('span');
-          badge.className = 'combo-badge';
-          badge.textContent = `${selectionIndex + 1}`;
-          badge.style.cssText = `
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: #7ee787;
-            color: #000;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-          `;
-          div.style.position = 'relative';
-          div.appendChild(badge);
-        }
+        div.classList.add('combo-selected');
+        // Enhanced combo badge
+        const badge = document.createElement('span');
+        badge.className = 'combo-badge';
+        badge.textContent = `${selectionIndex + 1}`;
+        badge.style.cssText = `
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          background: linear-gradient(45deg, var(--neon-green), var(--neon-cyan));
+          color: var(--bg-primary);
+          border-radius: 50%;
+          width: 24px;
+          height: 24px;
+          font-size: 12px;
+          font-weight: bold;
+          font-family: 'Orbitron', monospace;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 0 10px rgba(0, 255, 65, 0.8);
+          animation: badgePulse 2s ease-in-out infinite;
+        `;
+        div.style.position = 'relative';
+        div.appendChild(badge);
       }
     } else {
-      div.style.borderColor = "#30364a";
-      div.style.boxShadow = "none";
+      // Reset to default styling
+      div.style.borderColor = "";
       div.style.background = "";
-      const badge = div.querySelector('.combo-badge');
-      if (badge) badge.remove();
+      div.style.boxShadow = "";
+      div.style.transform = "";
     }
   });
   
-  // Update combo display
   updateComboDisplay();
 }
 
@@ -1267,7 +1295,7 @@ function updateAverageRating() {
   }
 }
 
-// Enhanced Sharing Feature
+// Enhanced Sharing Feature with Modal
 async function shareSigil() {
   try {
     if (!lastGeneratedImage) {
@@ -1275,68 +1303,100 @@ async function shareSigil() {
       return;
     }
 
-    const intentInput = document.getElementById("intentInput");
-    if (!intentInput) {
-      toast('⚠️ Cannot find input field', 'error');
-      return;
-    }
-
-    const phrase = intentInput.value || 'Quantum Sigil';
+    const phrase = intentInput?.value || 'Quantum Sigil';
     const vibe = selectedEnergies.join(' + ');
 
-    // Create comprehensive share data
-    const shareText = `🔮 I just created a ${vibe} sigil for "${phrase}" using Sigilcraft! ✨ 
-
-Experience quantum sigil creation: ${window.location.origin}
-
-#sigilcraft #quantumsigil #manifestation`;
-
-    // Try multiple sharing methods
-    if (navigator.share) {
-      try {
-        // First try with image if supported
-        if (canvas && navigator.canShare) {
-          const blob = await new Promise(resolve => {
-            canvas.toBlob(resolve, 'image/png', 0.9);
-          });
-          
-          if (blob && blob.size > 0) {
-            const file = new File([blob], `${phrase.replace(/[^a-zA-Z0-9]/g, '_')}_sigil.png`, { type: 'image/png' });
-            
-            if (navigator.canShare({ files: [file] })) {
-              await navigator.share({
-                title: 'My Quantum Sigil from Sigilcraft',
-                text: shareText,
-                files: [file]
-              });
-              toast('✨ Sigil shared with image!', 'success');
-              return;
-            }
-          }
-        }
-        
-        // Fallback to text-only native share
-        await navigator.share({
-          title: 'My Quantum Sigil from Sigilcraft',
-          text: shareText,
-          url: window.location.origin
-        });
-        toast('✨ Sigil shared successfully!', 'success');
-        return;
-        
-      } catch (shareError) {
-        if (shareError.name !== 'AbortError') {
-          console.log('Native share failed:', shareError.message);
-        }
-      }
-    }
-    
-    // Fallback to clipboard copy
-    await fallbackShare(shareText);
+    // Show enhanced share modal
+    showShareModal(phrase, vibe);
     
   } catch (error) {
     console.error('Share error:', error);
-    await fallbackShare(`🔮 Check out my quantum sigil created with Sigilcraft! ${window.location.origin}`);
+    toast('❌ Sharing failed. Please try again.', 'error');
+  }
+}
+
+function showShareModal(phrase, vibe) {
+  const shareModal = document.getElementById('shareModal');
+  const shareCanvas = document.getElementById('shareCanvas');
+  
+  if (!shareModal || !shareCanvas) {
+    // Fallback to simple text share
+    fallbackShare(`🔮 I created a ${vibe} sigil for "${phrase}" using Sigilcraft! ${window.location.origin}`);
+    return;
+  }
+  
+  // Copy current sigil to share canvas
+  if (lastGeneratedImage) {
+    const img = new Image();
+    img.onload = () => {
+      const ctx = shareCanvas.getContext('2d');
+      ctx.clearRect(0, 0, shareCanvas.width, shareCanvas.height);
+      ctx.drawImage(img, 0, 0, shareCanvas.width, shareCanvas.height);
+    };
+    img.src = lastGeneratedImage;
+  }
+  
+  shareModal.classList.remove('hidden');
+}
+
+function hideShareModal() {
+  const shareModal = document.getElementById('shareModal');
+  if (shareModal) {
+    shareModal.classList.add('hidden');
+  }
+}
+
+async function shareToTwitter() {
+  const phrase = intentInput?.value || 'Quantum Sigil';
+  const vibe = selectedEnergies.join(' + ');
+  const text = `🔮 I just created a ${vibe} sigil for "${phrase}" using Sigilcraft! ✨ #sigilcraft #quantumsigil #manifestation`;
+  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.origin)}`;
+  window.open(url, '_blank');
+  toast('🐦 Opening Twitter...', 'success');
+}
+
+async function shareToFacebook() {
+  const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.origin)}`;
+  window.open(url, '_blank');
+  toast('📘 Opening Facebook...', 'success');
+}
+
+async function copyShareLink() {
+  const phrase = intentInput?.value || 'Quantum Sigil';
+  const vibe = selectedEnergies.join(' + ');
+  const shareText = `🔮 I created a ${vibe} sigil for "${phrase}" using Sigilcraft! ✨\n\nTry it yourself: ${window.location.origin}\n\n#sigilcraft #quantumsigil #manifestation`;
+  
+  try {
+    await navigator.clipboard.writeText(shareText);
+    toast('📋 Share text copied to clipboard!', 'success');
+    hideShareModal();
+  } catch (error) {
+    fallbackShare(shareText);
+  }
+}
+
+async function downloadForShare() {
+  const shareCanvas = document.getElementById('shareCanvas');
+  if (!shareCanvas) {
+    toast('❌ No image to download', 'error');
+    return;
+  }
+  
+  try {
+    const blob = await new Promise(resolve => {
+      shareCanvas.toBlob(resolve, 'image/png', 1.0);
+    });
+    
+    if (blob) {
+      const phrase = intentInput?.value || 'sigil';
+      const filename = `${phrase.replace(/[^a-zA-Z0-9]/g, '_')}_share.png`;
+      downloadFile(blob, filename);
+      toast('💾 Share image downloaded!', 'success');
+      hideShareModal();
+    }
+  } catch (error) {
+    console.error('Download error:', error);
+    toast('❌ Download failed', 'error');
   }
 }
 
@@ -1415,12 +1475,12 @@ async function canvasToBlob() {
   });
 }
 
-// Sigil Gallery Feature
+// Enhanced Sigil Gallery Feature
 function showSigilGallery() {
   const gallery = document.getElementById('sigilGallery');
-  const galleryContent = document.getElementById('galleryContent');
+  const galleryGrid = document.getElementById('galleryGrid');
   
-  if (!gallery || !galleryContent) {
+  if (!gallery || !galleryGrid) {
     toast('⚠️ Gallery not available', 'error');
     return;
   }
@@ -1429,93 +1489,101 @@ function showSigilGallery() {
     // Load saved sigils from localStorage
     const savedSigils = JSON.parse(localStorage.getItem('saved_sigils') || '[]');
 
-    galleryContent.innerHTML = '';
+    galleryGrid.innerHTML = '';
 
     if (savedSigils.length === 0) {
-      galleryContent.innerHTML = `
-        <div style="text-align: center; color: var(--text-secondary); padding: 40px;">
-          <h3 style="margin-bottom: 15px;">🖼️ No saved sigils yet</h3>
-          <p>Generate some beautiful sigils and save them to build your collection!</p>
-          <button onclick="hideSigilGallery()" style="margin-top: 20px; padding: 10px 20px; background: var(--neon-cyan); color: var(--dark-bg); border: none; border-radius: 8px; cursor: pointer;">Start Creating</button>
+      galleryGrid.innerHTML = `
+        <div class="gallery-empty" style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary); padding: 40px;">
+          <div style="font-size: 3rem; margin-bottom: 20px;">🖼️</div>
+          <h3 style="margin-bottom: 15px; font-family: 'Orbitron', monospace; color: var(--neon-purple);">No Saved Sigils</h3>
+          <p style="margin-bottom: 20px;">Generate beautiful quantum sigils and save them to build your mystical collection!</p>
+          <button onclick="hideSigilGallery()" class="btn btn-primary">Start Creating</button>
         </div>
       `;
     } else {
       // Show most recent sigils first
-      const recentSigils = savedSigils.slice(-12).reverse();
+      const recentSigils = savedSigils.slice(-20).reverse();
       
-      recentSigils.forEach((sigil, index) => {
+      recentSigils.forEach((sigil) => {
         const item = document.createElement('div');
         item.className = 'gallery-item';
-        item.style.cssText = `
-          background: rgba(0, 20, 40, 0.6);
-          border: 2px solid var(--border-glow);
-          border-radius: 12px;
-          padding: 15px;
-          text-align: center;
-          transition: all 0.3s ease;
-          cursor: pointer;
-          margin: 10px;
-        `;
         
-        // Create safe image element
+        // Create image element with enhanced error handling
         const img = document.createElement('img');
         img.alt = `Sigil: ${sigil.phrase}`;
-        img.style.cssText = 'max-width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;';
+        img.loading = 'lazy';
         
-        // Handle image loading errors
+        // Enhanced error handling for images
         img.onerror = () => {
           img.src = 'data:image/svg+xml,' + encodeURIComponent(`
-            <svg width="120" height="120" xmlns="http://www.w3.org/2000/svg">
-              <rect width="120" height="120" fill="#333"/>
-              <text x="60" y="60" text-anchor="middle" fill="#666" font-size="12">Sigil</text>
+            <svg width="150" height="100" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#8a2be2;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#00f5ff;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <rect width="150" height="100" fill="url(#grad1)" opacity="0.3"/>
+              <text x="75" y="45" text-anchor="middle" fill="#ffffff" font-size="12" font-family="monospace">🔮</text>
+              <text x="75" y="65" text-anchor="middle" fill="#ffffff" font-size="10" font-family="monospace">Sigil</text>
             </svg>
           `);
         };
         
         img.src = sigil.image;
         
+        // Create info section with enhanced styling
         const info = document.createElement('div');
         info.className = 'gallery-info';
-        info.innerHTML = `
-          <div style="font-weight: bold; margin-bottom: 5px; color: var(--text-primary); font-size: 0.9rem;" 
-               title="${sigil.phrase}">
-            ${sigil.phrase.length > 15 ? sigil.phrase.substring(0, 15) + '...' : sigil.phrase}
-          </div>
-          <div style="color: var(--text-secondary); font-size: 0.7rem;">
-            ${sigil.vibe.replace('+', ' + ')} <br>
-            ${new Date(sigil.timestamp).toLocaleDateString()}
-          </div>
-          <button onclick="event.stopPropagation(); deleteSigil('${sigil.id}')" 
-                  style="margin-top: 8px; padding: 4px 8px; background: rgba(255, 0, 0, 0.3); color: white; border: 1px solid #ff4444; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">
-            🗑️ Delete
-          </button>
-        `;
+        
+        const phraseDiv = document.createElement('div');
+        phraseDiv.className = 'gallery-phrase';
+        phraseDiv.title = sigil.phrase;
+        phraseDiv.textContent = sigil.phrase.length > 20 ? sigil.phrase.substring(0, 20) + '...' : sigil.phrase;
+        
+        const vibeDiv = document.createElement('small');
+        vibeDiv.className = 'gallery-vibe';
+        vibeDiv.textContent = sigil.vibe.replace(/\+/g, ' + ');
+        
+        const dateDiv = document.createElement('small');
+        dateDiv.className = 'gallery-date';
+        dateDiv.textContent = new Date(sigil.timestamp).toLocaleDateString();
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'gallery-delete-btn';
+        deleteBtn.innerHTML = '🗑️';
+        deleteBtn.title = 'Delete Sigil';
+        deleteBtn.onclick = (e) => {
+          e.stopPropagation();
+          if (confirm('Delete this sigil permanently?')) {
+            deleteSigil(sigil.id);
+          }
+        };
+        
+        info.appendChild(phraseDiv);
+        info.appendChild(vibeDiv);
+        info.appendChild(dateDiv);
+        info.appendChild(deleteBtn);
         
         item.appendChild(img);
         item.appendChild(info);
         
-        // Add click handler to load sigil
+        // Enhanced click handler
         item.onclick = () => {
           loadSigilFromGallery(sigil.id);
+          hideSigilGallery();
         };
         
-        // Add hover effects
-        item.onmouseenter = () => {
-          item.style.transform = 'translateY(-5px)';
-          item.style.boxShadow = '0 15px 30px rgba(0, 255, 255, 0.3)';
-          item.style.borderColor = 'var(--neon-cyan)';
-        };
-        item.onmouseleave = () => {
-          item.style.transform = 'translateY(0)';
-          item.style.boxShadow = '';
-          item.style.borderColor = 'var(--border-glow)';
-        };
-        
-        galleryContent.appendChild(item);
+        galleryGrid.appendChild(item);
       });
     }
 
-    gallery.style.display = 'flex';
+    gallery.classList.remove('hidden');
+    // Add opening animation
+    setTimeout(() => {
+      gallery.style.opacity = '1';
+    }, 10);
+    
     console.log(`Gallery opened with ${savedSigils.length} saved sigils`);
     
   } catch (error) {
@@ -1607,7 +1675,8 @@ function loadSigilFromGallery(id) {
 function hideSigilGallery() {
   const gallery = document.getElementById('sigilGallery');
   if (gallery) {
-    gallery.style.display = 'none';
+    gallery.classList.add('hidden');
+    gallery.style.opacity = '0';
   }
 }
 
@@ -1685,6 +1754,11 @@ function updateAverageRating() {
 window.hideSigilGallery = hideSigilGallery;
 window.saveSigilToGallery = saveSigilToGallery;
 window.rateSigil = rateSigil;
+window.hideShareModal = hideShareModal;
+window.shareToTwitter = shareToTwitter;
+window.shareToFacebook = shareToFacebook;
+window.copyShareLink = copyShareLink;
+window.downloadForShare = downloadForShare;
 
 // -------- Stripe Checkout --------
 async function goPremiumCheckout() {
@@ -1700,26 +1774,95 @@ async function goPremiumCheckout() {
 }
 window.goPremiumCheckout = goPremiumCheckout;
 
-// init
+// Enhanced App Initialization
 window.addEventListener("load", async () => {
   try {
+    console.log("🚀 Initializing Sigil Generator Pro...");
+    
+    // Initialize character counter
+    if (intentInput && charCounter) {
+      intentInput.addEventListener('input', () => {
+        const length = intentInput.value.length;
+        charCounter.textContent = `${length}/200`;
+        charCounter.style.color = length > 180 ? 'var(--neon-orange)' : 'var(--text-muted)';
+      });
+    }
+    
+    // Initialize app state
     await renderGate();
-
-    // Initialize new features
     updateAverageRating();
+    
+    // Add CSS animations
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes badgePulse {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(0, 255, 65, 0.8); }
+        50% { transform: scale(1.1); box-shadow: 0 0 20px rgba(0, 255, 65, 1); }
+      }
+      
+      .loading-active body::before {
+        animation-duration: 0.5s;
+      }
+      
+      .gallery-delete-btn {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: rgba(255, 0, 0, 0.8);
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+        cursor: pointer;
+        opacity: 0;
+        transition: all 0.3s ease;
+      }
+      
+      .gallery-item:hover .gallery-delete-btn {
+        opacity: 1;
+      }
+      
+      .gallery-phrase {
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+      }
+      
+      .gallery-vibe {
+        display: block;
+        color: var(--neon-purple);
+        font-size: 0.8rem;
+        margin-bottom: 3px;
+      }
+      
+      .gallery-date {
+        display: block;
+        color: var(--text-muted);
+        font-size: 0.7rem;
+      }
+      
+      .gallery-empty {
+        animation: float 6s ease-in-out infinite;
+      }
+    `;
+    document.head.appendChild(style);
 
     // Check for purchase success/cancel
-    const p = new URLSearchParams(location.search);
-    if (p.get("purchase") === "success") {
+    const params = new URLSearchParams(location.search);
+    if (params.get("purchase") === "success") {
       toast("🎉 Payment successful! Check your email for your Pro key.", 'success', 5000);
-    } else if (p.get("purchase") === "cancel") {
+    } else if (params.get("purchase") === "cancel") {
       toast("Purchase cancelled.", 'warning');
     }
 
-    // Welcome message for new features
+    // Enhanced welcome message
     setTimeout(() => {
-      toast("✨ New features added: Animation, Gallery, Rating & Sharing!", 'success', 4000);
-    }, 2000);
+      toast("✨ Sigilcraft loaded! All systems quantum-ready.", 'success', 3000);
+    }, 1000);
+    
+    console.log("✅ App initialization complete!");
 
   } catch (error) {
     console.error("Initialization error:", error);
