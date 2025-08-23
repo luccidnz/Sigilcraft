@@ -766,7 +766,8 @@ async function generateSigilRequest(phrase = "default", vibe = "mystical", retry
       errorMessage = '📡 Invalid server response. Please try again.';
       retryable = true;
     } else if (errorStr.includes('display') || errorStr.includes('render')) {
-      errorMessage = '🖼️ Failed to display image. Please try regenerating.';
+      errorMessage = '🖼️ Failed to display result. Please try again.';
+      retryable = true; display image. Please try regenerating.';
       retryable = true;
     }
 

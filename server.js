@@ -439,8 +439,33 @@ process.on('uncaughtException', (error) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Sigilcraft Node server running on http://0.0.0.0:${PORT}`);
-  console.log(`Pro key configured: ${process.env.PRO_KEY ? 'Yes' : 'No'}`);
-  console.log(`Stripe configured: ${process.env.STRIPE_SECRET ? 'Yes' : 'No'}`);
-});
+// Function to find available port if default is in use
+function startServer(port) {
+  const server = app.listen(port, "0.0.0.0", () => {
+    console.log(`Sigilcraft Node server running on http://0.0.0.0:${port}`);
+    console.log(`Pro key configured: ${process.env.PRO_KEY ? 'Yes' : 'No'}`);
+    console.log(`Stripe configured: ${process.env.STRIPE_SECRET ? 'Yes' : 'No'}`);
+  });
+
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.log(`Port ${port} is in use, trying port ${port + 1}...`);
+      setTimeout(() => {
+        server.close();
+        if (port < 5010) {
+          startServer(port + 1);
+        } else {
+          console.error('Could not find available port after trying 5000-5010');
+          process.exit(1);
+        }
+      }, 1000);
+    } else {
+      console.error('Server error:', err);
+      process.exit(1);
+    }
+  });
+
+  return server;
+}
+
+startServer(PORT);

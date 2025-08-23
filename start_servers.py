@@ -14,20 +14,6 @@ import socket
 from threading import Thread
 import json
 
-def monitor_process(process, name):
-    """Monitor a process and log its output"""
-    try:
-        for line in iter(process.stdout.readline, ''):
-            if line:
-                print(f"[{name}] {line.strip()}")
-            else:
-                break
-    except Exception as e:
-        print(f"[{name}] Monitor error: {e}")
-    finally:
-        if process.stdout:
-            process.stdout.close()
-
 def find_available_port(start_port=5001):
     """Find an available port starting from start_port"""
     for port in range(start_port, start_port + 10):
@@ -85,11 +71,22 @@ def start_node_server():
     """Start the Node.js server"""
     print("🟢 Starting Node.js server...")
     
-    # Kill any existing Node processes on port 5000
-    if is_port_in_use(5000):
-        print("🔄 Clearing port 5000...")
-        kill_process_on_port(5000)
-        time.sleep(2)
+    # Kill any existing Node processes on port 5000 more aggressively
+    for attempt in range(3):
+        if is_port_in_use(5000):
+            print(f"🔄 Clearing port 5000 (attempt {attempt + 1})...")
+            kill_process_on_port(5000)
+            time.sleep(2)
+            
+            # Additional cleanup for stubborn processes
+            try:
+                subprocess.run(['pkill', '-f', 'node.*server.js'], capture_output=True, timeout=5)
+                subprocess.run(['pkill', '-f', 'node.*5000'], capture_output=True, timeout=5)
+                time.sleep(1)
+            except:
+                pass
+        else:
+            break
     
     # Check if node_modules exists
     if not os.path.exists('node_modules'):
