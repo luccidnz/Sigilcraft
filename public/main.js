@@ -683,7 +683,7 @@ async function handleSigilDownload() {
     if (userIsPro && exportType.value === "svg") {
       // SVG Download
       console.log("Downloading as SVG");
-      const svg = buildSvg(seed, 2048); // Use seed and Pro resolution
+      const svg = generateSVG(intentInput.value || "default", selectedEnergies.join('+'), userIsPro ? 2048 : 1200, seed); // Use seed and appropriate resolution
       const blob = new Blob([svg], {type:"image/svg+xml"});
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
       const filename = `quantum_sigil_${timestamp}.svg`;
@@ -1566,3 +1566,55 @@ window.addEventListener("load", async () => {
 });
 
 // keep previewSvg hidden unless you want to show the SVG string; we use direct download instead.
+// Helper function to get vibe-specific colors
+function getVibeColors(vibe) {
+    switch (vibe) {
+        case "mystical": return ["#8a2be2", "#9370db", "#483d8b"];
+        case "cosmic": return ["#00ffff", "#00ced1", "#00bfff"];
+        case "elemental": return ["#ff7f50", "#ffa07a", "#cd5c5c"];
+        case "crystal": return ["#add8e6", "#87ceeb", "#b0e0e6"];
+        case "shadow": return ["#696969", "#778899", "#a9a9a9"];
+        case "light": return ["#ffd700", "#ffec8b", "#fffacd"];
+        default: return ["#ffffff", "#cccccc", "#999999"]; // Default colors
+    }
+}
+
+// Helper function to create seeded random number generator
+function createSeededRandom(seed) {
+    const numSeed = typeof seed === 'string' ? seed.split('').reduce((a, b) => {
+        a = ((a << 5) - a) + b.charCodeAt(0);
+        return a & a;
+    }, 0) : seed || Date.now();
+
+    let current = Math.abs(numSeed);
+    return function() {
+        current = (current * 9301 + 49297) % 233280;
+        return current / 233280;
+    };
+}
+
+// Function to generate SVG string
+function generateSVG(phrase, vibe, size, seed) {
+    const colors = getVibeColors(vibe);
+    const random = createSeededRandom(seed || phrase.length);
+
+    let svg = `<svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">`;
+    svg += `<rect width="${size}" height="${size}" fill="#000000"/>`;
+
+    const center = { x: size / 2, y: size / 2 };
+
+    // Add circles based on phrase length and random seed
+    for (let i = 0; i < phrase.length * 5; i++) {
+        const angle = (i * 360 / (phrase.length * 5)) + random() * 60;
+        const radius = (size / 8) + random() * (size / 4);
+        const x = center.x + Math.cos(angle * Math.PI / 180) * radius;
+        const y = center.y + Math.sin(angle * Math.PI / 180) * radius;
+        const r = 2 + random() * 8;
+        const opacity = (random() * 128 + 127) / 255; // Ensure opacity is between 0 and 1
+
+        svg += `<circle cx="${x}" cy="${y}" r="${r}" fill="${colors[i % colors.length]}" opacity="${opacity}"/>`;
+    }
+
+    svg += '</svg>';
+    return svg;
+}
