@@ -1441,7 +1441,9 @@ async function goPremiumCheckout() {
     console.error(e);
   }
 }
-window.goPremiumCheckout = // Check Pro Status
+window.goPremiumCheckout = goPremiumCheckout; // Assign to window
+
+// Check Pro Status
 async function checkProStatus() {
   try {
     const response = await fetch('/api/is-pro');
@@ -1463,7 +1465,7 @@ window.addEventListener("load", async () => {
     // Get DOM elements
     const intentInput = document.getElementById('intent-input');
     const charCounter = document.getElementById('char-counter');
-    
+
     // Initialize character counter
     if (intentInput && charCounter) {
       intentInput.addEventListener('input', () => {
@@ -1480,7 +1482,7 @@ window.addEventListener("load", async () => {
     if (typeof updateAverageRating === 'function') {
       updateAverageRating();
     }
-    
+
     // Check pro status
     const isProUser = await checkProStatus();
     console.log('Pro status:', isProUser);
