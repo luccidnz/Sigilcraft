@@ -201,12 +201,14 @@ h1, h2, h3, h4, h5, h6 {
     align-items: center;
     flex-wrap: wrap;
     gap: 1rem;
+    min-height: 60px;
 }
 
 .header-actions {
     display: flex;
     align-items: center;
     gap: 1rem;
+    flex-shrink: 0;
 }
 
 .pro-badge {
@@ -227,6 +229,8 @@ h1, h2, h3, h4, h5, h6 {
 .pro-buttons {
     display: flex;
     gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 /* ===== MAIN CONTAINER ===== */
@@ -1054,6 +1058,19 @@ section::before {
         padding: 0 1rem;
         flex-direction: column;
         text-align: center;
+        gap: 1.5rem;
+        justify-content: center;
+    }
+
+    .header-actions {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .pro-buttons {
+        flex-direction: row;
+        gap: 0.75rem;
     }
 
     .logo {
