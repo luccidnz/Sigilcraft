@@ -144,9 +144,9 @@ const loadingSpinner = el("loadingSpinner");
 function showLoading(text = "Generating quantum sigil...") {
   const loadingText = loadingSpinner.querySelector('.loading-text');
   const progressBar = loadingSpinner.querySelector('.progress-bar');
-  
+
   if (loadingText) loadingText.textContent = text;
-  
+
   // Animate progress bar
   if (progressBar) {
     progressBar.style.animation = 'none';
@@ -154,10 +154,10 @@ function showLoading(text = "Generating quantum sigil...") {
       progressBar.style.animation = 'progressFlow 3s ease-in-out infinite';
     }, 10);
   }
-  
+
   loadingSpinner.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
-  
+
   // Add pulsing effect to body
   document.body.classList.add('loading-active');
 }
@@ -238,22 +238,22 @@ function highlightSelection() {
   children.forEach((div, index) => {
     const name = div.textContent.trim();
     const isSelected = selectedEnergies.includes(name);
-    
+
     // Clear previous styling
     div.classList.remove('selected', 'combo-selected');
     const badge = div.querySelector('.combo-badge');
     if (badge) badge.remove();
-    
+
     if (isSelected) {
       div.classList.add('selected');
       const selectionIndex = selectedEnergies.indexOf(name);
-      
+
       // Enhanced selection styling
       div.style.borderColor = "var(--neon-green)";
       div.style.background = "rgba(0, 255, 65, 0.2)";
       div.style.boxShadow = "0 0 20px rgba(0, 255, 65, 0.6)";
       div.style.transform = "scale(1.05)";
-      
+
       if (selectedEnergies.length > 1) {
         div.classList.add('combo-selected');
         // Enhanced combo badge
@@ -289,7 +289,7 @@ function highlightSelection() {
       div.style.transform = "";
     }
   });
-  
+
   updateComboDisplay();
 }
 
@@ -364,7 +364,7 @@ enterKeyBtn.onclick = () => keyModal.showModal();
 async function unlockProFeatures() {
   const keyInput = document.getElementById("proKeyInput2");
   const key = keyInput.value.trim();
-  
+
   if (!key) {
     toast("Enter a Pro key", 'warning');
     return;
@@ -382,7 +382,7 @@ async function unlockProFeatures() {
       clearProCache();
       keyInput.value = '';
       toast("✨ Pro unlocked! All features available!", 'success', 5000);
-      
+
       setTimeout(async () => {
         await renderGate();
         await updateProButtons();
@@ -492,7 +492,7 @@ async function renderSigil(imageSrc, isSvg = false) {
       }
 
       const img = new Image();
-      
+
       img.onload = async () => {
         try {
           // Validate image dimensions
@@ -503,16 +503,16 @@ async function renderSigil(imageSrc, isSvg = false) {
           // Use high quality scaling
           ctx.imageSmoothingEnabled = true;
           ctx.imageSmoothingQuality = 'high';
-          
+
           // Clear canvas before drawing
           ctx.clearRect(0, 0, canvas.width, canvas.height);
-          
+
           // Draw the image
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          
+
           // Add watermark if needed
           await drawWatermarkIfFree();
-          
+
           console.log("Image rendered to canvas successfully");
           resolve();
         } catch (renderError) {
@@ -598,7 +598,7 @@ async function generateSigilRequest(phrase = "default", vibe = "mystical", retry
     }
 
     const data = await response.json();
-    
+
     // Better validation of response data
     if (!data) {
       throw new Error("Empty response from server");
@@ -607,7 +607,7 @@ async function generateSigilRequest(phrase = "default", vibe = "mystical", retry
     if (!data.success) {
       const errorMsg = data.error || "Generation failed";
       console.error("Generation failed:", errorMsg);
-      
+
       // Show user-friendly error message
       if (errorMsg.includes("timeout") || errorMsg.includes("timed out")) {
         toast("⏱️ Generation taking longer than expected. Retrying with optimized settings...", 'warning', 3000);
@@ -626,12 +626,12 @@ async function generateSigilRequest(phrase = "default", vibe = "mystical", retry
     }
 
     // Successfully generated - render the sigil
-    await renderSigil(data.image, phrase, vibe);
+    await renderSigil(data.image, false);
     return data;
 
   } catch (error) {
     console.error("Generation request error:", error);
-    
+
     // Handle specific error types
     if (error.name === 'AbortError' || error.message === 'timeout') {
       if (retryCount < maxRetries) {
@@ -643,14 +643,14 @@ async function generateSigilRequest(phrase = "default", vibe = "mystical", retry
         throw new Error("Generation timed out after multiple attempts");
       }
     }
-    
+
     if (error.message === 'rate_limit') {
       throw error; // Don't retry rate limit errors
     }
-    
+
     // Only retry on network errors or server errors
     if (retryCount < maxRetries && (
-      error.message.includes('fetch') || 
+      error.message.includes('fetch') ||
       error.message.includes('network') ||
       error.message.includes('Server error')
     )) {
@@ -658,349 +658,18 @@ async function generateSigilRequest(phrase = "default", vibe = "mystical", retry
       await new Promise(resolve => setTimeout(resolve, retryDelay));
       return generateSigilRequest(phrase, vibe, retryCount + 1);
     }
-    
+
     throw error;
-  }rver");
-    }
-
-    if (!response.ok) {
-      let errorMessage = `HTTP ${response.status}`;
-      try {
-        const errorText = await response.text();
-        const errorData = errorText ? JSON.parse(errorText) : {};
-        errorMessage = errorData.error || `Server error: ${response.status}`;
-      } catch (parseError) {
-        console.warn("Could not parse error response:", parseError);
-      }
-
-      if (response.status === 429) {
-        throw new Error("Rate limit exceeded. Please wait before trying again.");
-      } else if (response.status === 503) {
-        throw new Error("Service temporarily unavailable. Please try again.");
-      } else if (response.status === 408) {
-        throw new Error("Request timeout. Please try again.");
-      } else {
-        throw new Error(errorMessage);
-      }
-    }
-
-    // Enhanced response parsing with validation
-    let data;
-    try {
-      const responseText = await response.text();
-      if (!responseText) {
-        throw new Error("Empty response from server");
-      }
-      data = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error("Response parsing error:", parseError);
-      throw new Error("Invalid response format from server");
-    }
-
-    console.log("Received response:", data.success ? "Success" : "Failed", data.error || "");
-
-    // Enhanced validation of response data
-    if (!data || typeof data !== 'object') {
-      throw new Error("Invalid response data structure");
-    }
-
-    if (data.success && data.image) {
-      // Validate image data
-      if (typeof data.image !== 'string' || data.image.length < 100) {
-        throw new Error("Invalid image data received");
-      }
-
-      lastGeneratedImage = data.image;
-      console.log("Stored image for download, length:", data.image.length);
-      
-      try {
-        await renderSigil(data.image, false);
-        downloadBtn.style.display = 'block';
-        return { success: true };
-      } catch (renderError) {
-        console.error("Image rendering error:", renderError);
-        throw new Error("Failed to display generated image");
-      }
-    } else {
-      const errorMsg = data.error || "Generation failed - no image data received";
-      console.warn("Generation failed:", errorMsg);
-      return {
-        success: false,
-        error: errorMsg
-      };
-    }
-  } catch (error) {
-    console.error("Sigil generation error:", error);
-
-    // Enhanced error categorization and messaging
-    let errorMessage = '⚠️ Generation failed. Please try again.';
-    let retryable = true;
-
-    const errorStr = error.message || error.toString() || 'Unknown error';
-
-    if (error.name === 'AbortError' || errorStr.includes('timeout') || errorStr.includes('aborted')) {
-      errorMessage = '⏱️ Generation timed out. Try a simpler phrase or try again.';
-      retryable = true;
-    } else if (errorStr.includes('408') || errorStr.includes('Request timeout')) {
-      errorMessage = '⏱️ Request timed out. Please try again with a simpler phrase.';
-      retryable = true;
-    } else if (errorStr.includes('503') || errorStr.includes('Service')) {
-      errorMessage = '🔄 Service starting up. Please wait a moment and try again.';
-      retryable = true;
-    } else if (errorStr.includes('rate limit') || errorStr.includes('429')) {
-      errorMessage = '⏳ Too many requests. Please wait before trying again.';
-      retryable = false;
-    } else if (errorStr.includes('Invalid characters')) {
-      errorMessage = '🚫 Invalid characters in your intent. Please remove them.';
-      retryable = false;
-    } else if (errorStr.includes('too long') || errorStr.includes('too short')) {
-      errorMessage = `📝 ${errorStr}`;
-      retryable = false;
-    } else if (errorStr.includes('not available')) {
-      errorMessage = `⚡ ${errorStr}`;
-      retryable = true;
-    } else if (errorStr.includes('Failed to fetch') || errorStr.includes('Network')) {
-      errorMessage = '🌐 Network error. Please check your connection and try again.';
-      retryable = true;
-    } else if (errorStr.includes('Empty response') || errorStr.includes('Invalid response')) {
-      errorMessage = '📡 Invalid server response. Please try again.';
-      retryable = true;
-    } else if (errorStr.includes('display') || errorStr.includes('render')) {
-      errorMessage = '🖼️ Failed to display result. Please try again.';
-      retryable = true; display image. Please try regenerating.';
-      retryable = true;
-    }
-
-    toast(errorMessage, 'error', 5000);
-
-    return {
-      success: false,
-      error: errorMessage,
-      retryable: retryable
-    };
   }
 }
 
-// seeded RNG
-function mulberry32(a){return function(){var t=a+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return ((t^t>>>14)>>>0)/4294967296}}
-
-// SVG export: mirrors the placeholder look
-function buildSvg(seed = 0, size = 2048) {
-  const r = mulberry32(seed || 1);
-  const n = 120;
-  const pts = [];
-  for (let i=0;i<n;i++) pts.push(`${Math.floor(size*r())},${Math.floor(size*r())}`);
-  const poly = pts.join(" ");
-  return `
-<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="background:#0a0b0f">
-  <polyline points="${poly}" fill="none" stroke="#9ad0ff" stroke-width="${Math.max(2, Math.floor(size*0.004))}" />
-</svg>`.trim();
-}
-
-// --- generation + download ---
-// Input validation utilities
-const validatePhrase = (phrase) => {
-  if (!phrase || typeof phrase !== 'string') {
-    return { valid: false, error: "Please enter your intent or desire" };
-  }
-
-  const trimmed = phrase.trim();
-  if (trimmed.length === 0) {
-    return { valid: false, error: "Please enter your intent or desire" };
-  }
-
-  if (trimmed.length > 200) {
-    return { valid: false, error: "Intent is too long (maximum 200 characters)" };
-  }
-
-  if (trimmed.length < 2) {
-    return { valid: false, error: "Intent is too short (minimum 2 characters)" };
-  }
-
-  // Check for potentially harmful content
-  const harmfulPatterns = [
-    /<script/i, /javascript:/i, /vbscript:/i, /data:/i,
-    /onload=/i, /onerror=/i, /onclick=/i
-  ];
-
-  for (const pattern of harmfulPatterns) {
-    if (pattern.test(trimmed)) {
-      return { valid: false, error: "Invalid characters detected" };
-    }
-  }
-
-  return { valid: true, phrase: trimmed };
-};
-
-const validateEnergies = (energies, isPro) => {
-  if (!Array.isArray(energies) || energies.length === 0) {
-    return { valid: false, error: "Select at least one energy type" };
-  }
-
-  const allowedEnergies = isPro ? ALL_ENERGIES : FREE_ENERGIES;
-  const invalidEnergies = energies.filter(e => !allowedEnergies.includes(e));
-
-  if (invalidEnergies.length > 0) {
-    return {
-      valid: false,
-      error: `${invalidEnergies.join(", ")} ${invalidEnergies.length === 1 ? 'is' : 'are'} not available`
-    };
-  }
-
-  if (!isPro && energies.length > 1) {
-    return { valid: false, error: "Multiple energies require Pro upgrade" };
-  }
-
-  return { valid: true };
-};
-
-genBtn.onclick = async () => {
-  try {
-    // Validate energies
-    const isPro = await isUserPro();
-    const energyValidation = validateEnergies(selectedEnergies, isPro);
-    if (!energyValidation.valid) {
-      toast(energyValidation.error, 'warning');
-      return;
-    }
-
-    // Get and validate phrase
-    const intentInput = document.getElementById("intentInput");
-    if (!intentInput) {
-      toast("Intent input field not found", 'error');
-      return;
-    }
-
-    const phraseValidation = validatePhrase(intentInput.value);
-    if (!phraseValidation.valid) {
-      toast(phraseValidation.error, 'warning');
-      return;
-    }
-
-    const phrase = phraseValidation.phrase;
-
-    // Handle multiple vibes by combining them or using combo mode
-    const vibe = selectedEnergies.length > 1 ? selectedEnergies.join("+") : selectedEnergies[0];
-    const size = isPro ? 2048 : 1200;
-
-    canvas.width = size; canvas.height = size;
-    genBtn.disabled = true;
-    genBtn.textContent = "Generating...";
-
-    showLoading(isPro && batchToggle.checked ? "Creating sigil batch..." : "Channeling quantum energy...");
-
-    if (isPro && batchToggle.checked) {
-      // Batch generation
-      if (typeof JSZip === 'undefined') {
-        toast("JSZip library not loaded", 'error');
-        return;
-      }
-
-      const zip = new JSZip();
-      let successCount = 0;
-      const batchSize = 5;
-
-      for (let i = 0; i < batchSize; i++){
-        try {
-          showLoading(`Creating sigil ${i + 1} of ${batchSize}...`);
-          const batchPhrase = `${phrase} variant ${i + 1}`;
-          
-          // Try generation with retry logic
-          let result = null;
-          let attempts = 0;
-          const maxAttempts = 2;
-
-          while (attempts < maxAttempts && (!result || !result.success)) {
-            try {
-              result = await generateSigilRequest(batchPhrase, vibe);
-              if (result && result.success) break;
-            } catch (batchError) {
-              console.warn(`Batch attempt ${attempts + 1} failed:`, batchError);
-            }
-            attempts++;
-            if (attempts < maxAttempts) {
-              await new Promise(resolve => setTimeout(resolve, 1000));
-            }
-          }
-
-          if (result && result.success && lastGeneratedImage) {
-            const base64Data = lastGeneratedImage.includes(',') ? lastGeneratedImage.split(",")[1] : lastGeneratedImage;
-            zip.file(`sigil_${i+1}.png`, base64Data, {base64: true});
-            successCount++;
-          } else {
-            console.warn(`Failed to generate sigil ${i + 1} after ${attempts} attempts`);
-          }
-        } catch (error) {
-          console.error(`Error generating sigil ${i + 1}:`, error);
-        }
-      }
-
-      if (successCount > 0) {
-        try {
-          const blob = await zip.generateAsync({type:"blob"});
-          downloadFile(blob, "sigils.zip");
-          toast(`✨ ${successCount}/${batchSize} sigils ready for download!`, 'success', 4000);
-        } catch (zipError) {
-          console.error("Zip creation error:", zipError);
-          toast("❌ Failed to create download package", 'error');
-        }
-      } else {
-        toast("❌ Failed to generate any batch sigils", 'error');
-      }
-    } else {
-      // Single generation with retry logic
-      let result = null;
-      let attempts = 0;
-      const maxAttempts = 3;
-
-      while (attempts < maxAttempts && (!result || !result.success)) {
-        try {
-          if (attempts > 0) {
-            const delay = 1000 * attempts;
-            console.log(`Retrying generation (attempt ${attempts}/${maxAttempts})... Delay: ${delay}ms`);
-            showLoading(`Retrying generation (${attempts + 1}/${maxAttempts})...`);
-            await new Promise(resolve => setTimeout(resolve, delay));
-          }
-
-          result = await generateSigilRequest(phrase, vibe);
-
-          if (result && result.success) {
-            toast("✨ Quantum sigil generated successfully!", 'success', 3000);
-            break;
-          } else if (result && !result.retryable) {
-            // Don't retry if error is not retryable
-            break;
-          }
-        } catch (genError) {
-          console.error(`Generation attempt ${attempts + 1} failed:`, genError);
-          result = { success: false, error: genError.message || 'Generation failed', retryable: true };
-        }
-        attempts++;
-      }
-
-      if (!result || !result.success) {
-        const errorMsg = result?.error || 'Unknown generation error';
-        console.error("All generation attempts failed:", errorMsg);
-        // Error message already shown by generateSigilRequest
-      }
-    }
-  } catch (error) {
-    console.error("Generation process error:", error);
-    toast(`❌ Generation failed: ${error.message || 'Unknown error'}`, 'error', 5000);
-  } finally {
-    hideLoading();
-    genBtn.disabled = false;
-    genBtn.textContent = "Initialize Quantum Sigil";
-    startCooldownIfNeeded();
-  }
-};
-
-downloadBtn.onclick = async () => {
+// Function to handle the download logic, including SVG and PNG
+async function handleSigilDownload() {
   console.log("Download button clicked");
 
   try {
     const userIsPro = await isUserPro();
-    const seed = Number(seedInput.value) || 0;
+    const seed = Number(seedInput.value) || 0; // Use seed for SVG generation
 
     // Check if we have a current sigil to download
     if (!lastGeneratedImage) {
@@ -1014,7 +683,7 @@ downloadBtn.onclick = async () => {
     if (userIsPro && exportType.value === "svg") {
       // SVG Download
       console.log("Downloading as SVG");
-      const svg = buildSvg(seed, 2048);
+      const svg = buildSvg(seed, 2048); // Use seed and Pro resolution
       const blob = new Blob([svg], {type:"image/svg+xml"});
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
       const filename = `quantum_sigil_${timestamp}.svg`;
@@ -1047,14 +716,14 @@ downloadBtn.onclick = async () => {
 
         downloadFile(blob, filename);
         toast("✨ Quantum Sigil downloaded successfully!", 'success');
-      }, 'image/png', 1.0);
+      }, 'image/png', 1.0); // Use PNG format with max quality
     }
 
   } catch (error) {
     console.error("Download error:", error);
     toast(`❌ Download failed: ${error.message}`, 'error');
   }
-};
+}
 
 // Simple, reliable download function
 function downloadFile(blob, filename) {
@@ -1096,7 +765,7 @@ let isAnimating = false;
 
 function toggleSigilAnimation() {
   const animateBtn = document.getElementById('animateBtn');
-  
+
   if (!animateBtn) {
     console.error('Animate button not found');
     return;
@@ -1115,28 +784,28 @@ function toggleSigilAnimation() {
 window.toggleSigilAnimation = toggleSigilAnimation;
 
 function startAnimation() {
-  if (!canvas || !lastGeneratedImage) {
-    toast('⚠️ Generate a sigil first to animate', 'warning');
+  if (isAnimating || !lastGeneratedImage) {
+    if (!lastGeneratedImage) toast('⚠️ Generate a sigil first to animate', 'warning');
     return;
   }
 
   isAnimating = true;
   let frame = 0;
-  
+
   // Store the original image
   const originalImg = new Image();
   originalImg.onload = () => {
     console.log('Starting sigil animation...');
-    
+
     const animate = () => {
       if (!isAnimating) return;
 
       const ctx = canvas.getContext('2d');
-      
+
       // Clear canvas with black background
       ctx.fillStyle = "#0a0b0f";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
+
       // Save context
       ctx.save();
 
@@ -1145,7 +814,7 @@ function startAnimation() {
       const scale = 1 + Math.sin(time * 3) * 0.08; // More pronounced pulsing
       const rotation = Math.sin(time * 1.5) * 0.03; // Gentle rotation
       const opacity = 0.9 + Math.sin(time * 5) * 0.1; // Opacity variation
-      
+
       // Add enhanced magical glow effect
       const glowIntensity = 0.6 + Math.sin(time * 6) * 0.4;
       ctx.shadowColor = `rgba(0, 255, 255, ${glowIntensity})`;
@@ -1165,23 +834,23 @@ function startAnimation() {
 
       // Restore context
       ctx.restore();
-      
+
       // Add enhanced magical particles effect
       addEnhancedMagicalParticles(ctx, time, frame);
-      
+
       frame++;
       animationFrame = requestAnimationFrame(animate);
     };
 
     animate();
   };
-  
+
   originalImg.onerror = () => {
     console.error('Failed to load image for animation');
     toast('❌ Animation failed - image error', 'error');
     stopAnimation();
   };
-  
+
   originalImg.src = lastGeneratedImage;
 }
 
@@ -1194,7 +863,7 @@ function addEnhancedMagicalParticles(ctx, time, frame) {
     const y = canvas.height / 2 + Math.sin(angle) * radius;
     const size = 3 + Math.sin(time * 3 + i) * 2;
     const alpha = 0.4 + Math.sin(time * 4 + i) * 0.3;
-    
+
     ctx.save();
     ctx.globalAlpha = alpha;
     ctx.fillStyle = `hsl(${(180 + Math.sin(time + i) * 120) % 360}, 80%, 70%)`;
@@ -1205,14 +874,14 @@ function addEnhancedMagicalParticles(ctx, time, frame) {
     ctx.fill();
     ctx.restore();
   }
-  
+
   // Add sparkle effects
   if (frame % 15 === 0) {
     for (let i = 0; i < 3; i++) {
       const x = Math.random() * canvas.width;
       const y = Math.random() * canvas.height;
       const alpha = 0.8 + Math.random() * 0.2;
-      
+
       ctx.save();
       ctx.globalAlpha = alpha;
       ctx.fillStyle = '#ffffff';
@@ -1231,7 +900,7 @@ function addMagicalParticles(ctx, time) {
     const y = Math.random() * canvas.height;
     const size = 2 + Math.random() * 3;
     const alpha = 0.3 + Math.random() * 0.4;
-    
+
     ctx.save();
     ctx.globalAlpha = alpha;
     ctx.fillStyle = `hsl(${180 + Math.sin(time + i) * 60}, 80%, 70%)`;
@@ -1256,6 +925,11 @@ function stopAnimation() {
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      drawWatermarkIfFree(); // Ensure watermark is drawn if needed
+    };
+    img.onerror = () => {
+      console.error('Failed to reload static image after animation');
+      toast('⚠️ Failed to restore static sigil', 'warning');
     };
     img.src = lastGeneratedImage;
   }
@@ -1309,7 +983,7 @@ async function shareSigil() {
 
     // Show enhanced share modal
     showShareModal(phrase, vibe);
-    
+
   } catch (error) {
     console.error('Share error:', error);
     toast('❌ Sharing failed. Please try again.', 'error');
@@ -1319,13 +993,13 @@ async function shareSigil() {
 function showShareModal(phrase, vibe) {
   const shareModal = document.getElementById('shareModal');
   const shareCanvas = document.getElementById('shareCanvas');
-  
+
   if (!shareModal || !shareCanvas) {
     // Fallback to simple text share
     fallbackShare(`🔮 I created a ${vibe} sigil for "${phrase}" using Sigilcraft! ${window.location.origin}`);
     return;
   }
-  
+
   // Copy current sigil to share canvas
   if (lastGeneratedImage) {
     const img = new Image();
@@ -1336,7 +1010,7 @@ function showShareModal(phrase, vibe) {
     };
     img.src = lastGeneratedImage;
   }
-  
+
   shareModal.classList.remove('hidden');
 }
 
@@ -1366,7 +1040,7 @@ async function copyShareLink() {
   const phrase = intentInput?.value || 'Quantum Sigil';
   const vibe = selectedEnergies.join(' + ');
   const shareText = `🔮 I created a ${vibe} sigil for "${phrase}" using Sigilcraft! ✨\n\nTry it yourself: ${window.location.origin}\n\n#sigilcraft #quantumsigil #manifestation`;
-  
+
   try {
     await navigator.clipboard.writeText(shareText);
     toast('📋 Share text copied to clipboard!', 'success');
@@ -1382,12 +1056,12 @@ async function downloadForShare() {
     toast('❌ No image to download', 'error');
     return;
   }
-  
+
   try {
     const blob = await new Promise(resolve => {
       shareCanvas.toBlob(resolve, 'image/png', 1.0);
     });
-    
+
     if (blob) {
       const phrase = intentInput?.value || 'sigil';
       const filename = `${phrase.replace(/[^a-zA-Z0-9]/g, '_')}_share.png`;
@@ -1415,7 +1089,7 @@ async function fallbackShare(text) {
   } catch (clipboardError) {
     console.log('Modern clipboard failed:', clipboardError);
   }
-  
+
   try {
     // Legacy clipboard fallback
     const textArea = document.createElement('textarea');
@@ -1426,10 +1100,10 @@ async function fallbackShare(text) {
     document.body.appendChild(textArea);
     textArea.focus();
     textArea.select();
-    
+
     const successful = document.execCommand('copy');
     document.body.removeChild(textArea);
-    
+
     if (successful) {
       toast('📋 Share text copied to clipboard!', 'success');
     } else {
@@ -1437,7 +1111,7 @@ async function fallbackShare(text) {
     }
   } catch (fallbackError) {
     console.error('All clipboard methods failed:', fallbackError);
-    
+
     // Final fallback - show text for manual copy
     const modal = document.createElement('div');
     modal.style.cssText = `
@@ -1445,42 +1119,36 @@ async function fallbackShare(text) {
       background: rgba(0,0,0,0.8); display: flex; align-items: center;
       justify-content: center; z-index: 10000;
     `;
-    
+
     modal.innerHTML = `
-      <div style="background: var(--card-bg); padding: 30px; border-radius: 15px; 
+      <div style="background: var(--card-bg); padding: 30px; border-radius: 15px;
                   max-width: 500px; color: white; text-align: center;">
         <h3>📋 Copy Share Text</h3>
-        <textarea readonly style="width: 100%; height: 120px; margin: 15px 0; 
-                                padding: 10px; background: #333; color: white; 
+        <textarea readonly style="width: 100%; height: 120px; margin: 15px 0;
+                                padding: 10px; background: #333; color: white;
                                 border-radius: 8px; font-family: monospace;">${text}</textarea>
-        <button onclick="this.parentElement.parentElement.remove()" 
-                style="background: #7ee787; border: none; padding: 10px 20px; 
+        <button onclick="this.parentElement.parentElement.remove()"
+                style="background: #7ee787; border: none; padding: 10px 20px;
                        border-radius: 8px; cursor: pointer;">Close</button>
       </div>
     `;
-    
+
     document.body.appendChild(modal);
-    
+
     // Auto-select text
     const textarea = modal.querySelector('textarea');
     textarea.focus();
     textarea.select();
-    
+
     toast('📋 Please copy the text manually', 'info', 3000);
   }
-}
-
-async function canvasToBlob() {
-  return new Promise((resolve) => {
-    canvas.toBlob(resolve, 'image/png', 1.0);
-  });
 }
 
 // Enhanced Sigil Gallery Feature
 function showSigilGallery() {
   const gallery = document.getElementById('sigilGallery');
   const galleryGrid = document.getElementById('galleryGrid');
-  
+
   if (!gallery || !galleryGrid) {
     toast('⚠️ Gallery not available', 'error');
     return;
@@ -1504,16 +1172,16 @@ function showSigilGallery() {
     } else {
       // Show most recent sigils first
       const recentSigils = savedSigils.slice(-20).reverse();
-      
+
       recentSigils.forEach((sigil) => {
         const item = document.createElement('div');
         item.className = 'gallery-item';
-        
+
         // Create image element with enhanced error handling
         const img = document.createElement('img');
         img.alt = `Sigil: ${sigil.phrase}`;
         img.loading = 'lazy';
-        
+
         // Enhanced error handling for images
         img.onerror = () => {
           img.src = 'data:image/svg+xml,' + encodeURIComponent(`
@@ -1530,26 +1198,26 @@ function showSigilGallery() {
             </svg>
           `);
         };
-        
+
         img.src = sigil.image;
-        
+
         // Create info section with enhanced styling
         const info = document.createElement('div');
         info.className = 'gallery-info';
-        
+
         const phraseDiv = document.createElement('div');
         phraseDiv.className = 'gallery-phrase';
         phraseDiv.title = sigil.phrase;
         phraseDiv.textContent = sigil.phrase.length > 20 ? sigil.phrase.substring(0, 20) + '...' : sigil.phrase;
-        
+
         const vibeDiv = document.createElement('small');
         vibeDiv.className = 'gallery-vibe';
         vibeDiv.textContent = sigil.vibe.replace(/\+/g, ' + ');
-        
+
         const dateDiv = document.createElement('small');
         dateDiv.className = 'gallery-date';
         dateDiv.textContent = new Date(sigil.timestamp).toLocaleDateString();
-        
+
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'gallery-delete-btn';
         deleteBtn.innerHTML = '🗑️';
@@ -1560,21 +1228,21 @@ function showSigilGallery() {
             deleteSigil(sigil.id);
           }
         };
-        
+
         info.appendChild(phraseDiv);
         info.appendChild(vibeDiv);
         info.appendChild(dateDiv);
         info.appendChild(deleteBtn);
-        
+
         item.appendChild(img);
         item.appendChild(info);
-        
+
         // Enhanced click handler
         item.onclick = () => {
           loadSigilFromGallery(sigil.id);
           hideSigilGallery();
         };
-        
+
         galleryGrid.appendChild(item);
       });
     }
@@ -1584,9 +1252,9 @@ function showSigilGallery() {
     setTimeout(() => {
       gallery.style.opacity = '1';
     }, 10);
-    
+
     console.log(`Gallery opened with ${savedSigils.length} saved sigils`);
-    
+
   } catch (error) {
     console.error('Gallery error:', error);
     toast('❌ Error loading gallery', 'error');
@@ -1779,7 +1447,7 @@ window.goPremiumCheckout = goPremiumCheckout;
 window.addEventListener("load", async () => {
   try {
     console.log("🚀 Initializing Sigil Generator Pro...");
-    
+
     // Initialize character counter
     if (intentInput && charCounter) {
       intentInput.addEventListener('input', () => {
@@ -1788,11 +1456,11 @@ window.addEventListener("load", async () => {
         charCounter.style.color = length > 180 ? 'var(--neon-orange)' : 'var(--text-muted)';
       });
     }
-    
+
     // Initialize app state
     await renderGate();
     updateAverageRating();
-    
+
     // Add CSS animations
     const style = document.createElement('style');
     style.textContent = `
@@ -1800,11 +1468,11 @@ window.addEventListener("load", async () => {
         0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(0, 255, 65, 0.8); }
         50% { transform: scale(1.1); box-shadow: 0 0 20px rgba(0, 255, 65, 1); }
       }
-      
+
       .loading-active body::before {
         animation-duration: 0.5s;
       }
-      
+
       .gallery-delete-btn {
         position: absolute;
         top: 5px;
@@ -1819,31 +1487,31 @@ window.addEventListener("load", async () => {
         opacity: 0;
         transition: all 0.3s ease;
       }
-      
+
       .gallery-item:hover .gallery-delete-btn {
         opacity: 1;
       }
-      
+
       .gallery-phrase {
         font-weight: bold;
         margin-bottom: 5px;
         color: var(--text-primary);
         font-size: 0.9rem;
       }
-      
+
       .gallery-vibe {
         display: block;
         color: var(--neon-purple);
         font-size: 0.8rem;
         margin-bottom: 3px;
       }
-      
+
       .gallery-date {
         display: block;
         color: var(--text-muted);
         font-size: 0.7rem;
       }
-      
+
       .gallery-empty {
         animation: float 6s ease-in-out infinite;
       }
@@ -1862,7 +1530,7 @@ window.addEventListener("load", async () => {
     setTimeout(() => {
       toast("✨ Sigilcraft loaded! All systems quantum-ready.", 'success', 3000);
     }, 1000);
-    
+
     console.log("✅ App initialization complete!");
 
   } catch (error) {

@@ -1547,22 +1547,19 @@ def apply_minimal_quality_pass(img, vibe, phrase):
 def apply_final_quality_pass(img, vibe, phrase):
     """Apply final quality improvements for maximum visual impact - heavily optimized for speed"""
     try:
-        char_data = get_phrase_characteristics(phrase)
+        # Skip expensive operations for faster performance
         
-        # Skip expensive operations that cause timeouts
-        # No double-resolution for any vibe to prevent memory/time issues
-        
-        # Moderate sharpening to prevent processing bottlenecks
+        # Basic sharpening only
         enhancer = ImageEnhance.Sharpness(img)
-        img = enhancer.enhance(1.5)  # Reduced from 2.5
+        img = enhancer.enhance(1.3)
 
-        # Enhanced contrast for deeper blacks and brighter colors
+        # Basic contrast enhancement
         enhancer = ImageEnhance.Contrast(img)
-        img = enhancer.enhance(1.3)  # Reduced from 1.6
+        img = enhancer.enhance(1.2)
 
-        # Boost color vibrancy
+        # Basic color enhancement
         enhancer = ImageEnhance.Color(img)
-        img = enhancer.enhance(1.4)  # Reduced from 2.0
+        img = enhancer.enhance(1.3)
 
         # Apply simplified vibe-specific final touches
         if vibe == 'light':
