@@ -1441,13 +1441,29 @@ async function goPremiumCheckout() {
     console.error(e);
   }
 }
-window.goPremiumCheckout = goPremiumCheckout;
+window.goPremiumCheckout = // Check Pro Status
+async function checkProStatus() {
+  try {
+    const response = await fetch('/api/is-pro');
+    if (response.ok) {
+      const data = await response.json();
+      return data.pro || false;
+    }
+  } catch (error) {
+    console.error('Error checking pro status:', error);
+  }
+  return false;
+}
 
 // Enhanced App Initialization
 window.addEventListener("load", async () => {
   try {
     console.log("🚀 Initializing Sigil Generator Pro...");
 
+    // Get DOM elements
+    const intentInput = document.getElementById('intent-input');
+    const charCounter = document.getElementById('char-counter');
+    
     // Initialize character counter
     if (intentInput && charCounter) {
       intentInput.addEventListener('input', () => {
@@ -1458,8 +1474,16 @@ window.addEventListener("load", async () => {
     }
 
     // Initialize app state
-    await renderGate();
-    updateAverageRating();
+    if (typeof renderGate === 'function') {
+      await renderGate();
+    }
+    if (typeof updateAverageRating === 'function') {
+      updateAverageRating();
+    }
+    
+    // Check pro status
+    const isProUser = await checkProStatus();
+    console.log('Pro status:', isProUser);
 
     // Add CSS animations
     const style = document.createElement('style');

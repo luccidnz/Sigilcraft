@@ -1,4 +1,3 @@
-
 /* ===== CSS CUSTOM PROPERTIES ===== */
 :root {
     /* Colors */
@@ -7,12 +6,12 @@
     --bg-tertiary: #16213e;
     --card-bg: #1e1e2e;
     --surface: #2a2a3e;
-    
+
     /* Text */
     --text-primary: #ffffff;
     --text-secondary: #b8b9cc;
     --text-muted: #6b6b84;
-    
+
     /* Accent Colors */
     --neon-green: #00ff41;
     --neon-cyan: #00f5ff;
@@ -20,11 +19,11 @@
     --neon-pink: #ff1493;
     --neon-orange: #ff4500;
     --neon-blue: #1e90ff;
-    
+
     /* Effects */
     --glow: 0 0 20px rgba(0, 255, 65, 0.6);
     --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    
+
     /* Animations */
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -767,11 +766,6 @@ section::before {
     opacity: 1;
 }
 
-.toast.success {
-    border-color: var(--neon-green);
-    box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
-}
-
 .toast.error {
     border-color: #ff4444;
     box-shadow: 0 0 20px rgba(255, 68, 68, 0.3);
@@ -1055,59 +1049,59 @@ section::before {
         padding: 1rem;
         gap: 1.5rem;
     }
-    
+
     .header-content {
         padding: 0 1rem;
         flex-direction: column;
         text-align: center;
     }
-    
+
     .logo {
         font-size: 2rem;
     }
-    
+
     .energy-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .control-group {
         grid-template-columns: 1fr;
     }
-    
+
     .canvas-controls {
         flex-direction: column;
         align-items: center;
     }
-    
+
     .action-buttons {
         flex-direction: column;
         align-items: center;
     }
-    
+
     .unlock-actions {
         flex-direction: column;
     }
-    
+
     .key-input-inline {
         flex-direction: column;
     }
-    
+
     .toast {
         right: 1rem;
         left: 1rem;
         max-width: none;
         transform: translateY(-100px);
     }
-    
+
     .toast.show {
         transform: translateY(0);
     }
-    
+
     .gallery-grid {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: 1rem;
     }
-    
+
     .features-list {
         grid-template-columns: 1fr;
     }
@@ -1119,22 +1113,22 @@ section::before {
         margin: 0;
         border-radius: 12px;
     }
-    
+
     .generate-btn {
         font-size: 1rem;
         padding: 1.2rem 2rem;
     }
-    
+
     .btn {
         padding: 10px 16px;
         font-size: 0.8rem;
     }
-    
+
     .modal-content {
         padding: 1.5rem;
         margin: 1rem;
     }
-    
+
     .gallery-modal {
         min-width: 95vw;
     }
@@ -1148,7 +1142,7 @@ section::before {
         --bg-primary: #000000;
         --card-bg: #111111;
     }
-    
+
     .energy, .btn {
         border-width: 3px;
     }
@@ -1161,11 +1155,11 @@ section::before {
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
     }
-    
+
     .loading-overlay {
         animation: none;
     }
-    
+
     .quantum-spinner * {
         animation: none;
     }
@@ -1186,12 +1180,12 @@ section::before {
     .header, .footer, .loading-overlay, .toast {
         display: none;
     }
-    
+
     .sigil-canvas {
         max-width: 100%;
         break-inside: avoid;
     }
-    
+
     section {
         break-inside: avoid;
         box-shadow: none;

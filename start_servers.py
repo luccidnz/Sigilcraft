@@ -193,20 +193,24 @@ def main():
     # Set up signal handlers for clean shutdown
     def signal_handler(signum, frame):
         print("\n🛑 Shutting down servers...")
-        flask_process.terminate()
-        node_process.terminate()
-        
-        # Wait for graceful shutdown
-        time.sleep(2)
-        
-        # Force kill if needed
-        if flask_process.poll() is None:
-            flask_process.kill()
-        if node_process.poll() is None:
-            node_process.kill()
-        
-        print("✅ All servers stopped")
-        sys.exit(0)
+        try:
+            flask_process.terminate()
+            node_process.terminate()
+            
+            # Wait for graceful shutdown
+            time.sleep(2)
+            
+            # Force kill if needed
+            if flask_process.poll() is None:
+                flask_process.kill()
+            if node_process.poll() is None:
+                node_process.kill()
+            
+            print("✅ All servers stopped")
+        except Exception as e:
+            print(f"Error during shutdown: {e}")
+        finally:
+            sys.exit(0)
     
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
