@@ -74,7 +74,7 @@ app.use((req, res, next) => {
   res.header('X-Content-Type-Options', 'nosniff');
   res.header('X-Frame-Options', 'DENY');
   res.header('X-XSS-Protection', '1; mode=block');
-  
+
   if (req.method === 'OPTIONS') {
     res.sendStatus(200);
   } else {
@@ -175,11 +175,11 @@ app.get("/api/is-pro", (req, res) => {
     console.log("🔍 === PRO STATUS CHECK STARTED ===");
     console.log("🔍 Request URL:", req.url);
     console.log("🔍 All cookies:", req.cookies);
-    
+
     const pro = req.cookies && req.cookies.sigil_pro === "1";
     console.log("🔍 Pro status check result:", pro);
     console.log("🔍 === PRO STATUS CHECK COMPLETE ===");
-    
+
     res.json({ pro });
   } catch (error) {
     console.error("❌ Pro status check error:", error);
@@ -193,20 +193,20 @@ app.post("/api/verify-pro", (req, res) => {
     console.log("🔑 Request URL:", req.url);
     console.log("🔑 Request method:", req.method);
     console.log("🔑 Request body:", req.body);
-    
+
     const { key } = req.body;
     if (!key) {
       console.log("❌ No key provided in request");
       return res.status(400).json({ ok: false, error: "No key provided" });
     }
-    
+
     console.log(`🔑 Pro key verification: received="${key}"`);
     console.log(`🔑 Expected PRO_KEY: "${process.env.PRO_KEY ? 'SET' : 'NOT SET'}"`);
-    
+
     const ok =
-      (key && process.env.PRO_KEY && key === process.env.PRO_KEY) ||
-      (key && hasKey(key));
-    
+      (key && hasKey(key)) || // Check key existence first
+      (key && process.env.PRO_KEY && key === process.env.PRO_KEY); // Fallback to env key
+
     if (ok) {
       console.log("✅ Pro key verified successfully");
       res.cookie("sigil_pro", "1", {
@@ -221,7 +221,7 @@ app.post("/api/verify-pro", (req, res) => {
       console.log("✅ === PRO KEY VERIFICATION SUCCESS ===");
       return res.json({ ok: true });
     }
-    
+
     console.log("❌ Pro key verification failed");
     console.log("❌ === PRO KEY VERIFICATION FAILED ===");
     return res.json({ ok: false, error: "Invalid key" });
@@ -274,7 +274,7 @@ app.get("/api/health", async (req, res) => {
     // Check Flask backend health with proper timeout
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
-    
+
     // Try multiple Flask ports
     let flaskHealthy = false;
     for (const port of [5001, 5002, 5003, 5004, 5005]) {
@@ -291,7 +291,7 @@ app.get("/api/health", async (req, res) => {
       }
     }
     clearTimeout(timeoutId);
-    
+
     res.status(200).json({
       status: "healthy",
       services: {
@@ -318,14 +318,14 @@ app.get("/api/health", async (req, res) => {
 app.post("/generate", generationLimiter, async (req, res) => {
   let timeoutId = null;
   let controller = null;
-  
+
   try {
     console.log("Proxying generation request to Flask backend...");
 
     controller = new AbortController();
     const isComplexRequest = req.body.vibe && req.body.vibe.includes('+');
     const timeoutDuration = isComplexRequest ? 30000 : 20000; // Much shorter timeouts for faster response
-    
+
     timeoutId = setTimeout(() => {
       console.log("Request timeout reached, aborting...");
       if (controller) {
@@ -336,7 +336,7 @@ app.post("/generate", generationLimiter, async (req, res) => {
     // Try multiple Flask ports for generation
     let response = null;
     let lastError = null;
-    
+
     for (const port of [5001, 5002, 5003, 5004, 5005]) {
       try {
         if (controller.signal.aborted) {
@@ -362,7 +362,7 @@ app.post("/generate", generationLimiter, async (req, res) => {
           }
           throw fetchError;
         });
-        
+
         if (response && response.ok) {
           console.log(`Successfully connected to Flask on port ${port}`);
           break;
@@ -379,13 +379,13 @@ app.post("/generate", generationLimiter, async (req, res) => {
         }
       }
     }
-    
+
     // Clean up timeout
     if (timeoutId) {
       clearTimeout(timeoutId);
       timeoutId = null;
     }
-    
+
     // Check if we were aborted
     if (controller && controller.signal.aborted) {
       console.log("Request was aborted due to timeout");
@@ -394,7 +394,7 @@ app.post("/generate", generationLimiter, async (req, res) => {
         error: "Generation timed out. Please try a simpler phrase or try again."
       });
     }
-    
+
     if (!response) {
       throw lastError || new Error("Flask backend not available on any port");
     }
@@ -414,7 +414,7 @@ app.post("/generate", generationLimiter, async (req, res) => {
       clearTimeout(timeoutId);
       timeoutId = null;
     }
-    
+
     console.error("Flask backend proxy error:", error.message);
 
     // Handle timeout/abort errors specifically to prevent server crashes
@@ -425,21 +425,21 @@ app.post("/generate", generationLimiter, async (req, res) => {
         error: "Generation timed out. Please try a simpler phrase or try again."
       });
     }
-    
+
     if (error.message.includes('ECONNREFUSED') || error.code === 'ECONNREFUSED') {
       return res.status(503).json({
         success: false,
         error: "Sigil generation service is starting up. Please try again in a moment."
       });
     }
-    
+
     if (error.message.includes('fetch')) {
       return res.status(503).json({
         success: false,
         error: "Network error connecting to generation service. Please try again."
       });
     }
-    
+
     return res.status(500).json({
       success: false,
       error: "Sigil generation temporarily unavailable. Please try again."
