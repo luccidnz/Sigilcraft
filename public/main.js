@@ -1,216 +1,126 @@
 
-// ===== SIGILCRAFT - REVOLUTIONARY TEXT-RESPONSIVE SIGIL GENERATOR =====
+// Revolutionary Text-Responsive Sigil Generator - Frontend
+// Enhanced with quantum-level text analysis and true uniqueness
 
-// Configuration
-const FREE_ENERGIES = ["mystical", "elemental", "light"];
-const ALL_ENERGIES = ["mystical", "cosmic", "elemental", "crystal", "shadow", "light"];
-const COOLDOWN_TIME = 10000; // 10 seconds
+// ===== CONSTANTS =====
+const FREE_ENERGIES = ['mystical', 'elemental', 'light'];
+const PRO_ENERGIES = ['cosmic', 'crystal', 'shadow'];
+const ALL_ENERGIES = [...FREE_ENERGIES, ...PRO_ENERGIES];
 
-// Global state
-let appState = {
-  selectedEnergies: [FREE_ENERGIES[0]],
-  lastGeneratedImage: null,
-  isGenerating: false,
-  cooldownActive: false,
-  isPro: false,
-  sigilGallery: JSON.parse(localStorage.getItem('sigil_gallery') || '[]'),
-  currentSigilData: null
+// Energy descriptions for better UX
+const ENERGY_DESCRIPTIONS = {
+  'mystical': 'Ancient wisdom and spiritual connection',
+  'cosmic': 'Universal forces and stellar energies',
+  'elemental': 'Earth, fire, water, and air harmonies',
+  'crystal': 'Prismatic light and geometric perfection',
+  'shadow': 'Hidden depths and transformative power',
+  'light': 'Divine radiance and illuminating truth'
 };
 
-// DOM elements cache
-let domElements = {};
+// ===== STATE MANAGEMENT =====
+const appState = {
+  isPro: false,
+  isGenerating: false,
+  cooldownActive: false,
+  cooldownTime: 30,
+  selectedEnergies: [FREE_ENERGIES[0]],
+  currentSigilData: null,
+  sigilGallery: JSON.parse(localStorage.getItem('sigil_gallery') || '[]'),
+  lastGeneratedImage: null,
+  generationCounter: 0 // Add counter for uniqueness
+};
 
-// Cache DOM elements
-function cacheElements() {
-  domElements = {
-    intentInput: document.getElementById('intentInput'),
-    generateBtn: document.getElementById('generateBtn'),
-    canvas: document.getElementById('sigilCanvas'),
-    canvasContainer: document.getElementById('canvasContainer'),
-    downloadBtn: document.getElementById('downloadBtn'),
-    loading: document.getElementById('loading'),
-    energyContainer: document.getElementById('energyContainer'),
-    charCount: document.querySelector('.char-count'),
-    galleryContainer: document.getElementById('galleryContainer'),
-    shareModal: document.getElementById('shareModal'),
-    proBadge: document.getElementById('proBadge'),
-    proControls: document.getElementById('proControls'),
-    unlockSection: document.getElementById('unlockSection'),
-    proKeyInput: document.getElementById('proKeyInput'),
-    proKeySubmit: document.getElementById('proKeySubmit'),
-    proKeyModal: document.getElementById('proKeyModal'),
-    textAnalysis: document.getElementById('textAnalysis')
-  };
-}
+// ===== DOM ELEMENTS =====
+const domElements = {
+  intentInput: null,
+  generateBtn: null,
+  downloadBtn: null,
+  sigilCanvas: null,
+  textAnalysis: null,
+  energyContainer: null,
+  galleryContainer: null,
+  proKeyInput: null,
+  proKeySubmit: null,
+  shareModal: null,
+  loadingIndicator: null,
+  resultSection: null,
+  charCounter: null,
+  unlockSection: null,
+  cooldownTimer: null
+};
 
-// Setup event listeners
-function setupEvents() {
-  if (domElements.generateBtn) {
-    domElements.generateBtn.addEventListener('click', generateSigil);
-  }
+// ===== INITIALIZATION =====
+document.addEventListener('DOMContentLoaded', initializeApp);
 
-  if (domElements.intentInput) {
-    domElements.intentInput.addEventListener('input', handleTextInput);
-    domElements.intentInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && !appState.isGenerating && !appState.cooldownActive) {
-        generateSigil();
-      }
-    });
-  }
-
-  if (domElements.downloadBtn) {
-    domElements.downloadBtn.addEventListener('click', downloadSigil);
-  }
-
-  if (domElements.proKeySubmit) {
-    domElements.proKeySubmit.addEventListener('click', submitProKey);
-  }
-
-  // Close modals on outside click
-  document.addEventListener('click', (e) => {
-    if (e.target.classList.contains('modal')) {
-      e.target.style.display = 'none';
-    }
-  });
-}
-
-// Handle text input with analysis
-function handleTextInput() {
-  updateCharCounter();
-  analyzeText();
-}
-
-// ===== TEXT ANALYSIS DISPLAY =====
-function analyzeText() {
-  const text = domElements.intentInput?.value?.trim() || '';
+async function initializeApp() {
+  console.log('🚀 Initializing Revolutionary Sigil Generator...');
   
-  if (!text || !domElements.textAnalysis) return;
+  initializeDOM();
+  await checkProStatus();
+  renderEnergySelection();
+  renderGallery();
+  setupEvents();
+  updateUI();
   
-  // Perform basic analysis
-  const analysis = {
-    length: text.length,
-    wordCount: text.split(/\s+/).filter(word => word.length > 0).length,
-    uniqueChars: new Set(text.toLowerCase().replace(/\s/g, '')).size,
-    vowelRatio: (text.match(/[aeiou]/gi) || []).length / Math.max(text.length, 1),
-    complexity: calculateComplexity(text)
-  };
-  
-  // Update analysis display
-  domElements.textAnalysis.innerHTML = `
-    <h4>📊 Text Analysis</h4>
-    <div class="analysis-grid">
-      <div class="analysis-item">
-        <span class="label">Words:</span>
-        <span class="value">${analysis.wordCount}</span>
-      </div>
-      <div class="analysis-item">
-        <span class="label">Unique chars:</span>
-        <span class="value">${analysis.uniqueChars}</span>
-      </div>
-      <div class="analysis-item">
-        <span class="label">Vowel ratio:</span>
-        <span class="value">${(analysis.vowelRatio * 100).toFixed(1)}%</span>
-      </div>
-      <div class="analysis-item">
-        <span class="label">Complexity:</span>
-        <span class="value complexity-${getComplexityLevel(analysis.complexity)}">${getComplexityLevel(analysis.complexity)}</span>
-      </div>
-    </div>
-    <div class="energy-prediction">
-      <span class="label">Predicted energy:</span>
-      <span class="value">${predictEnergy(text)}</span>
-    </div>
-  `;
+  console.log('✅ Revolutionary app initialization complete!');
 }
 
-function calculateComplexity(text) {
-  let complexity = 0;
-  complexity += new Set(text.toLowerCase().replace(/\s/g, '')).size * 0.1;
-  complexity += text.split(/\s+/).length * 0.15;
-  complexity += (text.match(/[aeiou]/gi) || []).length / text.length * 0.2;
-  return Math.min(Math.max(complexity, 0.3), 1.0);
+function initializeDOM() {
+  domElements.intentInput = document.getElementById('intentInput');
+  domElements.generateBtn = document.getElementById('generateBtn');
+  domElements.downloadBtn = document.getElementById('downloadBtn');
+  domElements.sigilCanvas = document.getElementById('sigilCanvas');
+  domElements.textAnalysis = document.getElementById('textAnalysis');
+  domElements.energyContainer = document.getElementById('energyContainer');
+  domElements.galleryContainer = document.getElementById('galleryContainer');
+  domElements.proKeyInput = document.getElementById('proKeyInput');
+  domElements.proKeySubmit = document.getElementById('proKeySubmit');
+  domElements.shareModal = document.getElementById('shareModal');
+  domElements.loadingIndicator = document.getElementById('loading');
+  domElements.resultSection = document.getElementById('resultSection');
+  domElements.charCounter = document.getElementById('charCounter');
+  domElements.unlockSection = document.getElementById('unlockSection');
+  domElements.cooldownTimer = document.getElementById('cooldownTimer');
 }
 
-function getComplexityLevel(complexity) {
-  if (complexity < 0.4) return 'Simple';
-  if (complexity < 0.7) return 'Medium';
-  return 'Complex';
-}
-
-function predictEnergy(text) {
-  const energyWords = {
-    fire: ['fire', 'flame', 'burn', 'passion', 'energy', 'power'],
-    water: ['water', 'flow', 'calm', 'peace', 'healing', 'emotion'],
-    earth: ['earth', 'ground', 'stable', 'home', 'money', 'growth'],
-    air: ['air', 'wind', 'thought', 'mind', 'freedom', 'ideas'],
-    light: ['light', 'bright', 'sun', 'clarity', 'divine', 'pure'],
-    shadow: ['dark', 'shadow', 'mystery', 'hidden', 'transform'],
-    love: ['love', 'heart', 'romance', 'care', 'soul'],
-    wisdom: ['wisdom', 'knowledge', 'learn', 'truth', 'insight']
-  };
-  
-  const lowerText = text.toLowerCase();
-  let maxScore = 0;
-  let dominantEnergy = 'mystical';
-  
-  for (const [energy, keywords] of Object.entries(energyWords)) {
-    let score = 0;
-    keywords.forEach(keyword => {
-      if (lowerText.includes(keyword)) score++;
-    });
-    
-    if (score > maxScore) {
-      maxScore = score;
-      dominantEnergy = energy;
-    }
-  }
-  
-  return dominantEnergy;
-}
-
-// ===== PRO FEATURES =====
+// ===== PRO STATUS MANAGEMENT =====
 async function checkProStatus() {
   try {
-    const localPro = localStorage.getItem('sigil_pro') === '1';
-    const proKey = localStorage.getItem('sigil_pro_key');
-
-    let serverPro = false;
-    if (proKey) {
-      try {
-        const response = await fetch('/api/pro-status', {
-          headers: { 'x-pro-key': proKey },
-          signal: AbortSignal.timeout(5000)
-        });
-
-        if (response.ok) {
-          const contentType = response.headers.get('content-type');
-          if (contentType && contentType.includes('application/json')) {
-            const data = await response.json();
-            serverPro = data.isPro || false;
-          } else {
-            console.log('Pro status endpoint returned non-JSON response');
-          }
-        } else {
-          console.log(`Pro status check failed: ${response.status} ${response.statusText}`);
-        }
-      } catch (fetchError) {
-        console.log('Pro status fetch failed:', fetchError.message);
-      }
+    const storedKey = localStorage.getItem('pro_key');
+    
+    const response = await fetch('/api/pro-status', {
+      headers: storedKey ? { 'X-Pro-Key': storedKey } : {},
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
     }
-
-    appState.isPro = localPro || serverPro;
-    updateUI();
-
+    
+    const data = await response.json();
+    appState.isPro = data.isPro;
+    updateProStatus();
   } catch (error) {
-    console.log('Pro status check failed, falling back to local storage');
-    appState.isPro = localStorage.getItem('sigil_pro') === '1';
-    updateUI();
+    console.error('Error checking pro status:', error);
+    appState.isPro = false;
+    updateProStatus();
   }
+}
+
+function updateProStatus() {
+  if (domElements.unlockSection) {
+    domElements.unlockSection.style.display = appState.isPro ? 'none' : 'block';
+  }
+  
+  updateGenerateButton();
+  renderEnergySelection();
 }
 
 async function submitProKey() {
   const key = domElements.proKeyInput?.value?.trim();
-  if (!key) return;
+  if (!key) {
+    showToast('❌ Please enter a pro key', 'error');
+    return;
+  }
 
   try {
     const response = await fetch('/api/validate-key', {
@@ -220,56 +130,58 @@ async function submitProKey() {
     });
 
     const data = await response.json();
-
+    
     if (data.valid) {
-      localStorage.setItem('sigil_pro', '1');
-      localStorage.setItem('sigil_pro_key', key);
+      localStorage.setItem('pro_key', key);
       appState.isPro = true;
-      showToast('✨ Pro features unlocked!', 'success');
-      updateUI();
-      if (domElements.proKeyModal) {
-        domElements.proKeyModal.style.display = 'none';
-      }
+      updateProStatus();
+      showToast('✅ Pro features unlocked!', 'success');
+      document.getElementById('proKeyModal').style.display = 'none';
     } else {
       showToast('❌ Invalid pro key', 'error');
     }
   } catch (error) {
-    console.error('Pro key validation error:', error);
+    console.error('Key validation error:', error);
     showToast('❌ Validation failed', 'error');
   }
 }
 
-// ===== ENERGY SELECTION =====
+// ===== ENERGY SELECTION SYSTEM =====
 function renderEnergySelection() {
   if (!domElements.energyContainer) return;
 
-  const availableEnergies = appState.isPro ? ALL_ENERGIES : FREE_ENERGIES;
+  const energyHTML = ALL_ENERGIES.map(energy => {
+    const isSelected = appState.selectedEnergies.includes(energy);
+    const isLocked = !FREE_ENERGIES.includes(energy) && !appState.isPro;
+    
+    return `
+      <div class="energy-option ${isSelected ? 'selected' : ''} ${isLocked ? 'locked' : ''}"
+           onclick="toggleEnergy('${energy}')" 
+           title="${ENERGY_DESCRIPTIONS[energy]}">
+        <div class="energy-icon">${getEnergyIcon(energy)}</div>
+        <div class="energy-name">${energy}</div>
+        ${isLocked ? '<div class="lock-icon">🔒</div>' : ''}
+      </div>
+    `;
+  }).join('');
 
   domElements.energyContainer.innerHTML = `
-    <h3>Choose Your Vibe</h3>
-    <div class="energy-grid">
-      ${availableEnergies.map(energy => `
-        <div class="energy-option ${appState.selectedEnergies.includes(energy) ? 'selected' : ''}" 
-             onclick="toggleEnergy('${energy}')">
-          <i class="fas ${getEnergyIcon(energy)}"></i>
-          <span>${energy.charAt(0).toUpperCase() + energy.slice(1)}</span>
-          ${!FREE_ENERGIES.includes(energy) ? '<span class="pro-badge">PRO</span>' : ''}
-        </div>
-      `).join('')}
-    </div>
+    <h4>🌟 Energy Vibes</h4>
+    <div class="energy-grid">${energyHTML}</div>
+    <p class="energy-hint">Select one or more energy types to influence your sigil</p>
   `;
 }
 
 function getEnergyIcon(energy) {
   const icons = {
-    mystical: 'fa-moon',
-    cosmic: 'fa-star',
-    elemental: 'fa-fire',
-    crystal: 'fa-gem',
-    shadow: 'fa-eye',
-    light: 'fa-sun'
+    'mystical': '🔮',
+    'cosmic': '🌌', 
+    'elemental': '🌿',
+    'crystal': '💎',
+    'shadow': '🌑',
+    'light': '✨'
   };
-  return icons[energy] || 'fa-circle';
+  return icons[energy] || '⚡';
 }
 
 function toggleEnergy(energy) {
@@ -306,10 +218,11 @@ async function generateSigil() {
     return;
   }
 
-  console.log('🚀 Channeling revolutionary energies...');
+  console.log('🎨 Channeling cosmic energies...');
   console.log(`📝 Manifesting: "${phrase}" with vibes: ${appState.selectedEnergies.join('+')}`);
 
   appState.isGenerating = true;
+  appState.generationCounter++; // Increment for uniqueness
   updateGenerateButton();
   showLoading();
 
@@ -317,13 +230,22 @@ async function generateSigil() {
 
   try {
     const vibe = appState.selectedEnergies.join('+');
+    
+    // Add uniqueness parameters
+    const uniqueParams = {
+      phrase,
+      vibe,
+      timestamp: Date.now(),
+      counter: appState.generationCounter,
+      randomSeed: Math.random()
+    };
 
     console.log(`🌟 Sending request: phrase="${phrase}", vibe="${vibe}"`);
 
     const response = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phrase, vibe }),
+      body: JSON.stringify(uniqueParams),
       signal: AbortSignal.timeout(30000)
     });
 
@@ -337,7 +259,13 @@ async function generateSigil() {
 
     if (data.success && data.image) {
       appState.lastGeneratedImage = data.image;
-      appState.currentSigilData = { phrase, vibe, image: data.image, timestamp: new Date().toISOString() };
+      appState.currentSigilData = { 
+        phrase, 
+        vibe, 
+        image: data.image, 
+        timestamp: new Date().toISOString(),
+        uniqueId: Date.now() + Math.random()
+      };
 
       await renderSigil(data.image);
       showResult();
@@ -376,48 +304,103 @@ async function generateSigil() {
   }
 }
 
-// ===== CANVAS & RENDERING =====
-async function renderSigil(imageData) {
-  return new Promise((resolve) => {
-    if (!domElements.canvas) {
-      resolve();
-      return;
+// ===== UI MANAGEMENT =====
+function showLoading() {
+  if (domElements.loadingIndicator) {
+    domElements.loadingIndicator.style.display = 'flex';
+  }
+}
+
+function hideLoading() {
+  if (domElements.loadingIndicator) {
+    domElements.loadingIndicator.style.display = 'none';
+  }
+}
+
+function showResult() {
+  if (domElements.resultSection) {
+    domElements.resultSection.style.display = 'block';
+    domElements.resultSection.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+function updateGenerateButton() {
+  if (!domElements.generateBtn) return;
+
+  if (appState.isGenerating) {
+    domElements.generateBtn.textContent = 'Channeling Revolutionary Energies...';
+    domElements.generateBtn.disabled = true;
+  } else if (appState.cooldownActive) {
+    domElements.generateBtn.disabled = true;
+  } else {
+    domElements.generateBtn.textContent = '🚀 Generate Revolutionary Sigil';
+    domElements.generateBtn.disabled = false;
+  }
+}
+
+function updateCharCounter() {
+  if (!domElements.charCounter || !domElements.intentInput) return;
+  
+  const count = domElements.intentInput.value.length;
+  domElements.charCounter.textContent = `${count}/200 characters`;
+  
+  if (count > 150) {
+    domElements.charCounter.style.color = '#ff6b6b';
+  } else {
+    domElements.charCounter.style.color = 'var(--text-secondary)';
+  }
+}
+
+function updateUI() {
+  updateGenerateButton();
+  updateCharCounter();
+}
+
+// ===== COOLDOWN SYSTEM =====
+function startCooldown() {
+  if (appState.isPro) return;
+  
+  appState.cooldownActive = true;
+  let timeLeft = appState.cooldownTime;
+  
+  const timer = setInterval(() => {
+    if (domElements.generateBtn) {
+      domElements.generateBtn.textContent = `Wait ${timeLeft}s for next generation`;
+      domElements.generateBtn.disabled = true;
     }
+    
+    timeLeft--;
+    
+    if (timeLeft < 0) {
+      clearInterval(timer);
+      appState.cooldownActive = false;
+      updateGenerateButton();
+    }
+  }, 1000);
+}
 
-    const ctx = domElements.canvas.getContext('2d');
-    const img = new Image();
-
-    img.onload = () => {
-      ctx.clearRect(0, 0, domElements.canvas.width, domElements.canvas.height);
-
-      const scale = Math.min(
-        domElements.canvas.width / img.width, 
-        domElements.canvas.height / img.height
-      );
-      const x = (domElements.canvas.width - img.width * scale) / 2;
-      const y = (domElements.canvas.height - img.height * scale) / 2;
-
-      ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-      resolve();
-    };
-
-    img.onerror = () => {
-      console.error('Failed to load sigil image data.');
-      resolve();
-    };
-
-    img.src = imageData;
-  });
+// ===== SIGIL RENDERING =====
+async function renderSigil(imageData) {
+  if (!domElements.sigilCanvas || !imageData) return;
+  
+  try {
+    domElements.sigilCanvas.src = imageData;
+    domElements.sigilCanvas.style.display = 'block';
+  } catch (error) {
+    console.error('Error rendering sigil:', error);
+    showToast('❌ Error displaying sigil', 'error');
+  }
 }
 
 // ===== GALLERY SYSTEM =====
 function saveToGallery(sigilData) {
   const galleryItem = {
-    id: Date.now(),
+    id: Date.now() + Math.random(), // Ensure unique IDs
     phrase: sigilData.phrase,
     vibe: sigilData.vibe,
     image: sigilData.image,
-    timestamp: sigilData.timestamp
+    timestamp: sigilData.timestamp,
+    uniqueId: sigilData.uniqueId || Date.now()
   };
 
   appState.sigilGallery.unshift(galleryItem);
@@ -492,7 +475,8 @@ function downloadSigil() {
 
   const phrase = appState.currentSigilData.phrase.replace(/\s+/g, '-').toLowerCase();
   const timestamp = new Date().toISOString().split('T')[0];
-  const filename = `sigilcraft-revolutionary-${phrase}-${timestamp}.png`;
+  const uniqueId = Date.now();
+  const filename = `sigilcraft-revolutionary-${phrase}-${timestamp}-${uniqueId}.png`;
 
   const link = document.createElement('a');
   link.download = filename;
@@ -507,7 +491,8 @@ function downloadSigilFromGallery(sigilId) {
   if (sigil) {
     const phrase = sigil.phrase.replace(/\s+/g, '-').toLowerCase();
     const timestamp = new Date(sigil.timestamp).toISOString().split('T')[0];
-    const filename = `sigilcraft-revolutionary-${phrase}-${timestamp}.png`;
+    const uniqueId = sigil.uniqueId || Date.now();
+    const filename = `sigilcraft-revolutionary-${phrase}-${timestamp}-${uniqueId}.png`;
 
     const link = document.createElement('a');
     link.download = filename;
@@ -551,130 +536,209 @@ function shareViaNative() {
   }
 }
 
-// ===== UI UPDATES =====
-function updateGenerateButton() {
-  if (!domElements.generateBtn) return;
-
-  if (appState.isGenerating) {
-    domElements.generateBtn.textContent = 'Channeling Revolutionary Energies...';
-    domElements.generateBtn.disabled = true;
-  } else if (appState.cooldownActive) {
-    domElements.generateBtn.disabled = true;
-  } else {
-    domElements.generateBtn.textContent = '🚀 Generate Revolutionary Sigil';
-    domElements.generateBtn.disabled = false;
-  }
-}
-
-function updateCharCounter() {
-  if (!domElements.charCount || !domElements.intentInput) return;
-
-  const count = domElements.intentInput.value.length;
-  domElements.charCount.textContent = `${count}/200`;
-
-  if (count > 200) {
-    domElements.charCount.style.color = '#ff4444';
-  } else if (count > 150) {
-    domElements.charCount.style.color = '#ffaa00';
-  } else {
-    domElements.charCount.style.color = '#888';
-  }
-}
-
-function updateProInterface() {
-  if (domElements.proBadge) {
-    domElements.proBadge.style.display = appState.isPro ? 'block' : 'none';
+// ===== EVENT HANDLERS =====
+function setupEvents() {
+  if (domElements.generateBtn) {
+    domElements.generateBtn.addEventListener('click', generateSigil);
   }
 
-  if (domElements.unlockSection) {
-    domElements.unlockSection.style.display = appState.isPro ? 'none' : 'block';
+  if (domElements.intentInput) {
+    domElements.intentInput.addEventListener('input', handleTextInput);
+    domElements.intentInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !appState.isGenerating && !appState.cooldownActive) {
+        generateSigil();
+      }
+    });
   }
-}
 
-function startCooldown() {
-  appState.cooldownActive = true;
-  let timeLeft = COOLDOWN_TIME / 1000;
-
-  const countdown = setInterval(() => {
-    if (domElements.generateBtn) {
-      domElements.generateBtn.textContent = `Wait ${timeLeft}s`;
-    }
-
-    timeLeft--;
-
-    if (timeLeft <= 0) {
-      clearInterval(countdown);
-      appState.cooldownActive = false;
-      updateGenerateButton();
-    }
-  }, 1000);
-}
-
-function showResult() {
-  if (domElements.canvasContainer) {
-    domElements.canvasContainer.classList.remove('hidden');
-  }
   if (domElements.downloadBtn) {
-    domElements.downloadBtn.style.display = 'block';
+    domElements.downloadBtn.addEventListener('click', downloadSigil);
   }
+
+  if (domElements.proKeySubmit) {
+    domElements.proKeySubmit.addEventListener('click', submitProKey);
+  }
+
+  // Close modals on outside click
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('modal')) {
+      e.target.style.display = 'none';
+    }
+  });
 }
 
-function showLoading() {
-  if (domElements.loading) {
-    domElements.loading.style.display = 'flex';
-  }
+function handleTextInput() {
+  updateCharCounter();
+  analyzeText();
 }
 
-function hideLoading() {
-  if (domElements.loading) {
-    domElements.loading.style.display = 'none';
+// ===== TEXT ANALYSIS DISPLAY =====
+function analyzeText() {
+  if (!domElements.textAnalysis || !domElements.intentInput) return;
+  
+  const text = domElements.intentInput.value.trim();
+  
+  if (!text) {
+    domElements.textAnalysis.innerHTML = `
+      <h4>📊 Text Analysis</h4>
+      <p class="analysis-prompt">Enter text above to see how it will influence your sigil</p>
+    `;
+    return;
   }
+
+  const analysis = performTextAnalysis(text);
+  
+  domElements.textAnalysis.innerHTML = `
+    <h4>📊 Revolutionary Text Analysis</h4>
+    <div class="analysis-grid">
+      <div class="analysis-item">
+        <span class="analysis-label">Length:</span>
+        <span class="analysis-value">${analysis.length} chars</span>
+      </div>
+      <div class="analysis-item">
+        <span class="analysis-label">Words:</span>
+        <span class="analysis-value">${analysis.words}</span>
+      </div>
+      <div class="analysis-item">
+        <span class="analysis-label">Unique Characters:</span>
+        <span class="analysis-value">${analysis.uniqueChars}</span>
+      </div>
+      <div class="analysis-item">
+        <span class="analysis-label">Vowel Ratio:</span>
+        <span class="analysis-value">${analysis.vowelRatio}%</span>
+      </div>
+      <div class="analysis-item">
+        <span class="analysis-label">Complexity:</span>
+        <span class="analysis-value">${analysis.complexity}</span>
+      </div>
+      <div class="analysis-item">
+        <span class="analysis-label">Energy:</span>
+        <span class="analysis-value">${analysis.dominantEnergy}</span>
+      </div>
+    </div>
+  `;
+}
+
+function performTextAnalysis(text) {
+  const length = text.length;
+  const words = text.split(/\s+/).length;
+  const uniqueChars = new Set(text.toLowerCase().replace(/\s/g, '')).size;
+  const vowels = (text.match(/[aeiou]/gi) || []).length;
+  const vowelRatio = Math.round((vowels / Math.max(length, 1)) * 100);
+  
+  // Simple complexity calculation
+  let complexity = 'Simple';
+  if (uniqueChars > 15 || words > 5) complexity = 'Complex';
+  else if (uniqueChars > 10 || words > 3) complexity = 'Moderate';
+  
+  // Dominant energy detection (simplified)
+  const energyKeywords = {
+    mystical: ['magic', 'spirit', 'soul', 'divine', 'sacred'],
+    cosmic: ['space', 'star', 'universe', 'cosmic', 'galaxy'],
+    elemental: ['earth', 'fire', 'water', 'air', 'nature'],
+    crystal: ['crystal', 'gem', 'diamond', 'clear', 'pure'],
+    shadow: ['dark', 'shadow', 'hidden', 'mystery', 'deep'],
+    light: ['light', 'bright', 'sun', 'radiant', 'shine']
+  };
+  
+  let dominantEnergy = 'Neutral';
+  let maxMatches = 0;
+  
+  for (const [energy, keywords] of Object.entries(energyKeywords)) {
+    const matches = keywords.filter(keyword => 
+      text.toLowerCase().includes(keyword)
+    ).length;
+    
+    if (matches > maxMatches) {
+      maxMatches = matches;
+      dominantEnergy = energy.charAt(0).toUpperCase() + energy.slice(1);
+    }
+  }
+  
+  return {
+    length,
+    words,
+    uniqueChars,
+    vowelRatio,
+    complexity,
+    dominantEnergy
+  };
 }
 
 // ===== TOAST NOTIFICATIONS =====
 function showToast(message, type = 'info') {
+  console.log(`Toast: ${message} (${type})`);
+  
+  // Remove existing toasts
+  const existingToasts = document.querySelectorAll('.toast');
+  existingToasts.forEach(toast => toast.remove());
+  
+  // Create new toast
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
   toast.textContent = message;
-
+  
+  // Style the toast
+  Object.assign(toast.style, {
+    position: 'fixed',
+    top: '20px',
+    right: '20px',
+    padding: '15px 20px',
+    borderRadius: '8px',
+    color: 'white',
+    fontWeight: '600',
+    zIndex: '10000',
+    minWidth: '250px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+    transform: 'translateX(300px)',
+    transition: 'transform 0.3s ease'
+  });
+  
+  // Set background color based on type
+  const colors = {
+    success: '#4CAF50',
+    error: '#f44336',
+    warning: '#ff9800',
+    info: '#2196F3'
+  };
+  toast.style.backgroundColor = colors[type] || colors.info;
+  
+  // Add to DOM and animate in
   document.body.appendChild(toast);
-
-  setTimeout(() => toast.classList.add('show'), 100);
-
+  
   setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => document.body.removeChild(toast), 300);
-  }, 3000);
+    toast.style.transform = 'translateX(0)';
+  }, 100);
+  
+  // Auto remove after delay
+  setTimeout(() => {
+    toast.style.transform = 'translateX(300px)';
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.parentNode.removeChild(toast);
+      }
+    }, 300);
+  }, 4000);
 }
 
-// ===== MAIN UPDATE FUNCTION =====
-function updateUI() {
-  updateGenerateButton();
-  renderEnergySelection();
-  updateProInterface();
-  updateCharCounter();
-  renderGallery();
-  analyzeText();
+// ===== UTILITY FUNCTIONS =====
+function formatTimestamp(timestamp) {
+  return new Date(timestamp).toLocaleString();
 }
 
-// ===== INITIALIZATION =====
-document.addEventListener('DOMContentLoaded', async () => {
-  console.log('🚀 Initializing Revolutionary Sigil Generator...');
-
-  try {
-    cacheElements();
-    setupEvents();
-    await checkProStatus();
-    updateUI();
-
-    console.log('✅ Revolutionary app initialization complete!');
-  } catch (error) {
-    console.error('❌ Initialization failed:', error);
-    showToast('❌ App initialization failed', 'error');
+function validateInput(text) {
+  if (!text || text.trim().length === 0) {
+    return { valid: false, error: 'Please enter some text' };
   }
-});
+  
+  if (text.length > 200) {
+    return { valid: false, error: 'Text too long (max 200 characters)' };
+  }
+  
+  return { valid: true };
+}
 
-// Make functions globally available
+// Expose functions globally for onclick handlers
 window.toggleEnergy = toggleEnergy;
 window.viewSigil = viewSigil;
 window.deleteSigil = deleteSigil;

@@ -219,15 +219,20 @@ class AdvancedTextAnalyzer:
 class QuantumSigilGenerator:
     """Advanced sigil generator using quantum-inspired algorithms"""
     
-    def __init__(self, text, vibe='mystical'):
+    def __init__(self, text, vibe='mystical', unique_context=None):
         self.text = text
         self.vibe = vibe
+        self.unique_context = unique_context or f"{text}-{vibe}-{time.time()}"
         self.analyzer = AdvancedTextAnalyzer(text)
         self.size = 1024
         self.center = self.size // 2
         
-        # Create deterministic seed from text
-        self.seed = int(hashlib.sha256(f"{text}-{vibe}".encode()).hexdigest()[:8], 16)
+        # Create semi-random seed with timestamp to ensure uniqueness
+        base_seed = int(hashlib.sha256(f"{text}-{vibe}".encode()).hexdigest()[:8], 16)
+        context_seed = int(hashlib.sha256(self.unique_context.encode()).hexdigest()[:8], 16)
+        time_seed = int(time.time() * 1000000) % 1000000  # Microsecond precision
+        unique_seed = secrets.randbits(32)  # True random component
+        self.seed = (base_seed + context_seed + time_seed + unique_seed) % (2**32)
         np.random.seed(self.seed)
         random.seed(self.seed)
         
@@ -1139,9 +1144,9 @@ class QuantumSigilGenerator:
         
         return img
 
-def generate_artistic_sigil(phrase, vibe='mystical'):
+def generate_artistic_sigil(phrase, vibe='mystical', unique_context=None):
     """Generate a truly unique and text-responsive sigil"""
-    generator = QuantumSigilGenerator(phrase, vibe)
+    generator = QuantumSigilGenerator(phrase, vibe, unique_context)
     return generator.generate()
 
 @app.route('/', methods=['GET'])
@@ -1201,6 +1206,11 @@ def generate_sigil():
         data = request.get_json()
         phrase = data.get('phrase', '').strip()
         vibe = data.get('vibe', 'mystical').strip()
+        
+        # Extract uniqueness parameters
+        timestamp = data.get('timestamp', int(time.time() * 1000))
+        counter = data.get('counter', 1)
+        random_seed = data.get('randomSeed', 0.5)
 
         if not phrase:
             return jsonify({
@@ -1214,10 +1224,12 @@ def generate_sigil():
                 'error': 'Phrase too long (max 200 characters)'
             }), 400
 
-        print(f"🚀 Generating revolutionary sigil for: '{phrase}' with vibe: {vibe}")
+        # Create unique identifier for this generation
+        unique_context = f"{phrase}-{vibe}-{timestamp}-{counter}-{random_seed}"
+        print(f"🚀 Generating revolutionary sigil for: '{phrase}' with vibe: {vibe} [Unique: {hash(unique_context) % 10000}]")
 
-        # Generate the revolutionary text-responsive sigil
-        sigil_img = generate_artistic_sigil(phrase, vibe)
+        # Generate the revolutionary text-responsive sigil with unique context
+        sigil_img = generate_artistic_sigil(phrase, vibe, unique_context)
 
         # Convert to base64
         buffer = io.BytesIO()
@@ -1235,7 +1247,8 @@ def generate_sigil():
             'phrase': phrase,
             'vibe': vibe,
             'version': 'Quantum Revolution 15.0',
-            'timestamp': datetime.now().isoformat()
+            'timestamp': datetime.now().isoformat(),
+            'uniqueId': hash(unique_context) % 10000
         })
 
     except Exception as e:
