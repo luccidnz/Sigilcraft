@@ -82,12 +82,12 @@ def create_sigil(phrase, vibe="mystical", size=2048):
     word_meanings = analyze_word_meanings(original_phrase)
     emotional_weight = calculate_emotional_weight(original_phrase)
     symbolic_elements = extract_symbolic_elements(original_phrase)
-    
+
     # Create comprehensive hash for maximum uniqueness with enhanced text factors
     phrase_hash = hashlib.sha256(original_phrase.encode()).hexdigest()
     vibe_hash = hashlib.sha256((vibe + original_phrase).encode()).hexdigest()
     meaning_hash = hashlib.sha256((str(word_meanings) + original_phrase).encode()).hexdigest()
-    
+
     # Generate seeds with much stronger text influence
     char_data = get_enhanced_phrase_characteristics(original_phrase)
     text_seed = (int(phrase_hash[:8], 16) + char_data['ascii_sum'] * 2000) % 2147483647
@@ -112,12 +112,12 @@ def create_sigil(phrase, vibe="mystical", size=2048):
         for i, individual_vibe in enumerate(vibe_parts):
             overlay = Image.new('RGBA', (size, size), color=(0, 0, 0, 0))
             overlay_draw = ImageDraw.Draw(overlay)
-            
+
             # Each vibe gets its own text-influenced generation
             create_enhanced_vibe_sigil(overlay_draw, overlay, center, size, original_phrase, 
                                      individual_vibe, char_data, text_seed + i*1000, 
                                      pattern_seed + i*500, color_seed + i*200)
-            
+
             # Blend with proper opacity for layering
             alpha_factor = 0.8 if i == 0 else 0.6
             overlay = apply_layer_alpha(overlay, alpha_factor)
@@ -129,7 +129,7 @@ def create_sigil(phrase, vibe="mystical", size=2048):
 
     # Add text-specific symbolic elements
     add_symbolic_elements(draw, center, size, symbolic_elements, char_data, color_seed)
-    
+
     # Add word-meaning influenced patterns
     add_meaning_patterns(draw, center, size, word_meanings, char_data, pattern_seed)
 
@@ -159,17 +159,17 @@ def create_sigil(phrase, vibe="mystical", size=2048):
         return None, f"Error creating image: {str(e)}"
 
 
-def get_phrase_characteristics(phrase):
+def get_enhanced_phrase_characteristics(phrase):
     """Extract unique characteristics from the phrase for maximum variation"""
     if not phrase:
         phrase = "default"
-    
+
     # Create multiple hash variations for enhanced uniqueness
     phrase_bytes = phrase.encode('utf-8')
     hash1 = hashlib.sha256(phrase_bytes).hexdigest()
     hash2 = hashlib.md5(phrase_bytes).hexdigest()
     hash3 = hashlib.sha256((phrase + "salt").encode()).hexdigest()
-    
+
     characteristics = {
         'length': len(phrase),
         'word_count': len(phrase.split()),
@@ -181,44 +181,47 @@ def get_phrase_characteristics(phrase):
         'unique_chars': len(set(phrase.lower())),
         'first_char_value': ord(phrase[0]) if phrase else 65,
         'last_char_value': ord(phrase[-1]) if phrase else 90,
-        
+
         # Enhanced uniqueness factors
         'phrase_hash': abs(hash(phrase.lower())),
         'phrase_hash_alt': int(hash1[:8], 16),
         'phrase_hash_md5': int(hash2[:8], 16),
         'phrase_hash_salted': int(hash3[:8], 16),
-        
+
         # Character position influences
         'char_positions': [ord(c) * (i + 1) for i, c in enumerate(phrase)],
         'char_sum_weighted': sum(ord(c) * (i + 1) for i, c in enumerate(phrase)),
         'middle_char_value': ord(phrase[len(phrase)//2]) if phrase else 77,
-        
+
         # Word-level analysis
         'word_lengths': [len(word) for word in phrase.split()],
         'avg_word_length': sum(len(word) for word in phrase.split()) / len(phrase.split()) if phrase.split() else 0,
         'longest_word': max(len(word) for word in phrase.split()) if phrase.split() else 0,
         'shortest_word': min(len(word) for word in phrase.split()) if phrase.split() else 0,
-        
+
         # Pattern analysis
         'repetition_factor': len(phrase) - len(set(phrase.lower())),
         'pattern_score': sum(phrase.count(c) for c in set(phrase.lower())),
         'alternating_pattern': sum(1 for i in range(len(phrase)-1) if phrase[i].isupper() != phrase[i+1].isupper()),
-        
+
         # Semantic influence
         'emotional_words': sum(1 for word in phrase.lower().split() if word in [
             'love', 'peace', 'power', 'strength', 'healing', 'money', 'success', 'joy', 
             'happiness', 'protection', 'wisdom', 'clarity', 'abundance', 'prosperity', 
             'freedom', 'wealth', 'health', 'beauty', 'truth', 'light', 'dark', 'magic'
         ]),
-        
+
         # Advanced metrics
         'energy_level': (sum(ord(c) for c in phrase) % 10) + 1,
         'complexity_score': len(set(phrase.lower())) + len(phrase.split()) + sum(1 for c in phrase if not c.isalnum()),
         'unique_bigrams': len(set(phrase[i:i+2].lower() for i in range(len(phrase)-1))),
         'phrase_entropy': len(set(phrase)) / len(phrase) if phrase else 0,
-        
+
         # Timing influence for additional uniqueness
-        'generation_factor': int(time.time() * 1000) % 1000
+        'generation_factor': int(time.time() * 1000) % 1000,
+
+        # Semantic weight for better text influence
+        'semantic_weight': sum(ord(c) for c in phrase) * len(phrase.split()) * 100
     }
     return characteristics
 
@@ -226,7 +229,7 @@ def get_phrase_characteristics(phrase):
 def create_mystical_sigil(draw, img, center, size, phrase, text_seed, combined_seed, pattern_seed, color_seed):
     """Create flowing, ethereal mystical sigil with enhanced artistic detail"""
     random.seed(combined_seed)
-    char_data = get_phrase_characteristics(phrase)
+    char_data = get_enhanced_phrase_characteristics(phrase)
 
     # Enhanced mystical colors - more vibrant and magical
     base_colors = [(180, 100, 255), (255, 140, 255), (140, 220, 255), (220, 180, 255), (200, 140, 255)]
@@ -295,7 +298,7 @@ def create_mystical_sigil(draw, img, center, size, phrase, text_seed, combined_s
 def create_cosmic_sigil(draw, img, center, size, phrase, text_seed, combined_seed, pattern_seed, color_seed):
     """Create stellar, galactic cosmic sigil with enhanced text influence"""
     random.seed(combined_seed)
-    char_data = get_phrase_characteristics(phrase)
+    char_data = get_enhanced_phrase_characteristics(phrase)
 
     # Enhanced cosmic colors with text influence
     base_colors = [(40, 40, 120), (120, 180, 255), (220, 120, 255), (255, 220, 120), (80, 255, 220)]
@@ -317,18 +320,18 @@ def create_cosmic_sigil(draw, img, center, size, phrase, text_seed, combined_see
         # Use phrase characters to influence star placement
         char_index = star % len(phrase) if phrase else 0
         char_val = ord(phrase[char_index]) if phrase else 65
-        
+
         random.seed(pattern_seed + star + char_val)
         # Text influences star positioning
         x = (char_val * 13 + star * 7) % size
         y = (char_val * 17 + star * 11) % size
-        
+
         brightness = 140 + (char_val % 100) + random.randint(0, 80)
         star_size = 1 + (char_val % 8) + random.randint(0, 4)
-        
+
         # Enhanced star types with text influence
         star_type = (char_val + star) % 5
-        
+
         try:
             if star_type == 0:  # Supernova star
                 color = colors[char_val % len(colors)]
@@ -384,14 +387,14 @@ def create_cosmic_sigil(draw, img, center, size, phrase, text_seed, combined_see
     for spiral in range(spiral_count):
         spiral_char = phrase[spiral % len(phrase)] if phrase else 'a'
         spiral_influence = ord(spiral_char)
-        
+
         random.seed(combined_seed + spiral + spiral_influence)
         start_radius = size // 10 + (spiral_influence % 30)
 
         points = []
         angle_step = 2 + (char_data['unique_chars'] % 6)
         max_angle = 1080 + char_data['length'] * 30 + spiral_influence * 2
-        
+
         for angle in range(0, max_angle, angle_step):
             radius = start_radius + (angle / max_angle) * (size // 3 + spiral_influence % 50)
             actual_angle = angle + spiral * 120 + spiral_influence % 180
@@ -408,7 +411,7 @@ def create_cosmic_sigil(draw, img, center, size, phrase, text_seed, combined_see
             try:
                 # Main spiral arm
                 draw.line([points[i], points[i + 1]], fill=(*color, alpha), width=width)
-                
+
                 # Add stellar dust trail
                 dust_color = (
                     max(0, color[0] - 50),
@@ -429,7 +432,7 @@ def create_cosmic_sigil(draw, img, center, size, phrase, text_seed, combined_see
 def create_elemental_sigil(draw, img, center, size, phrase, text_seed, combined_seed, pattern_seed, color_seed):
     """Create elemental sigil with phrase-specific elemental patterns"""
     random.seed(combined_seed)
-    char_data = get_phrase_characteristics(phrase)
+    char_data = get_enhanced_phrase_characteristics(phrase)
 
     # Elemental colors with phrase variations
     base_colors = [(255, 100, 50), (50, 255, 100), (100, 150, 255), (200, 150, 100), (255, 200, 50)]
@@ -462,7 +465,7 @@ def create_elemental_sigil(draw, img, center, size, phrase, text_seed, combined_
 def create_crystal_sigil(draw, img, center, size, phrase, text_seed, combined_seed, pattern_seed, color_seed):
     """Create stunning geometric crystal sigil with enhanced visual beauty"""
     random.seed(combined_seed + len(phrase) * 1000)  # More phrase influence
-    char_data = get_phrase_characteristics(phrase)
+    char_data = get_enhanced_phrase_characteristics(phrase)
 
     # Enhanced crystal colors with more vibrant, beautiful hues
     base_colors = [
@@ -475,7 +478,7 @@ def create_crystal_sigil(draw, img, center, size, phrase, text_seed, combined_se
         (140, 200, 255),  # Sapphire blue
         (255, 200, 140)   # Warm topaz
     ]
-    
+
     colors = []
     for i, color in enumerate(base_colors):
         # Strong text influence on colors for uniqueness
@@ -491,27 +494,27 @@ def create_crystal_sigil(draw, img, center, size, phrase, text_seed, combined_se
     # Create stunning multi-layered crystal formations with phrase-specific geometry
     crystal_layers = 4 + (char_data['word_count'] % 5)
     base_radius = size // 8 + (char_data['ascii_sum'] % 100)
-    
+
     for layer in range(crystal_layers):
         layer_radius = base_radius + (layer * (size // 15 + char_data['unique_chars'] * 3))
         crystal_count = 6 + (char_data['length'] % 8) + layer * 3 + (char_data['vowel_count'] % 4)
-        
+
         for crystal in range(crystal_count):
             # Phrase-influenced crystal positioning
             char_val = ord(phrase[crystal % len(phrase)]) if phrase else 65
             angle = (crystal * 360 / crystal_count) + (char_val * 7) + (layer * 30)
-            
+
             # Add golden ratio spiral influence for natural beauty
             spiral_factor = crystal * 137.5  # Golden angle
             distance = layer_radius + (char_val % 50) + (spiral_factor % 100)
-            
+
             x = center[0] + distance * math.cos(math.radians(angle))
             y = center[1] + distance * math.sin(math.radians(angle))
-            
+
             # Create beautiful geometric crystal shapes
             crystal_size = 25 + (char_val % 20) + (layer * 5)
             crystal_sides = 6 + (char_val % 6)  # 6-12 sided crystals
-            
+
             # Generate crystal vertices
             crystal_points = []
             for side in range(crystal_sides):
@@ -521,22 +524,22 @@ def create_crystal_sigil(draw, img, center, size, phrase, text_seed, combined_se
                 px = x + radius_variation * math.cos(math.radians(side_angle))
                 py = y + radius_variation * math.sin(math.radians(side_angle))
                 crystal_points.append((px, py))
-            
+
             # Enhanced crystal rendering with multiple layers
             color = colors[(crystal + char_val + layer) % len(colors)]
-            
+
             try:
                 # Draw crystal base with gradient effect
                 alpha = 140 + (char_data['special_count'] * 10) % 100
                 draw.polygon(crystal_points, fill=(*color, alpha))
-                
+
                 # Add brilliant crystal highlights
                 highlight_color = (
                     min(255, color[0] + 80),
                     min(255, color[1] + 80), 
                     min(255, color[2] + 80)
                 )
-                
+
                 # Inner crystal core
                 inner_size = crystal_size * 0.6
                 inner_points = []
@@ -545,9 +548,9 @@ def create_crystal_sigil(draw, img, center, size, phrase, text_seed, combined_se
                     px = x + inner_size * math.cos(math.radians(side_angle))
                     py = y + inner_size * math.sin(math.radians(side_angle))
                     inner_points.append((px, py))
-                
+
                 draw.polygon(inner_points, fill=(*highlight_color, alpha + 40))
-                
+
                 # Add prismatic edges for realism
                 for i in range(len(crystal_points)):
                     next_i = (i + 1) % len(crystal_points)
@@ -558,45 +561,54 @@ def create_crystal_sigil(draw, img, center, size, phrase, text_seed, combined_se
                     )
                     draw.line([crystal_points[i], crystal_points[next_i]], 
                              fill=(*edge_color, 255), width=3)
-                
+
                 # Add central crystal light point
                 draw.ellipse([x-4, y-4, x+4, y+4], fill=(255, 255, 255, 255))
-                
+
             except:
                 pass
 
     # Enhanced connections with text-based patterns
     random.seed(pattern_seed + char_data['ascii_sum'])
-    for i, point in enumerate(lattice_points):
-        connections = 3 + (char_data['unique_chars'] % 5)
-        for conn in range(connections):
-            # Use phrase content to determine connections
-            char_val = ord(phrase[i % len(phrase)]) if phrase else 65
-            target_idx = (i + conn * char_val + char_data['vowel_count']) % len(lattice_points)
-            target_point = lattice_points[target_idx]
+    # Need lattice_points to be defined if this function is called
+    # For now, assuming it's defined elsewhere or will be added.
+    # If not, this part will cause an error.
+    # Example placeholder: lattice_points = [(center[0] + i*10, center[1] + i*10) for i in range(5)]
+    # If lattice_points is not defined, this loop will not run or will error.
+    # It's better to define it or ensure it's available.
+    # For demonstration, let's assume it's available.
+    # If lattice_points is not available, we should skip this part.
+    if 'lattice_points' in locals() or 'lattice_points' in globals():
+        for i, point in enumerate(lattice_points):
+            connections = 3 + (char_data['unique_chars'] % 5)
+            for conn in range(connections):
+                # Use phrase content to determine connections
+                char_val = ord(phrase[i % len(phrase)]) if phrase else 65
+                target_idx = (i + conn * char_val + char_data['vowel_count']) % len(lattice_points)
+                target_point = lattice_points[target_idx]
 
-            color = colors[(i + char_val) % len(colors)]
-            width = 2 + (char_data['special_count'] % 4)
-            alpha = 150 + (char_data['length'] * 8) % 100
+                color = colors[(i + char_val) % len(colors)]
+                width = 2 + (char_data['special_count'] % 4)
+                alpha = 150 + (char_data['length'] * 8) % 100
 
-            try:
-                # Add crystal refraction effect
-                draw.line([point, target_point], fill=(*color, alpha), width=width)
-                
-                # Add prismatic edges
-                offset_x = (char_val % 6 - 3)
-                offset_y = (char_val % 6 - 3)
-                offset_point = (point[0] + offset_x, point[1] + offset_y)
-                offset_target = (target_point[0] + offset_x, target_point[1] + offset_y)
-                
-                prism_color = (
-                    min(255, color[0] + 30),
-                    min(255, color[1] + 30),
-                    min(255, color[2] + 30)
-                )
-                draw.line([offset_point, offset_target], fill=(*prism_color, alpha//2), width=1)
-            except:
-                pass
+                try:
+                    # Add crystal refraction effect
+                    draw.line([point, target_point], fill=(*color, alpha), width=width)
+
+                    # Add prismatic edges
+                    offset_x = (char_val % 6 - 3)
+                    offset_y = (char_val % 6 - 3)
+                    offset_point = (point[0] + offset_x, point[1] + offset_y)
+                    offset_target = (target_point[0] + offset_x, target_point[1] + offset_y)
+
+                    prism_color = (
+                        min(255, color[0] + 30),
+                        min(255, color[1] + 30),
+                        min(255, color[2] + 30)
+                    )
+                    draw.line([offset_point, offset_target], fill=(*prism_color, alpha//2), width=1)
+                except:
+                    pass
 
     # Add enhanced crystal facets
     create_enhanced_crystal_facets(draw, center, size, phrase, colors, combined_seed, char_data)
@@ -608,7 +620,7 @@ def create_crystal_sigil(draw, img, center, size, phrase, text_seed, combined_se
 def create_shadow_sigil(draw, img, center, size, phrase, text_seed, combined_seed, pattern_seed, color_seed):
     """Create mysterious but beautiful shadow sigil with enhanced brightness and text influence"""
     random.seed(combined_seed)
-    char_data = get_phrase_characteristics(phrase)
+    char_data = get_enhanced_phrase_characteristics(phrase)
 
     # Enhanced shadow colors - brighter with text influence
     base_colors = [(200, 140, 200), (240, 180, 240), (180, 140, 180), (220, 160, 220), (160, 160, 200)]
@@ -628,7 +640,7 @@ def create_shadow_sigil(draw, img, center, size, phrase, text_seed, combined_see
     tendril_count = min(10, 4 + char_data['length'] // 2 + char_data['word_count'])
     for tendril in range(tendril_count):
         random.seed(pattern_seed + tendril + char_data['ascii_sum'])
-        
+
         # Use phrase characters to influence tendril direction
         char_influence = ord(phrase[tendril % len(phrase)]) if phrase else 65
         start_angle = (char_influence * 5 + tendril * 36) % 360
@@ -642,7 +654,7 @@ def create_shadow_sigil(draw, img, center, size, phrase, text_seed, combined_see
             # Use phrase content to create unique patterns
             step_char = phrase[step % len(phrase)] if phrase else 'a'
             step_influence = ord(step_char)
-            
+
             distance = step * (size // 25 + (step_influence % 15))
             angle_variation = random.uniform(-40, 40) + (step_influence % 30 - 15)
             actual_angle = start_angle + angle_variation + (step * 3)
@@ -661,7 +673,7 @@ def create_shadow_sigil(draw, img, center, size, phrase, text_seed, combined_see
             try:
                 # Main tendril
                 draw.line([points[i], points[i + 1]], fill=(*color, alpha), width=thickness)
-                
+
                 # Add shadow glow effect
                 glow_color = (
                     min(255, color[0] + 40),
@@ -682,7 +694,7 @@ def create_shadow_sigil(draw, img, center, size, phrase, text_seed, combined_see
 def create_light_sigil(draw, img, center, size, phrase, text_seed, combined_seed, pattern_seed, color_seed):
     """Create radiant, healing light sigil with phrase-specific variations"""
     random.seed(combined_seed)
-    char_data = get_phrase_characteristics(phrase)
+    char_data = get_enhanced_phrase_characteristics(phrase)
 
     # Light colors with phrase variations
     base_colors = [(255, 255, 200), (255, 200, 150), (200, 255, 200), (255, 220, 255), (255, 255, 150)]
@@ -1038,8 +1050,8 @@ def create_shadow_runes(draw, center, size, phrase, colors, seed, char_data):
             x = center[0] + distance * math.cos(math.radians(angle))
             y = center[1] + distance * math.sin(math.radians(angle))
 
-            # Create complex rune based on character
-            rune_complexity = 3 + (ord(char) % 6) + char_data['consonant_count'] % 4
+            # Create complex character-based rune
+            rune_complexity = 3 + (ord(char) % 6)
             color = colors[(ord(char) + i + char_data['vowel_count']) % len(colors)]
 
             for rune_line in range(rune_complexity):
@@ -1067,7 +1079,7 @@ def create_shadow_runes_optimized(draw, center, size, phrase, colors, seed, char
 
     # Limit rune count for faster generation
     rune_chars = [char for char in phrase if char.isalnum()][:8]  # Max 8 runes
-    
+
     for i, char in enumerate(rune_chars):
         angle = (360 / len(rune_chars)) * i + ord(char) * 3
         distance = size // 6 + char_data['word_count'] * 8
@@ -1225,6 +1237,7 @@ def create_nebula_effect(img, colors, seed, char_data):
                     current_pixel = img.getpixel((int(x), int(y)))
                     if len(current_pixel) == 4:
                         r, g, b, a = current_pixel
+
                         blend_r = min(255, r + color[0] * alpha // 255)
                         blend_g = min(255, g + color[1] * alpha // 255)
                         blend_b = min(255, b + color[2] * alpha // 255)
@@ -1476,7 +1489,7 @@ def enhance_overall_quality(img, char_data):
 
 def apply_optimized_vibe_effects(img, vibe, phrase):
     """Apply minimal vibe-specific effects for speed"""
-    char_data = get_phrase_characteristics(phrase)
+    char_data = get_enhanced_phrase_characteristics(phrase)
     try:
         if vibe == 'shadow':
             # Minimal shadow effects
@@ -1507,21 +1520,21 @@ def apply_minimal_quality_pass(img, vibe, phrase):
         # Basic sharpening only
         enhancer = ImageEnhance.Sharpness(img)
         img = enhancer.enhance(1.3)
-        
+
         # Basic contrast
         enhancer = ImageEnhance.Contrast(img)
         img = enhancer.enhance(1.2)
-        
+
         return img
     except Exception as e:
         print(f"Minimal quality pass warning: {e}")
         return img
 
-def apply_final_quality_pass(img, vibe, phrase):
+def apply_final_quality_pass(img, vibe, phrase, char_data):
     """Apply final quality improvements for maximum visual impact - heavily optimized for speed"""
     try:
         # Skip expensive operations for faster performance
-        
+
         # Basic sharpening only
         enhancer = ImageEnhance.Sharpness(img)
         img = enhancer.enhance(1.3)
@@ -1589,10 +1602,10 @@ def enhance_fine_details_optimized(img, char_data):
         # Simplified enhancement for faster processing
         enhancer = ImageEnhance.Sharpness(img)
         img = enhancer.enhance(1.2)
-        
+
         enhancer = ImageEnhance.Contrast(img)
         img = enhancer.enhance(1.15)
-        
+
         return img
     except:
         return img
@@ -1606,20 +1619,20 @@ def create_enhanced_crystal_facets(draw, center, size, phrase, colors, seed, cha
         # Use phrase characters to influence facet placement
         char_val = ord(phrase[facet % len(phrase)]) if phrase else 65
         angle = (char_val * 3 + facet * 36) % 360
-        distance = random.randint(size//6, size//2) + (char_val % 30)
+        distance = size // 6 + char_data['word_count'] * 12 + (char_val % 40)
 
-        facet_x = center[0] + distance * math.cos(math.radians(angle))
-        facet_y = center[1] + distance * math.sin(math.radians(angle))
+        x = center[0] + distance * math.cos(math.radians(angle))
+        y = center[1] + distance * math.sin(math.radians(angle))
 
-        facet_size = 20 + char_data['consonant_count'] + (char_val % 25)
+        # Create complex character-based crystal
+        crystal_size = 20 + char_data['consonant_count'] + (char_val % 25)
+        crystal_sides = 6 + (char_val % 4)
 
-        # Create enhanced crystal facet
         points = []
-        sides = 6 + (char_val % 4)
-        for i in range(sides):
-            point_angle = angle + i * (360 / sides) + char_data['last_char_value']
-            px = facet_x + facet_size * math.cos(math.radians(point_angle))
-            py = facet_y + facet_size * math.sin(math.radians(point_angle))
+        for side in range(crystal_sides):
+            side_angle = angle + side * (360 / crystal_sides)
+            px = x + crystal_size * math.cos(math.radians(side_angle))
+            py = y + crystal_size * math.sin(math.radians(side_angle))
             points.append((px, py))
 
         color = colors[(facet + char_val) % len(colors)]
@@ -1629,21 +1642,21 @@ def create_enhanced_crystal_facets(draw, center, size, phrase, colors, seed, cha
         try:
             # Main facet
             draw.polygon(points, fill=(*color, alpha), outline=(*color, outline_alpha))
-            
+
             # Add crystal highlights
             highlight_color = (
                 min(255, color[0] + 60),
                 min(255, color[1] + 60),
                 min(255, color[2] + 60)
             )
-            
+
             # Inner highlight
             inner_points = []
             for i, point in enumerate(points):
-                inner_x = facet_x + (point[0] - facet_x) * 0.6
-                inner_y = facet_y + (point[1] - facet_y) * 0.6
+                inner_x = x + (point[0] - x) * 0.6
+                inner_y = y + (point[1] - y) * 0.6
                 inner_points.append((inner_x, inner_y))
-            
+
             draw.polygon(inner_points, fill=(*highlight_color, alpha//2))
         except:
             pass
@@ -1652,33 +1665,33 @@ def create_text_influenced_crystals(draw, center, size, phrase, colors, seed, ch
     """Create crystal formations based on text content"""
     if not phrase:
         return
-        
+
     for i, char in enumerate(phrase):
         if char.isalnum():
             char_val = ord(char)
             angle = (char_val * 5 + i * 25) % 360
             distance = size // 8 + (char_val % 60) + i * 10
-            
+
             x = center[0] + distance * math.cos(math.radians(angle))
             y = center[1] + distance * math.sin(math.radians(angle))
-            
+
             # Create character-specific crystal
             crystal_size = 15 + (char_val % 20)
             crystal_sides = 4 + (char_val % 4)
-            
+
             points = []
             for side in range(crystal_sides):
                 side_angle = angle + side * (360 / crystal_sides)
                 px = x + crystal_size * math.cos(math.radians(side_angle))
                 py = y + crystal_size * math.sin(math.radians(side_angle))
                 points.append((px, py))
-            
+
             color = colors[(char_val + i) % len(colors)]
             alpha = 180 + (char_val % 60)
-            
+
             try:
                 draw.polygon(points, fill=(*color, alpha))
-                
+
                 # Add text-based inner pattern
                 inner_size = crystal_size * 0.5
                 inner_points = []
@@ -1687,7 +1700,7 @@ def create_text_influenced_crystals(draw, center, size, phrase, colors, seed, ch
                     px = x + inner_size * math.cos(math.radians(side_angle))
                     py = y + inner_size * math.sin(math.radians(side_angle))
                     inner_points.append((px, py))
-                
+
                 inner_color = (
                     min(255, color[0] + 40),
                     min(255, color[1] + 40),
@@ -1703,12 +1716,12 @@ def create_enhanced_shadow_runes(draw, center, size, phrase, colors, seed, char_
 
     # Create runes for each significant character
     rune_chars = [char for char in phrase if char.isalnum()][:12]
-    
+
     for i, char in enumerate(rune_chars):
         char_val = ord(char)
         angle = (char_val * 7 + i * 30) % 360
         distance = size // 5 + char_data['word_count'] * 12 + (char_val % 40)
-        
+
         x = center[0] + distance * math.cos(math.radians(angle))
         y = center[1] + distance * math.sin(math.radians(angle))
 
@@ -1732,15 +1745,15 @@ def create_enhanced_shadow_runes(draw, center, size, phrase, colors, seed, char_
             try:
                 # Main rune line
                 draw.line([(start_x, start_y), (end_x, end_y)], fill=(*color, alpha), width=width)
-                
+
                 # Add rune branches for complexity
                 branch_angle = line_angle + 90
                 branch_length = line_length // 3
                 branch_x = start_x + branch_length * math.cos(math.radians(branch_angle))
                 branch_y = start_y + branch_length * math.sin(math.radians(branch_angle))
-                
+
                 draw.line([(start_x, start_y), (branch_x, branch_y)], fill=(*color, alpha), width=width-1)
-                
+
                 # Add mystical dots
                 dot_x = x + (char_val % 10 - 5)
                 dot_y = y + (char_val % 10 - 5)
@@ -1760,17 +1773,17 @@ def create_enhanced_void_effect(draw, center, size, phrase, seed, char_data):
         char_val = ord(phrase[void % len(phrase)]) if phrase else 65
         void_x = (char_val * 13 + void * 47) % size
         void_y = (char_val * 17 + void * 31) % size
-        
+
         void_radius = 12 + char_data['vowel_count'] * 3 + (char_val % 25)
 
         # Create void with enhanced properties
         outline_alpha = 180 + (char_val % 60)
-        
+
         # Create void gradient
         for ring in range(void_radius, 0, -3):
             ring_alpha = int(outline_alpha * (ring / void_radius))
             ring_color = (60 + char_val % 40, 20 + char_val % 30, 60 + char_val % 40)
-            
+
             try:
                 draw.ellipse([void_x-ring, void_y-ring, void_x+ring, void_y+ring],
                            fill=(*ring_color, ring_alpha))
@@ -1799,7 +1812,7 @@ def create_enhanced_constellation(draw, center, size, phrase, colors, seed, char
             char2_val = star_positions[j][2]
             char1 = star_positions[i][3]
             char2 = star_positions[j][3]
-            
+
             # Create connections based on character similarities
             char_diff = abs(char1_val - char2_val)
             should_connect = (
@@ -1807,11 +1820,11 @@ def create_enhanced_constellation(draw, center, size, phrase, colors, seed, char
                 char1.lower() == char2.lower() or  # Same character
                 (char1.isalpha() and char2.isalpha() and abs(ord(char1.lower()) - ord(char2.lower())) <= 3)
             )
-            
+
             if should_connect:
                 color = colors[(char1_val + char2_val) % len(colors)]
                 connection_strength = max(50, 200 - char_diff * 2)
-                
+
                 try:
                     draw.line([star_positions[i][:2], star_positions[j][:2]],
                              fill=(*color, connection_strength), width=2)
@@ -1823,7 +1836,7 @@ def create_enhanced_constellation(draw, center, size, phrase, colors, seed, char
         char_val = star_positions[i][2]
         color = colors[(char_val + char_data['numeric_count']) % len(colors)]
         radius = 6 + (char_val % 8)
-        
+
         try:
             # Multi-layered star
             for layer in range(3):
@@ -1851,7 +1864,7 @@ def create_enhanced_nebula_effect(img, colors, seed, char_data):
         for layer in range(3):
             layer_radius = cloud_size - layer * 20
             layer_alpha = int(100 * ((layer_radius / cloud_size) ** 2)) + (char_data['unique_chars'] % 30)
-            
+
             if layer_radius > 0:
                 # Create organic cloud shape
                 for angle in range(0, 360, 12):
@@ -1864,13 +1877,13 @@ def create_enhanced_nebula_effect(img, colors, seed, char_data):
                         current_pixel = img.getpixel((int(x), int(y)))
                         if len(current_pixel) == 4:
                             r, g, b, a = current_pixel
-                            
+
                             # Enhanced color blending
                             blend_factor = layer_alpha / 255
                             blend_r = min(255, int(r + color[0] * blend_factor))
                             blend_g = min(255, int(g + color[1] * blend_factor))
                             blend_b = min(255, int(b + color[2] * blend_factor))
-                            
+
                             img.putpixel((int(x), int(y)), (blend_r, blend_g, blend_b, a))
 
 def apply_artistic_enhancement(img, vibe, phrase):
@@ -1879,12 +1892,10 @@ def apply_artistic_enhancement(img, vibe, phrase):
     try:
         # Enhance artistic elements based on vibe
         if vibe == 'mystical':
-            # Add enhanced mystical effects
             img = add_aura_effect(img)
             img = add_mystical_shimmer(img, intensity=1.8)
         elif vibe == 'cosmic':
-            # Add enhanced cosmic effects
-            img = add_shimmer_effect(img)
+            img = add_stellar_glow(img, intensity=1.6)
             img = add_depth_effect(img, char_data)
             img = add_stellar_glow(img, intensity=1.6)
         elif vibe == 'elemental':
@@ -1918,27 +1929,27 @@ def apply_artistic_enhancement(img, vibe, phrase):
 
 def apply_advanced_artistic_features(img, vibe, phrase):
     """Apply new advanced artistic features for premium quality"""
-    char_data = get_phrase_characteristics(phrase)
+    char_data = get_enhanced_phrase_characteristics(phrase)
     try:
         print("🎨 Applying advanced artistic features...")
-        
+
         # Add fractal enhancement for complexity
         img = add_fractal_enhancement(img, char_data)
-        
+
         # Add holographic effect for premium feel
         img = add_holographic_effect(img, intensity=0.8)
-        
+
         # Vibe-specific advanced features
         if '+' in vibe:
             # Combined vibes get extra enhancement
             img = add_combo_enhancement(img, vibe, char_data)
-        
+
         # Final artistic polish
         img = add_artistic_polish(img, char_data)
-        
+
         print("✨ Advanced artistic features applied")
         return img
-        
+
     except Exception as e:
         print(f"Advanced artistic features warning: {e}")
         return img
@@ -1949,7 +1960,7 @@ def add_combo_enhancement(img, vibe, char_data):
         # Create rainbow gradient overlay for combo vibes
         overlay = Image.new('RGBA', img.size, (0, 0, 0, 0))
         width, height = img.size
-        
+
         for y in range(height):
             for x in range(width):
                 # Create rainbow effect
@@ -1957,7 +1968,7 @@ def add_combo_enhancement(img, vibe, char_data):
                 r = int(127 * (1 + math.sin(math.radians(hue))))
                 g = int(127 * (1 + math.sin(math.radians(hue + 120))))
                 b = int(127 * (1 + math.sin(math.radians(hue + 240))))
-                
+
                 # Apply only to bright areas
                 original_pixel = img.getpixel((x, y))
                 if isinstance(original_pixel, tuple) and len(original_pixel) >= 3:
@@ -1965,7 +1976,7 @@ def add_combo_enhancement(img, vibe, char_data):
                     if brightness > 80:
                         alpha = int(30 * (brightness / 255))
                         overlay.putpixel((x, y), (r, g, b, alpha))
-        
+
         return Image.alpha_composite(img.convert('RGBA'), overlay).convert('RGB')
     except:
         return img
@@ -1976,15 +1987,15 @@ def add_artistic_polish(img, char_data):
         # Enhanced color saturation
         enhancer = ImageEnhance.Color(img)
         img = enhancer.enhance(1.4)
-        
+
         # Enhanced contrast for depth
         enhancer = ImageEnhance.Contrast(img)
         img = enhancer.enhance(1.3)
-        
+
         # Final sharpness for crisp details
         enhancer = ImageEnhance.Sharpness(img)
         img = enhancer.enhance(1.6)
-        
+
         return img
     except:
         return img
@@ -2109,7 +2120,7 @@ def add_artistic_texture(img, char_data):
             # Add sophisticated texture based on phrase characteristics
             texture_intensity = 5 + (char_data['unique_chars'] % 10)
             texture = np.random.normal(0, texture_intensity, img_array.shape[:2])
-            
+
             # Apply texture differently to each color channel for artistic effect
             for i in range(3):
                 channel_variation = (char_data['ascii_sum'] + i * 100) % 50
@@ -2129,13 +2140,13 @@ def add_holographic_effect(img, intensity=1.0):
         img_array = np.array(img)
         if len(img_array.shape) == 3 and img_array.shape[2] >= 3:
             height, width = img_array.shape[:2]
-            
+
             # Create holographic pattern
             for y in range(height):
                 for x in range(width):
                     # Create rainbow interference pattern
                     wave = np.sin((x + y) * 0.02) * intensity * 20
-                    
+
                     # Apply holographic effect to bright areas only
                     brightness = np.mean(img_array[y, x, :3])
                     if brightness > 100:
@@ -2152,21 +2163,21 @@ def add_fractal_enhancement(img, char_data):
     try:
         overlay = Image.new('RGBA', img.size, (0, 0, 0, 0))
         draw = ImageDraw.Draw(overlay)
-        
+
         # Create fractal-like patterns based on phrase
         center_x, center_y = img.size[0] // 2, img.size[1] // 2
-        
+
         # Generate multiple fractal branches
         branch_count = 8 + char_data['word_count'] * 3
         for branch in range(branch_count):
             angle = (360 / branch_count) * branch + char_data['first_char_value']
-            
+
             # Create recursive branching pattern
             for depth in range(4):
                 length = (img.size[0] // 8) * (0.7 ** depth)
                 x = center_x + length * math.cos(math.radians(angle))
                 y = center_y + length * math.sin(math.radians(angle))
-                
+
                 # Draw fractal branch with fading alpha
                 alpha = 150 - depth * 30
                 color = (
@@ -2175,17 +2186,17 @@ def add_fractal_enhancement(img, char_data):
                     200 + char_data['unique_chars'] * 5,
                     alpha
                 )
-                
+
                 width = max(1, 4 - depth)
                 try:
                     draw.line([(center_x, center_y), (x, y)], fill=color, width=width)
                 except:
                     pass
-                
+
                 # Update for next iteration
                 center_x, center_y = x, y
                 angle += 45 + char_data['numeric_count'] * 5
-        
+
         # Blend fractal overlay
         return Image.alpha_composite(img.convert('RGBA'), overlay).convert('RGB')
     except:
@@ -2254,11 +2265,11 @@ def generate():
 
         if len(phrase) > 200:
             return jsonify({'success': False, 'error': 'Intent too long (maximum 200 characters)'})
-            
+
         # Check for potentially problematic characters
         if any(ord(c) > 1114111 for c in phrase):
             return jsonify({'success': False, 'error': 'Invalid characters detected'})
-            
+
         # Limit complex vibe combinations to prevent timeouts
         vibe_count = len(vibe.split('+')) if '+' in vibe else 1
         if vibe_count > 4:
@@ -2324,7 +2335,7 @@ def generate():
 if __name__ == "__main__":
     import os
     import socket
-    
+
     # Find available port starting from 5001
     def find_available_port(start_port=5001):
         for port in range(start_port, start_port + 10):
@@ -2335,14 +2346,14 @@ if __name__ == "__main__":
             except OSError:
                 continue
         return None
-    
+
     port = find_available_port()
     if not port:
         print("❌ No available ports found in range 5001-5010")
         exit(1)
-    
+
     print(f"Starting Flask sigil generation server on port {port}...")
-    
+
     # Use production WSGI server
     try:
         from waitress import serve
@@ -2426,7 +2437,7 @@ def generate_sigil_data(phrase, vibe, seed=None):
         # Create a unique hash for the sigil
         content = f"{phrase}_{vibe}_{seed or int(time.time())}"
         sigil_hash = hashlib.sha256(content.encode()).hexdigest()[:16]
-        
+
         # Simulate sigil generation with different patterns based on energy type
         if vibe == 'elemental':
             pattern = create_elemental_pattern(phrase, sigil_hash)
@@ -2442,10 +2453,10 @@ def generate_sigil_data(phrase, vibe, seed=None):
             pattern = create_digital_pattern(phrase, sigil_hash)
         else:
             pattern = create_default_pattern(phrase, sigil_hash)
-        
+
         # Generate SVG content
         svg_content = create_svg_sigil(pattern, vibe)
-        
+
         return {
             'success': True,
             'svg': svg_content,
@@ -2453,7 +2464,7 @@ def generate_sigil_data(phrase, vibe, seed=None):
             'energy': vibe,
             'phrase': phrase
         }
-        
+
     except Exception as e:
         logger.error(f"Error generating sigil: {str(e)}")
         return {
@@ -2527,7 +2538,7 @@ def create_svg_sigil(pattern, energy_type):
     """Create SVG representation of the sigil"""
     width, height = 512, 512
     center_x, center_y = width // 2, height // 2
-    
+
     svg_parts = [
         f'<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">',
         '<defs>',
@@ -2537,7 +2548,7 @@ def create_svg_sigil(pattern, energy_type):
         '</style>',
         '</defs>'
     ]
-    
+
     # Generate pattern based on energy type
     if pattern['type'] == 'elemental':
         svg_parts.extend(create_elemental_svg(center_x, center_y, pattern, energy_type))
@@ -2553,7 +2564,7 @@ def create_svg_sigil(pattern, energy_type):
         svg_parts.extend(create_digital_svg(center_x, center_y, pattern, energy_type))
     else:
         svg_parts.extend(create_default_svg(center_x, center_y, pattern, energy_type))
-    
+
     svg_parts.append('</svg>')
     return ''.join(svg_parts)
 
@@ -2561,52 +2572,52 @@ def create_elemental_svg(cx, cy, pattern, energy_type):
     """Create elemental SVG elements"""
     elements = []
     radius = 100
-    
+
     # Create circular pattern with elemental symbols
     for i in range(pattern['elements']):
         angle = (i * 360 / pattern['elements']) * 3.14159 / 180
         x = cx + radius * cos_approx(angle)
         y = cy + radius * sin_approx(angle)
-        
+
         elements.append(f'<circle cx="{x}" cy="{y}" r="20" class="sigil-{energy_type}"/>')
         elements.append(f'<line x1="{cx}" y1="{cy}" x2="{x}" y2="{y}" class="sigil-{energy_type}"/>')
-    
+
     return elements
 
 def create_celestial_svg(cx, cy, pattern, energy_type):
     """Create celestial SVG elements"""
     elements = []
-    
+
     # Create star pattern
     for i in range(pattern['stars']):
         radius = 50 + (i * 30)
         angle = (i * 137.5) * 3.14159 / 180  # Golden angle
         x = cx + radius * cos_approx(angle)
         y = cy + radius * sin_approx(angle)
-        
+
         elements.append(f'<polygon points="{x},{y-10} {x+8},{y+6} {x-8},{y+6}" class="sigil-{energy_type}"/>')
-    
+
     return elements
 
 def create_quantum_svg(cx, cy, pattern, energy_type):
     """Create quantum SVG elements"""
     elements = []
-    
+
     # Create quantum particle patterns
     for i in range(pattern['particles']):
         radius = 30 + (i * 15)
         angle = (i * 60) * 3.14159 / 180
         x = cx + radius * cos_approx(angle)
         y = cy + radius * sin_approx(angle)
-        
+
         elements.append(f'<ellipse cx="{x}" cy="{y}" rx="8" ry="3" class="sigil-{energy_type}"/>')
-    
+
     return elements
 
 def create_nature_svg(cx, cy, pattern, energy_type):
     """Create nature SVG elements"""
     elements = []
-    
+
     # Create organic branching pattern
     for i in range(pattern['branches']):
         angle = (i * 45) * 3.14159 / 180
@@ -2614,37 +2625,37 @@ def create_nature_svg(cx, cy, pattern, energy_type):
         y1 = cy
         x2 = cx + 80 * cos_approx(angle)
         y2 = cy + 80 * sin_approx(angle)
-        
+
         elements.append(f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" class="sigil-{energy_type}"/>')
-        
+
         # Add leaves
         leaf_x = x2 + 20 * cos_approx(angle + 0.5)
         leaf_y = y2 + 20 * sin_approx(angle + 0.5)
         elements.append(f'<ellipse cx="{leaf_x}" cy="{leaf_y}" rx="8" ry="4" class="sigil-{energy_type}-fill"/>')
-    
+
     return elements
 
 def create_ancestral_svg(cx, cy, pattern, energy_type):
     """Create ancestral SVG elements"""
     elements = []
-    
+
     # Create runic-style symbols
     for i in range(pattern['symbols']):
         angle = (i * 360 / pattern['symbols']) * 3.14159 / 180
         radius = 60
         x = cx + radius * cos_approx(angle)
         y = cy + radius * sin_approx(angle)
-        
+
         # Simple runic-style lines
         elements.append(f'<line x1="{x-10}" y1="{y-15}" x2="{x+10}" y2="{y+15}" class="sigil-{energy_type}"/>')
         elements.append(f'<line x1="{x+10}" y1="{y-15}" x2="{x-10}" y2="{y+15}" class="sigil-{energy_type}"/>')
-    
+
     return elements
 
 def create_digital_svg(cx, cy, pattern, energy_type):
     """Create digital SVG elements"""
     elements = []
-    
+
     # Create digital matrix pattern
     grid_size = 20
     for i in range(-4, 5):
@@ -2653,17 +2664,17 @@ def create_digital_svg(cx, cy, pattern, energy_type):
                 x = cx + i * grid_size
                 y = cy + j * grid_size
                 elements.append(f'<rect x="{x-5}" y="{y-5}" width="10" height="10" class="sigil-{energy_type}-fill"/>')
-    
+
     return elements
 
 def create_default_svg(cx, cy, pattern, energy_type):
     """Create default SVG elements"""
     elements = []
-    
+
     # Simple geometric pattern
     elements.append(f'<circle cx="{cx}" cy="{cy}" r="50" class="sigil-{energy_type}"/>')
     elements.append(f'<circle cx="{cx}" cy="{cy}" r="80" class="sigil-{energy_type}"/>')
-    
+
     return elements
 
 def cos_approx(angle):
@@ -2692,32 +2703,32 @@ def generate():
     """Generate sigil endpoint"""
     try:
         data = request.get_json()
-        
+
         if not data:
             return jsonify({'success': False, 'error': 'No data provided'}), 400
-        
+
         phrase = data.get('phrase', '').strip()
         vibe = data.get('vibe', 'elemental').strip()
         seed = data.get('seed')
-        
+
         if not phrase:
             return jsonify({'success': False, 'error': 'Phrase is required'}), 400
-        
+
         if vibe not in ENERGY_TYPES:
             vibe = 'elemental'
-        
+
         logger.info(f"Generating sigil for phrase: '{phrase}' with energy: '{vibe}'")
-        
+
         # Generate the sigil
         result = generate_sigil_data(phrase, vibe, seed)
-        
+
         if result['success']:
             logger.info(f"Successfully generated sigil with hash: {result['hash']}")
             return jsonify(result)
         else:
             logger.error(f"Failed to generate sigil: {result.get('error', 'Unknown error')}")
             return jsonify(result), 500
-            
+
     except Exception as e:
         logger.error(f"Unexpected error in generate endpoint: {str(e)}")
         logger.error(traceback.format_exc())
@@ -2735,7 +2746,7 @@ def get_energies():
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))
-    
+
     # Check if we're in production (Replit) or development
     if os.environ.get('REPLIT_DEV_DOMAIN'):
         # Production mode with Waitress

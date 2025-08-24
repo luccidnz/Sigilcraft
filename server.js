@@ -169,39 +169,9 @@ async function tryEmailKey(to, key) {
 
 // ======== ALL API ROUTES MUST BE DEFINED BEFORE STATIC FILES ========
 
-// -------- API Request Logging Middleware
-app.use('/api', (req, res, next) => {
-  console.log(`🔌 [API] ${req.method} ${req.url} from ${req.ip}`);
-  res.setHeader('Content-Type', 'application/json');
-  res.setHeader('Cache-Control', 'no-cache');
-  next();
-});
-
-// -------- Checkout session route (frontend calls this)
-app.post("/api/create-checkout-session", async (req, res) => {
-  try {
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      line_items: [{ price: process.env.PRICE_ID, quantity: 1 }],
-      success_url: `${req.protocol}://${req.get("host")}/?purchase=success`,
-      cancel_url: `${req.protocol}://${req.get("host")}/?purchase=cancel`,
-      customer_creation: "if_required",
-      allow_promotion_codes: true
-    });
-    res.status(200).json({ url: session.url });
-  } catch (err) {
-    console.error("Stripe session error:", err);
-    res.status(500).json({ error: "checkout_session_failed" });
-  }
-});
-
-// -------- Pro check & verify
+// -------- Pro check & verify (MUST BE BEFORE MIDDLEWARE)
 app.get("/api/is-pro", (req, res) => {
   try {
-    // Ensure proper JSON response headers
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Cache-Control', 'no-cache');
-    
     console.log("🔍 === PRO STATUS CHECK STARTED ===");
     console.log("🔍 Request URL:", req.url);
     console.log("🔍 All cookies:", req.cookies);
@@ -210,20 +180,15 @@ app.get("/api/is-pro", (req, res) => {
     console.log("🔍 Pro status check result:", pro);
     console.log("🔍 === PRO STATUS CHECK COMPLETE ===");
     
-    return res.status(200).json({ pro });
+    res.json({ pro });
   } catch (error) {
     console.error("❌ Pro status check error:", error);
-    console.log("❌ === PRO STATUS CHECK ERROR ===");
-    return res.status(500).json({ pro: false, error: "Server error" });
+    res.status(500).json({ pro: false, error: "Server error" });
   }
 });
 
 app.post("/api/verify-pro", (req, res) => {
   try {
-    // Ensure proper JSON response headers
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Cache-Control', 'no-cache');
-    
     console.log("🔑 === PRO KEY VERIFICATION STARTED ===");
     console.log("🔑 Request URL:", req.url);
     console.log("🔑 Request method:", req.method);
@@ -254,16 +219,41 @@ app.post("/api/verify-pro", (req, res) => {
       const idx = list.findIndex(x => x.key === key);
       if (idx >= 0) { list[idx].used = true; saveKeys(list); }
       console.log("✅ === PRO KEY VERIFICATION SUCCESS ===");
-      return res.status(200).json({ ok: true });
+      return res.json({ ok: true });
     }
     
     console.log("❌ Pro key verification failed");
     console.log("❌ === PRO KEY VERIFICATION FAILED ===");
-    return res.status(200).json({ ok: false, error: "Invalid key" });
+    return res.json({ ok: false, error: "Invalid key" });
   } catch (error) {
     console.error("❌ Pro key verification error:", error);
-    console.log("❌ === PRO KEY VERIFICATION ERROR ===");
     return res.status(500).json({ ok: false, error: "Server error" });
+  }
+});
+
+// -------- API Request Logging Middleware (AFTER CRITICAL ROUTES)
+app.use('/api', (req, res, next) => {
+  console.log(`🔌 [API] ${req.method} ${req.url} from ${req.ip}`);
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Cache-Control', 'no-cache');
+  next();
+});
+
+// -------- Checkout session route (frontend calls this)
+app.post("/api/create-checkout-session", async (req, res) => {
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      line_items: [{ price: process.env.PRICE_ID, quantity: 1 }],
+      success_url: `${req.protocol}://${req.get("host")}/?purchase=success`,
+      cancel_url: `${req.protocol}://${req.get("host")}/?purchase=cancel`,
+      customer_creation: "if_required",
+      allow_promotion_codes: true
+    });
+    res.status(200).json({ url: session.url });
+  } catch (err) {
+    console.error("Stripe session error:", err);
+    res.status(500).json({ error: "checkout_session_failed" });
   }
 });
 
