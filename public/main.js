@@ -89,10 +89,12 @@ async function generateSigil() {
 }
 
 async function makeGenerationRequest(phrase, vibe) {
+  console.log(`🌟 Sending request: phrase="${phrase}", vibe="${vibe}"`);
+  
   const response = await fetch('/api/generate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ phrase, vibe }),
+    body: JSON.stringify({ phrase: phrase.trim(), vibe: vibe || 'mystical' }),
     signal: AbortSignal.timeout(45000)
   });
 
@@ -101,7 +103,9 @@ async function makeGenerationRequest(phrase, vibe) {
     throw new Error(`Server error: ${errorText}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  console.log('✅ Generation response received');
+  return data;
 }
 
 // ===== ENHANCED UI MANAGEMENT =====
@@ -202,13 +206,21 @@ function renderEnergies() {
   elements.energyContainer.innerHTML = availableEnergies.map(energy => `
     <div class="energy-option ${state.selectedEnergies.includes(energy) ? 'selected' : ''}" 
          data-energy="${energy}" 
-         data-vibe="${energy}"
-         onclick="toggleEnergy('${energy}')">
+         data-vibe="${energy}">
       <div class="energy-icon">${getEnergyIcon(energy)}</div>
       <span class="energy-name">${energy.charAt(0).toUpperCase() + energy.slice(1)}</span>
       ${!FREE_ENERGIES.includes(energy) && !state.isPro ? '<span class="pro-badge">PRO</span>' : ''}
     </div>
   `).join('');
+
+  // Add click event listeners after rendering
+  const energyOptions = elements.energyContainer.querySelectorAll('.energy-option');
+  energyOptions.forEach(option => {
+    option.addEventListener('click', () => {
+      const energy = option.dataset.energy;
+      toggleEnergy(energy);
+    });
+  });
 }
 
 function getEnergyIcon(energy) {
@@ -480,7 +492,7 @@ async function checkProStatus() {
         headers: { 'x-pro-key': proKey }
       });
 
-      if (response.ok) {
+      if (response.ok && response.headers.get('content-type')?.includes('application/json')) {
         const data = await response.json();
         serverPro = data.isPro || false;
       }
@@ -490,7 +502,7 @@ async function checkProStatus() {
     updateUI();
 
   } catch (error) {
-    console.error('Error checking pro status:', error);
+    console.log('Pro status check failed, using local storage');
     state.isPro = localStorage.getItem('sigil_pro') === '1';
     updateUI();
   }
