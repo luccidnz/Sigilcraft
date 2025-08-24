@@ -856,6 +856,201 @@ body {
     padding: 3rem;
 }
 
+/* ===== GENERATE SECTION ===== */
+.generate-section {
+    text-align: center;
+    margin: 3rem 0;
+}
+
+.generate-btn {
+    padding: 2rem 4rem;
+    font-size: 1.3rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--sacred-primary), var(--sacred-secondary));
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 32px rgba(138, 43, 226, 0.3);
+}
+
+.generate-btn:hover:not(:disabled) {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(138, 43, 226, 0.5);
+}
+
+.generate-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.loading-indicator {
+    margin: 2rem 0;
+    display: flex;
+    justify-content: center;
+}
+
+/* ===== RESULT SECTION ===== */
+.result-section {
+    text-align: center;
+    margin: 3rem 0;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 20px;
+    border: 1px solid var(--sacred-primary);
+}
+
+.result-section h3 {
+    color: var(--sacred-primary);
+    margin-bottom: 2rem;
+    font-size: 1.8rem;
+}
+
+.sigil-canvas {
+    max-width: 500px;
+    margin: 0 auto 2rem;
+    padding: 2rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    border: 2px solid var(--accent-gold);
+}
+
+.download-btn {
+    padding: 1rem 2rem;
+    background: var(--accent-gold);
+    color: var(--bg-primary);
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.download-btn:hover {
+    background: #FFD700;
+    transform: translateY(-2px);
+}
+
+/* ===== GALLERY SECTION ===== */
+.gallery-section {
+    margin: 3rem 0;
+}
+
+.gallery-section h3 {
+    text-align: center;
+    color: var(--sacred-primary);
+    margin-bottom: 2rem;
+    font-size: 1.8rem;
+}
+
+.sigil-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.gallery-item {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--sacred-primary);
+    border-radius: 15px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.gallery-item:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent-gold);
+    box-shadow: 0 10px 25px rgba(138, 43, 226, 0.3);
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+
+.gallery-info {
+    text-align: center;
+}
+
+.gallery-phrase {
+    display: block;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.gallery-vibe {
+    display: block;
+    color: var(--accent-gold);
+    font-size: 0.8rem;
+    text-transform: capitalize;
+}
+
+/* ===== MODAL STYLES ===== */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+.modal-content {
+    background: var(--bg-primary);
+    margin: 15% auto;
+    padding: 2rem;
+    border: 2px solid var(--sacred-primary);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+}
+
+.modal-content h3 {
+    color: var(--sacred-primary);
+    margin-bottom: 1rem;
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 1rem;
+    margin: 1rem 0;
+    border: 1px solid var(--sacred-primary);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.modal-content button {
+    margin: 0.5rem;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* ===== TOAST ANIMATIONS ===== */
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+}
+
 .cosmic-mandala {
     position: relative;
     width: 150px;
