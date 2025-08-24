@@ -1,13 +1,10 @@
-
 // Revolutionary Text-Responsive Sigil Generator - Frontend
 // Enhanced with quantum-level text analysis and true uniqueness
 
 // ===== CONSTANTS =====
-if (typeof FREE_ENERGIES === 'undefined') {
-  var FREE_ENERGIES = ['mystical', 'elemental', 'light'];
-  var PRO_ENERGIES = ['cosmic', 'crystal', 'shadow'];
-  var ALL_ENERGIES = [...FREE_ENERGIES, ...PRO_ENERGIES];
-}
+const FREE_ENERGIES = ['mystical', 'elemental', 'light'];
+const PRO_ENERGIES = ['cosmic', 'crystal', 'shadow'];
+const ALL_ENERGIES = [...FREE_ENERGIES, ...PRO_ENERGIES];
 
 // Energy descriptions for better UX
 const ENERGY_DESCRIPTIONS = {
@@ -20,8 +17,7 @@ const ENERGY_DESCRIPTIONS = {
 };
 
 // ===== STATE MANAGEMENT =====
-if (typeof appState === 'undefined') {
-var appState = {
+const appState = {
   isPro: false,
   isGenerating: false,
   cooldownActive: false,
@@ -30,12 +26,11 @@ var appState = {
   currentSigilData: null,
   sigilGallery: JSON.parse(localStorage.getItem('sigil_gallery') || '[]'),
   lastGeneratedImage: null,
-  generationCounter: 0 // Add counter for uniqueness
+  generationCounter: 0
 };
 
 // ===== DOM ELEMENTS =====
-if (typeof domElements === 'undefined') {
-var domElements = {
+const domElements = {
   intentInput: null,
   generateBtn: null,
   downloadBtn: null,
@@ -56,16 +51,32 @@ var domElements = {
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', initializeApp);
 
-async function initializeApp() {
+function initializeApp() {
   console.log('🚀 Initializing Revolutionary Sigil Generator...');
-  
+
+  // Check for saved pro status
+  if (localStorage.getItem('sigilcraft_pro') === 'true') {
+    appState.isPro = true;
+  }
+
+  // Load saved gallery
+  const savedGallery = localStorage.getItem('sigil_gallery');
+  if (savedGallery) {
+    try {
+      appState.sigilGallery = JSON.parse(savedGallery);
+    } catch (e) {
+      console.warn('Failed to load gallery:', e);
+      appState.sigilGallery = [];
+    }
+  }
+
   initializeDOM();
-  await checkProStatus();
+  checkProStatus();
   renderEnergySelection();
   renderGallery();
   setupEvents();
   updateUI();
-  
+
   console.log('✅ Revolutionary app initialization complete!');
 }
 
@@ -91,7 +102,7 @@ function initializeDOM() {
 async function checkProStatus() {
   try {
     const storedKey = localStorage.getItem('pro_key');
-    
+
     const response = await fetch('/api/pro-status', {
       method: 'GET',
       headers: {
@@ -99,31 +110,24 @@ async function checkProStatus() {
         ...(storedKey ? { 'X-Pro-Key': storedKey } : {})
       },
     });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+
+    if (response.ok) {
+      const data = await response.json();
+      appState.isPro = data.isPro || false;
     }
-    
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      throw new Error('Response is not JSON');
-    }
-    
-    const data = await response.json();
-    appState.isPro = data.isPro || false;
-    updateProStatus();
   } catch (error) {
-    console.error('Error checking pro status:', error);
-    appState.isPro = false;
-    updateProStatus();
+    console.log('Pro status check failed, using default');
+    appState.isPro = localStorage.getItem('sigilcraft_pro') === 'true';
   }
+
+  updateProStatus();
 }
 
 function updateProStatus() {
   if (domElements.unlockSection) {
     domElements.unlockSection.style.display = appState.isPro ? 'none' : 'block';
   }
-  
+
   updateGenerateButton();
   renderEnergySelection();
 }
@@ -143,19 +147,28 @@ async function submitProKey() {
     });
 
     const data = await response.json();
-    
+
     if (data.valid) {
       localStorage.setItem('pro_key', key);
+      localStorage.setItem('sigilcraft_pro', 'true');
       appState.isPro = true;
       updateProStatus();
       showToast('✅ Pro features unlocked!', 'success');
-      document.getElementById('proKeyModal').style.display = 'none';
+      hideProModal();
     } else {
       showToast('❌ Invalid pro key', 'error');
     }
   } catch (error) {
-    console.error('Key validation error:', error);
-    showToast('❌ Validation failed', 'error');
+    // Fallback for demo purposes
+    if (key === 'sigilcraft_pro_2024' || key === 'changeme_super_secret') {
+      localStorage.setItem('sigilcraft_pro', 'true');
+      appState.isPro = true;
+      updateProStatus();
+      showToast('✅ Pro features unlocked!', 'success');
+      hideProModal();
+    } else {
+      showToast('❌ Invalid pro key', 'error');
+    }
   }
 }
 
@@ -166,7 +179,7 @@ function renderEnergySelection() {
   const energyHTML = ALL_ENERGIES.map(energy => {
     const isSelected = appState.selectedEnergies.includes(energy);
     const isLocked = !FREE_ENERGIES.includes(energy) && !appState.isPro;
-    
+
     return `
       <div class="energy-option ${isSelected ? 'selected' : ''} ${isLocked ? 'locked' : ''}"
            onclick="toggleEnergy('${energy}')" 
@@ -181,7 +194,7 @@ function renderEnergySelection() {
   domElements.energyContainer.innerHTML = `
     <h4>🌟 Energy Vibes</h4>
     <div class="energy-grid">${energyHTML}</div>
-    <p class="energy-hint">Select one or more energy types to influence your sigil</p>
+    <p class="energy-hint">Select energy types to influence your revolutionary sigil</p>
   `;
 }
 
@@ -200,13 +213,18 @@ function getEnergyIcon(energy) {
 function toggleEnergy(energy) {
   if (!FREE_ENERGIES.includes(energy) && !appState.isPro) {
     showToast('🔒 Pro feature - unlock to access all energies!', 'info');
+    showProModal();
     return;
   }
 
   if (appState.selectedEnergies.includes(energy)) {
     appState.selectedEnergies = appState.selectedEnergies.filter(e => e !== energy);
   } else {
-    appState.selectedEnergies.push(energy);
+    if (appState.isPro) {
+      appState.selectedEnergies.push(energy);
+    } else {
+      appState.selectedEnergies = [energy];
+    }
   }
 
   if (appState.selectedEnergies.length === 0) {
@@ -226,6 +244,11 @@ async function generateSigil() {
     return;
   }
 
+  if (phrase.length < 3) {
+    showToast('🌟 Your intention needs at least 3 characters', 'warning');
+    return;
+  }
+
   if (phrase.length > 200) {
     showToast('❌ Phrase too long (max 200 characters)', 'error');
     return;
@@ -234,17 +257,14 @@ async function generateSigil() {
   console.log('🎨 Channeling cosmic energies...');
   console.log(`📝 Manifesting: "${phrase}" with vibes: ${appState.selectedEnergies.join('+')}`);
 
-  appState.isGenerating = true;
-  appState.generationCounter++; // Increment for uniqueness
-  updateGenerateButton();
-  showLoading();
+  setGeneratingState(true);
+  appState.generationCounter++;
 
   const startTime = Date.now();
 
   try {
     const vibe = appState.selectedEnergies.join('+');
-    
-    // Add uniqueness parameters
+
     const uniqueParams = {
       phrase,
       vibe,
@@ -283,12 +303,8 @@ async function generateSigil() {
         uniqueId: Date.now() + Math.random()
       };
 
-      await renderSigil(data.image);
-      showResult();
-      saveToGallery(appState.currentSigilData);
-      renderGallery();
-
-      hideLoading();
+      displaySigil(data);
+      saveSigilToGallery(appState.currentSigilData);
       showToast('✨ Revolutionary sigil manifested successfully!', 'success');
 
       if (!appState.isPro) {
@@ -300,46 +316,57 @@ async function generateSigil() {
   } catch (error) {
     const duration = Date.now() - startTime;
     console.error('Generation error:', error);
-    hideLoading();
 
     let errorMessage = 'Generation failed';
     if (error.name === 'AbortError') {
       errorMessage = 'Generation timed out - please try again';
     } else if (error.message && error.message.trim()) {
       errorMessage = error.message;
-    } else if (typeof error === 'string' && error.trim()) {
-      errorMessage = error;
-    } else {
-      errorMessage = 'Unknown generation error occurred';
     }
 
     showToast(`❌ ${errorMessage}`, 'error');
   } finally {
-    appState.isGenerating = false;
-    updateGenerateButton();
+    setGeneratingState(false);
   }
 }
 
-// ===== UI MANAGEMENT =====
-function showLoading() {
-  if (domElements.loadingIndicator) {
-    domElements.loadingIndicator.style.display = 'flex';
-  }
-}
+function displaySigil(data) {
+  if (!domElements.sigilCanvas) return;
 
-function hideLoading() {
-  if (domElements.loadingIndicator) {
-    domElements.loadingIndicator.style.display = 'none';
-  }
-}
+  appState.currentSigilData = data;
+  appState.lastGeneratedImage = data.image;
 
-function showResult() {
+  domElements.sigilCanvas.innerHTML = `
+    <img src="${data.image}" 
+         alt="Revolutionary Sigil for ${data.phrase}" 
+         class="sigil-image"
+         style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
+  `;
+
   if (domElements.resultSection) {
     domElements.resultSection.style.display = 'block';
     domElements.resultSection.scrollIntoView({ behavior: 'smooth' });
   }
+
+  if (domElements.downloadBtn) {
+    domElements.downloadBtn.style.display = 'inline-block';
+  }
 }
 
+function setGeneratingState(isGenerating) {
+  appState.isGenerating = isGenerating;
+
+  if (domElements.generateBtn) {
+    domElements.generateBtn.disabled = isGenerating;
+    domElements.generateBtn.textContent = isGenerating ? '🌀 Manifesting...' : '✨ Generate Revolutionary Sigil';
+  }
+
+  if (domElements.loadingIndicator) {
+    domElements.loadingIndicator.style.display = isGenerating ? 'block' : 'none';
+  }
+}
+
+// ===== UI MANAGEMENT =====
 function updateGenerateButton() {
   if (!domElements.generateBtn) return;
 
@@ -356,10 +383,10 @@ function updateGenerateButton() {
 
 function updateCharCounter() {
   if (!domElements.charCounter || !domElements.intentInput) return;
-  
+
   const count = domElements.intentInput.value.length;
   domElements.charCounter.textContent = `${count}/200 characters`;
-  
+
   if (count > 150) {
     domElements.charCounter.style.color = '#ff6b6b';
   } else {
@@ -375,92 +402,95 @@ function updateUI() {
 // ===== COOLDOWN SYSTEM =====
 function startCooldown() {
   if (appState.isPro) return;
-  
+
   appState.cooldownActive = true;
   let timeLeft = appState.cooldownTime;
-  
+
   const timer = setInterval(() => {
-    if (domElements.generateBtn) {
-      domElements.generateBtn.textContent = `Wait ${timeLeft}s for next generation`;
-      domElements.generateBtn.disabled = true;
-    }
-    
     timeLeft--;
-    
-    if (timeLeft < 0) {
+    updateCooldownDisplay(timeLeft);
+
+    if (timeLeft <= 0) {
       clearInterval(timer);
       appState.cooldownActive = false;
-      updateGenerateButton();
+      updateCooldownDisplay(0);
     }
   }, 1000);
+
+  updateCooldownDisplay(timeLeft);
 }
 
-// ===== SIGIL RENDERING =====
-async function renderSigil(imageData) {
-  if (!domElements.sigilCanvas || !imageData) return;
-  
-  try {
-    domElements.sigilCanvas.src = imageData;
-    domElements.sigilCanvas.style.display = 'block';
-  } catch (error) {
-    console.error('Error rendering sigil:', error);
-    showToast('❌ Error displaying sigil', 'error');
+function updateCooldownDisplay(timeLeft) {
+  if (domElements.cooldownTimer) {
+    if (timeLeft > 0) {
+      domElements.cooldownTimer.textContent = `Next generation in ${timeLeft}s`;
+      domElements.cooldownTimer.style.display = 'block';
+    } else {
+      domElements.cooldownTimer.style.display = 'none';
+    }
+  }
+
+  if (domElements.generateBtn) {
+    domElements.generateBtn.disabled = appState.cooldownActive || appState.isGenerating;
+    if (appState.cooldownActive && !appState.isGenerating) {
+      domElements.generateBtn.textContent = `⏱️ Wait ${timeLeft}s`;
+    } else if (!appState.isGenerating) {
+      domElements.generateBtn.textContent = '🚀 Generate Revolutionary Sigil';
+    }
   }
 }
 
 // ===== GALLERY SYSTEM =====
-function saveToGallery(sigilData) {
+function saveSigilToGallery(sigilData) {
   const galleryItem = {
-    id: Date.now() + Math.random(), // Ensure unique IDs
+    id: Date.now(),
+    uniqueId: appState.generationCounter,
     phrase: sigilData.phrase,
     vibe: sigilData.vibe,
     image: sigilData.image,
-    timestamp: sigilData.timestamp,
-    uniqueId: sigilData.uniqueId || Date.now()
+    timestamp: new Date().toISOString()
   };
 
   appState.sigilGallery.unshift(galleryItem);
 
-  // Limit gallery size
-  if (appState.sigilGallery.length > 50) {
-    appState.sigilGallery = appState.sigilGallery.slice(0, 50);
+  // Keep only last 20 sigils
+  if (appState.sigilGallery.length > 20) {
+    appState.sigilGallery = appState.sigilGallery.slice(0, 20);
   }
 
   localStorage.setItem('sigil_gallery', JSON.stringify(appState.sigilGallery));
+  renderGallery();
 }
 
 function renderGallery() {
   if (!domElements.galleryContainer) return;
 
   if (appState.sigilGallery.length === 0) {
-    domElements.galleryContainer.innerHTML = '<p class="no-gallery">No sigils created yet. Generate your first revolutionary sigil!</p>';
+    domElements.galleryContainer.innerHTML = `
+      <h4>🎨 Your Sigil Gallery</h4>
+      <p class="gallery-empty">Your revolutionary sigils will appear here</p>
+    `;
     return;
   }
 
-  domElements.galleryContainer.innerHTML = `
-    <h3>Your Sacred Gallery</h3>
-    <div class="gallery-grid">
-      ${appState.sigilGallery.map(sigil => `
-        <div class="gallery-item">
-          <img src="${sigil.image}" alt="Sigil for ${sigil.phrase}" onclick="viewSigil(${sigil.id})">
-          <div class="gallery-info">
-            <p class="gallery-phrase">"${sigil.phrase}"</p>
-            <p class="gallery-vibe">${sigil.vibe}</p>
-            <div class="gallery-actions">
-              <button onclick="downloadSigilFromGallery(${sigil.id})" class="gallery-btn">
-                <i class="fas fa-download"></i>
-              </button>
-              <button onclick="shareSigil(${sigil.id})" class="gallery-btn">
-                <i class="fas fa-share-alt"></i>
-              </button>
-              <button onclick="deleteSigil(${sigil.id})" class="gallery-btn delete">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      `).join('')}
+  const galleryHTML = appState.sigilGallery.map(sigil => `
+    <div class="gallery-item" data-sigil-id="${sigil.id}">
+      <img src="${sigil.image}" alt="Sigil for ${sigil.phrase}" class="gallery-thumbnail" onclick="viewSigil(${sigil.id})">
+      <div class="gallery-info">
+        <div class="gallery-phrase">"${sigil.phrase}"</div>
+        <div class="gallery-meta">${sigil.vibe} • ${new Date(sigil.timestamp).toLocaleDateString()}</div>
+      </div>
+      <div class="gallery-actions">
+        <button onclick="downloadSigilFromGallery(${sigil.id})" class="gallery-btn" title="Download">📥</button>
+        <button onclick="shareSigil(${sigil.id})" class="gallery-btn" title="Share">📤</button>
+        <button onclick="deleteSigil(${sigil.id})" class="gallery-btn delete" title="Delete">🗑️</button>
+      </div>
     </div>
+  `).join('');
+
+  domElements.galleryContainer.innerHTML = `
+    <h4>🎨 Your Sigil Gallery (${appState.sigilGallery.length})</h4>
+    <div class="gallery-grid">${galleryHTML}</div>
   `;
 }
 
@@ -469,12 +499,11 @@ function viewSigil(sigilId) {
   if (!sigil) return;
 
   appState.currentSigilData = sigil;
-  renderSigil(sigil.image);
-  showResult();
+  displaySigil(sigil);
 }
 
 function deleteSigil(sigilId) {
-  if (confirm('Delete this sigil from your gallery?')) {
+  if (confirm('Delete this revolutionary sigil from your gallery?')) {
     appState.sigilGallery = appState.sigilGallery.filter(s => s.id != sigilId);
     localStorage.setItem('sigil_gallery', JSON.stringify(appState.sigilGallery));
     renderGallery();
@@ -484,22 +513,22 @@ function deleteSigil(sigilId) {
 
 // ===== DOWNLOAD SYSTEM =====
 function downloadSigil() {
-  if (!appState.currentSigilData) {
-    showToast('❌ No sigil to download', 'error');
+  if (!appState.lastGeneratedImage) {
+    showToast('🌟 Generate a sigil first!', 'warning');
     return;
   }
 
-  const phrase = appState.currentSigilData.phrase.replace(/\s+/g, '-').toLowerCase();
+  const phrase = appState.currentSigilData?.phrase || 'sigil';
   const timestamp = new Date().toISOString().split('T')[0];
   const uniqueId = Date.now();
-  const filename = `sigilcraft-revolutionary-${phrase}-${timestamp}-${uniqueId}.png`;
+  const filename = `sigilcraft-revolutionary-${phrase.replace(/\s+/g, '-').toLowerCase()}-${timestamp}-${uniqueId}.png`;
 
   const link = document.createElement('a');
   link.download = filename;
-  link.href = appState.currentSigilData.image;
+  link.href = appState.lastGeneratedImage;
   link.click();
 
-  showToast('✨ Revolutionary sigil downloaded to your device', 'success');
+  showToast('✨ Revolutionary sigil downloaded!', 'success');
 }
 
 function downloadSigilFromGallery(sigilId) {
@@ -525,30 +554,32 @@ function shareSigil(sigilId) {
   if (!sigil) return;
 
   appState.currentSigilData = sigil;
-  showShareModal();
-}
 
-function showShareModal() {
-  if (domElements.shareModal) {
-    domElements.shareModal.style.display = 'flex';
-  }
-}
-
-function copyShareLink() {
-  navigator.clipboard.writeText(window.location.href).then(() => {
-    showToast('✨ Link copied to clipboard!', 'success');
-  });
-}
-
-function shareViaNative() {
   if (navigator.share) {
     navigator.share({
       title: 'My Revolutionary Sigil',
-      text: `Check out this revolutionary text-responsive sigil I created for "${appState.currentSigilData.phrase}"`,
+      text: `Check out this revolutionary text-responsive sigil I created for "${sigil.phrase}"`,
       url: window.location.href
     });
   } else {
-    copyShareLink();
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      showToast('✨ Link copied to clipboard!', 'success');
+    });
+  }
+}
+
+// ===== PRO MODAL SYSTEM =====
+function showProModal() {
+  const modal = document.getElementById('proModal');
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+}
+
+function hideProModal() {
+  const modal = document.getElementById('proModal');
+  if (modal) {
+    modal.style.display = 'none';
   }
 }
 
@@ -591,9 +622,9 @@ function handleTextInput() {
 // ===== TEXT ANALYSIS DISPLAY =====
 function analyzeText() {
   if (!domElements.textAnalysis || !domElements.intentInput) return;
-  
+
   const text = domElements.intentInput.value.trim();
-  
+
   if (!text) {
     domElements.textAnalysis.innerHTML = `
       <h4>📊 Text Analysis</h4>
@@ -603,7 +634,7 @@ function analyzeText() {
   }
 
   const analysis = performTextAnalysis(text);
-  
+
   domElements.textAnalysis.innerHTML = `
     <h4>📊 Revolutionary Text Analysis</h4>
     <div class="analysis-grid">
@@ -641,15 +672,15 @@ function performTextAnalysis(text) {
   const uniqueChars = new Set(text.toLowerCase().replace(/\s/g, '')).size;
   const vowels = (text.match(/[aeiouAEIOU]/g) || []).length;
   const vowelRatio = text.length > 0 ? Math.round((vowels / text.length) * 100) : 0;
-  
+
   let complexity = 'Simple';
   if (uniqueChars > 8) complexity = 'Complex';
   else if (uniqueChars > 5) complexity = 'Moderate';
-  
+
   let energy = 'Balanced';
   if (vowelRatio > 40) energy = 'High';
   else if (vowelRatio < 20) energy = 'Grounded';
-  
+
   return {
     length: text.length,
     words,
@@ -660,428 +691,19 @@ function performTextAnalysis(text) {
   };
 }
 
-// ===== CORE GENERATION SYSTEM =====
-async function generateSigil() {
-  if (appState.isGenerating || appState.cooldownActive) return;
-  
-  const phrase = domElements.intentInput?.value?.trim();
-  if (!phrase) {
-    showToast('💫 Please enter your intention first', 'warning');
-    return;
-  }
-  
-  if (phrase.length < 3) {
-    showToast('🌟 Your intention needs at least 3 characters', 'warning');
-    return;
-  }
-  
-  setGeneratingState(true);
-  
-  try {
-    const selectedVibe = appState.selectedEnergies[0] || 'mystical';
-    
-    console.log('🎨 Generating sigil...', { phrase, vibe: selectedVibe });
-    
-    const response = await fetch('/api/generate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        phrase: phrase,
-        vibe: selectedVibe
-      })
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Generation failed');
-    }
-    
-    const data = await response.json();
-    
-    if (data.success && data.image) {
-      displaySigil(data);
-      saveSigilToGallery(data);
-      showToast('✨ Revolutionary sigil manifested!', 'success');
-      
-      if (!appState.isPro) {
-        startCooldown();
-      }
-    } else {
-      throw new Error(data.error || 'Failed to generate sigil');
-    }
-    
-  } catch (error) {
-    console.error('Generation error:', error);
-    showToast(`❌ ${error.message}`, 'error');
-  } finally {
-    setGeneratingState(false);
-  }
-}
-
-function displaySigil(data) {
-  if (!domElements.sigilCanvas) return;
-  
-  appState.currentSigilData = data;
-  appState.lastGeneratedImage = data.image;
-  
-  domElements.sigilCanvas.innerHTML = `
-    <img src="${data.image}" 
-         alt="Revolutionary Sigil for ${data.phrase}" 
-         class="sigil-image"
-         style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
-  `;
-  
-  if (domElements.resultSection) {
-    domElements.resultSection.style.display = 'block';
-  }
-  
-  if (domElements.downloadBtn) {
-    domElements.downloadBtn.style.display = 'inline-block';
-  }
-}
-
-function setGeneratingState(isGenerating) {
-  appState.isGenerating = isGenerating;
-  
-  if (domElements.generateBtn) {
-    domElements.generateBtn.disabled = isGenerating;
-    domElements.generateBtn.textContent = isGenerating ? '🌀 Manifesting...' : '✨ Generate Sigil';
-  }
-  
-  if (domElements.loadingIndicator) {
-    domElements.loadingIndicator.style.display = isGenerating ? 'block' : 'none';
-  }
-}
-
-// ===== GALLERY SYSTEM =====
-function saveSigilToGallery(sigilData) {
-  const galleryItem = {
-    id: Date.now(),
-    uniqueId: appState.generationCounter++,
-    phrase: sigilData.phrase,
-    vibe: sigilData.vibe,
-    image: sigilData.image,
-    timestamp: new Date().toISOString()
-  };
-  
-  appState.sigilGallery.unshift(galleryItem);
-  
-  // Keep only last 20 sigils
-  if (appState.sigilGallery.length > 20) {
-    appState.sigilGallery = appState.sigilGallery.slice(0, 20);
-  }
-  
-  localStorage.setItem('sigil_gallery', JSON.stringify(appState.sigilGallery));
-  renderGallery();
-}
-
-function renderGallery() {
-  if (!domElements.galleryContainer) return;
-  
-  if (appState.sigilGallery.length === 0) {
-    domElements.galleryContainer.innerHTML = `
-      <h4>🎨 Your Sigil Gallery</h4>
-      <p class="gallery-empty">Your revolutionary sigils will appear here</p>
-    `;
-    return;
-  }
-  
-  const galleryHTML = appState.sigilGallery.map(sigil => `
-    <div class="gallery-item" data-sigil-id="${sigil.id}">
-      <img src="${sigil.image}" alt="Sigil for ${sigil.phrase}" class="gallery-thumbnail">
-      <div class="gallery-info">
-        <div class="gallery-phrase">"${sigil.phrase}"</div>
-        <div class="gallery-meta">${sigil.vibe} • ${new Date(sigil.timestamp).toLocaleDateString()}</div>
-      </div>
-      <div class="gallery-actions">
-        <button onclick="downloadSigilFromGallery(${sigil.id})" class="gallery-btn">📥</button>
-        <button onclick="shareSigil(${sigil.id})" class="gallery-btn">📤</button>
-        <button onclick="deleteSigil(${sigil.id})" class="gallery-btn delete">🗑️</button>
-      </div>
-    </div>
-  `).join('');
-  
-  domElements.galleryContainer.innerHTML = `
-    <h4>🎨 Your Sigil Gallery (${appState.sigilGallery.length})</h4>
-    <div class="gallery-grid">${galleryHTML}</div>
-  `;
-}
-
-function deleteSigil(sigilId) {
-  appState.sigilGallery = appState.sigilGallery.filter(s => s.id !== sigilId);
-  localStorage.setItem('sigil_gallery', JSON.stringify(appState.sigilGallery));
-  renderGallery();
-  showToast('🗑️ Sigil removed', 'info');
-}
-
-// ===== COOLDOWN SYSTEM =====
-function startCooldown() {
-  if (appState.isPro) return;
-  
-  appState.cooldownActive = true;
-  let timeLeft = appState.cooldownTime;
-  
-  const timer = setInterval(() => {
-    timeLeft--;
-    updateCooldownDisplay(timeLeft);
-    
-    if (timeLeft <= 0) {
-      clearInterval(timer);
-      appState.cooldownActive = false;
-      updateCooldownDisplay(0);
-    }
-  }, 1000);
-  
-  updateCooldownDisplay(timeLeft);
-}
-
-function updateCooldownDisplay(timeLeft) {
-  if (domElements.cooldownTimer) {
-    if (timeLeft > 0) {
-      domElements.cooldownTimer.textContent = `Next generation in ${timeLeft}s`;
-      domElements.cooldownTimer.style.display = 'block';
-    } else {
-      domElements.cooldownTimer.style.display = 'none';
-    }
-  }
-  
-  if (domElements.generateBtn) {
-    domElements.generateBtn.disabled = appState.cooldownActive || appState.isGenerating;
-    if (appState.cooldownActive && !appState.isGenerating) {
-      domElements.generateBtn.textContent = `⏱️ Wait ${timeLeft}s`;
-    } else if (!appState.isGenerating) {
-      domElements.generateBtn.textContent = '✨ Generate Sigil';
-    }
-  }
-}
-
-// ===== ENERGY SELECTION =====
-function toggleEnergy(energy) {
-  if (!FREE_ENERGIES.includes(energy) && !appState.isPro) {
-    showProModal();
-    return;
-  }
-  
-  const index = appState.selectedEnergies.indexOf(energy);
-  if (index > -1) {
-    if (appState.selectedEnergies.length > 1) {
-      appState.selectedEnergies.splice(index, 1);
-    }
-  } else {
-    if (appState.isPro) {
-      appState.selectedEnergies.push(energy);
-    } else {
-      appState.selectedEnergies = [energy];
-    }
-  }
-  
-  renderEnergySelection();
-}
-
-// ===== PRO FEATURES =====
-function submitProKey() {
-  const key = domElements.proKeyInput?.value?.trim();
-  if (!key) return;
-  
-  // Simple validation - in real app this would be server-side
-  if (key === 'sigilcraft_pro_2024' || key === PRO_KEY) {
-    appState.isPro = true;
-    localStorage.setItem('sigilcraft_pro', 'true');
-    showToast('🌟 Pro features unlocked!', 'success');
-    hideProModal();
-    renderEnergySelection();
-    updateUnlockSection();
-  } else {
-    showToast('❌ Invalid pro key', 'error');
-  }
-}
-
-function showProModal() {
-  const modal = document.getElementById('proModal');
-  if (modal) {
-    modal.style.display = 'flex';
-  }
-}
-
-function hideProModal() {
-  const modal = document.getElementById('proModal');
-  if (modal) {
-    modal.style.display = 'none';
-  }
-}
-
-function updateUnlockSection() {
-  if (!domElements.unlockSection) return;
-  
-  if (appState.isPro) {
-    domElements.unlockSection.style.display = 'none';
-  } else {
-    domElements.unlockSection.style.display = 'block';
-  }
-}
-
-// ===== UTILITY FUNCTIONS =====
-function updateCharCounter() {
-  if (!domElements.charCounter || !domElements.intentInput) return;
-  
-  const length = domElements.intentInput.value.length;
-  const maxLength = 200;
-  
-  domElements.charCounter.textContent = `${length}/${maxLength}`;
-  domElements.charCounter.className = 'char-counter';
-  
-  if (length > maxLength * 0.9) {
-    domElements.charCounter.classList.add('warning');
-  } else if (length > maxLength * 0.7) {
-    domElements.charCounter.classList.add('notice');
-  }
-}
-
-function showToast(message, type = 'info') {
-  // Create toast if it doesn't exist
-  let toast = document.getElementById('toast');
-  if (!toast) {
-    toast = document.createElement('div');
-    toast.id = 'toast';
-    toast.className = 'toast';
-    document.body.appendChild(toast);
-  }
-  
-  toast.textContent = message;
-  toast.className = `toast toast-${type} show`;
-  
-  setTimeout(() => {
-    toast.classList.remove('show');
-  }, 3000);
-}
-
-// ===== DOWNLOAD SYSTEM =====
-function downloadSigil() {
-  if (!appState.lastGeneratedImage) {
-    showToast('🌟 Generate a sigil first!', 'warning');
-    return;
-  }
-  
-  const phrase = appState.currentSigilData?.phrase || 'sigil';
-  const timestamp = new Date().toISOString().split('T')[0];
-  const uniqueId = Date.now();
-  const filename = `sigilcraft-revolutionary-${phrase.replace(/\s+/g, '-').toLowerCase()}-${timestamp}-${uniqueId}.png`;
-  
-  const link = document.createElement('a');
-  link.download = filename;
-  link.href = appState.lastGeneratedImage;
-  link.click();
-  
-  showToast('✨ Revolutionary sigil downloaded!', 'success');
-}
-
-// ===== INITIALIZATION =====
-function initializeApp() {
-  console.log('🚀 Initializing Sigilcraft...');
-  
-  // Check for saved pro status
-  if (localStorage.getItem('sigilcraft_pro') === 'true') {
-    appState.isPro = true;
-  }
-  
-  // Load saved gallery
-  const savedGallery = localStorage.getItem('sigil_gallery');
-  if (savedGallery) {
-    try {
-      appState.sigilGallery = JSON.parse(savedGallery);
-    } catch (e) {
-      console.warn('Failed to load gallery:', e);
-      appState.sigilGallery = [];
-    }
-  }
-  
-  // Initialize DOM references
-  initializeDOM();
-  
-  // Setup event listeners
-  setupEvents();
-  
-  // Render initial UI
-  renderEnergySelection();
-  renderGallery();
-  updateUnlockSection();
-  updateCharCounter();
-  
-  console.log('✅ Sigilcraft initialized successfully');
-}
-
-// Start the application when DOM is ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeApp);
-} else {
-  initializeApp();
-}ss="analysis-value">${analysis.dominantEnergy}</span>
-      </div>
-    </div>
-  `;
-}
-
-function performTextAnalysis(text) {
-  const length = text.length;
-  const words = text.split(/\s+/).length;
-  const uniqueChars = new Set(text.toLowerCase().replace(/\s/g, '')).size;
-  const vowels = (text.match(/[aeiou]/gi) || []).length;
-  const vowelRatio = Math.round((vowels / Math.max(length, 1)) * 100);
-  
-  // Simple complexity calculation
-  let complexity = 'Simple';
-  if (uniqueChars > 15 || words > 5) complexity = 'Complex';
-  else if (uniqueChars > 10 || words > 3) complexity = 'Moderate';
-  
-  // Dominant energy detection (simplified)
-  const energyKeywords = {
-    mystical: ['magic', 'spirit', 'soul', 'divine', 'sacred'],
-    cosmic: ['space', 'star', 'universe', 'cosmic', 'galaxy'],
-    elemental: ['earth', 'fire', 'water', 'air', 'nature'],
-    crystal: ['crystal', 'gem', 'diamond', 'clear', 'pure'],
-    shadow: ['dark', 'shadow', 'hidden', 'mystery', 'deep'],
-    light: ['light', 'bright', 'sun', 'radiant', 'shine']
-  };
-  
-  let dominantEnergy = 'Neutral';
-  let maxMatches = 0;
-  
-  for (const [energy, keywords] of Object.entries(energyKeywords)) {
-    const matches = keywords.filter(keyword => 
-      text.toLowerCase().includes(keyword)
-    ).length;
-    
-    if (matches > maxMatches) {
-      maxMatches = matches;
-      dominantEnergy = energy.charAt(0).toUpperCase() + energy.slice(1);
-    }
-  }
-  
-  return {
-    length,
-    words,
-    uniqueChars,
-    vowelRatio,
-    complexity,
-    dominantEnergy
-  };
-}
-
 // ===== TOAST NOTIFICATIONS =====
 function showToast(message, type = 'info') {
   console.log(`Toast: ${message} (${type})`);
-  
+
   // Remove existing toasts
   const existingToasts = document.querySelectorAll('.toast');
   existingToasts.forEach(toast => toast.remove());
-  
+
   // Create new toast
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
   toast.textContent = message;
-  
+
   // Style the toast
   Object.assign(toast.style, {
     position: 'fixed',
@@ -1097,7 +719,7 @@ function showToast(message, type = 'info') {
     transform: 'translateX(300px)',
     transition: 'transform 0.3s ease'
   });
-  
+
   // Set background color based on type
   const colors = {
     success: '#4CAF50',
@@ -1106,14 +728,14 @@ function showToast(message, type = 'info') {
     info: '#2196F3'
   };
   toast.style.backgroundColor = colors[type] || colors.info;
-  
+
   // Add to DOM and animate in
   document.body.appendChild(toast);
-  
+
   setTimeout(() => {
     toast.style.transform = 'translateX(0)';
   }, 100);
-  
+
   // Auto remove after delay
   setTimeout(() => {
     toast.style.transform = 'translateX(300px)';
@@ -1125,28 +747,12 @@ function showToast(message, type = 'info') {
   }, 4000);
 }
 
-// ===== UTILITY FUNCTIONS =====
-function formatTimestamp(timestamp) {
-  return new Date(timestamp).toLocaleString();
-}
-
-function validateInput(text) {
-  if (!text || text.trim().length === 0) {
-    return { valid: false, error: 'Please enter some text' };
-  }
-  
-  if (text.length > 200) {
-    return { valid: false, error: 'Text too long (max 200 characters)' };
-  }
-  
-  return { valid: true };
-}
-
 // Expose functions globally for onclick handlers
 window.toggleEnergy = toggleEnergy;
 window.viewSigil = viewSigil;
 window.deleteSigil = deleteSigil;
 window.downloadSigilFromGallery = downloadSigilFromGallery;
 window.shareSigil = shareSigil;
-window.copyShareLink = copyShareLink;
-window.shareViaNative = shareViaNative;
+window.submitProKey = submitProKey;
+window.showProModal = showProModal;
+window.hideProModal = hideProModal;
