@@ -1,4 +1,3 @@
-
 // ===== SIGILCRAFT - QUANTUM SIGIL GENERATOR PRO =====
 
 // Configuration
@@ -47,7 +46,7 @@ async function generateSigil() {
   }
 
   const vibe = state.selectedEnergies.join('+');
-  
+
   try {
     state.isGenerating = true;
     updateUI();
@@ -57,7 +56,7 @@ async function generateSigil() {
     console.log(`📝 Manifesting: "${phrase}" with vibes: ${vibe}`);
 
     const result = await makeGenerationRequest(phrase, vibe);
-    
+
     if (result?.success && result?.image) {
       state.lastGeneratedImage = result.image;
       state.currentSigilData = {
@@ -68,12 +67,12 @@ async function generateSigil() {
         timestamp: new Date().toISOString(),
         energy: state.selectedEnergies
       };
-      
+
       await renderSigil(result.image);
       addToGallery(state.currentSigilData);
       showResult();
       showToast('✨ Sigil manifested successfully!', 'success');
-      
+
       if (!state.isPro) startCooldown();
     } else {
       throw new Error(result?.error || 'Generation failed');
@@ -116,7 +115,7 @@ function updateUI() {
 
 function updateGenerateButton() {
   if (!elements.generateBtn) return;
-  
+
   if (state.isGenerating) {
     elements.generateBtn.disabled = true;
     elements.generateBtn.innerHTML = '<div class="btn-mandala"></div><span>Channeling Energies...</span>';
@@ -142,13 +141,13 @@ function updateCharCounter() {
 
 function startCooldown() {
   if (state.isPro) return;
-  
+
   state.cooldownActive = true;
   let remaining = COOLDOWN_TIME;
 
   const interval = setInterval(() => {
     remaining -= 1000;
-    
+
     if (elements.generateBtn) {
       elements.generateBtn.innerHTML = `<div class="btn-mandala"></div><span>Recharging... ${Math.ceil(remaining/1000)}s</span>`;
     }
@@ -164,7 +163,7 @@ function startCooldown() {
 // ===== SPIRITUAL LOADING SYSTEM =====
 function showSpiritualLoading() {
   if (!elements.loading) return;
-  
+
   elements.loading.innerHTML = `
     <div class="spiritual-loading">
       <div class="cosmic-mandala">
@@ -184,7 +183,7 @@ function showSpiritualLoading() {
       </div>
     </div>
   `;
-  
+
   elements.loading.style.display = 'flex';
 }
 
@@ -199,7 +198,7 @@ function renderEnergies() {
   if (!elements.energyContainer) return;
 
   const availableEnergies = state.isPro ? ALL_ENERGIES : FREE_ENERGIES;
-  
+
   elements.energyContainer.innerHTML = availableEnergies.map(energy => `
     <div class="energy-option ${state.selectedEnergies.includes(energy) ? 'selected' : ''}" 
          data-energy="${energy}" 
@@ -241,7 +240,7 @@ function toggleEnergy(energy) {
       state.selectedEnergies.push(energy);
     }
   }
-  
+
   renderEnergies();
 }
 
@@ -330,7 +329,7 @@ function downloadSigil() {
   link.download = filename;
   link.href = state.lastGeneratedImage;
   link.click();
-  
+
   showToast('✨ Sigil downloaded to your device', 'success');
 }
 
@@ -345,7 +344,7 @@ function downloadSigilFromGallery(sigilId) {
     link.download = filename;
     link.href = sigil.image;
     link.click();
-    
+
     showToast('✨ Sigil downloaded', 'success');
   }
 }
@@ -445,14 +444,14 @@ async function renderSigil(imageData) {
     const img = new Image();
     img.onload = () => {
       ctx.clearRect(0, 0, elements.canvas.width, elements.canvas.height);
-      
+
       const scale = Math.min(
         elements.canvas.width / img.width, 
         elements.canvas.height / img.height
       );
       const x = (elements.canvas.width - img.width * scale) / 2;
       const y = (elements.canvas.height - img.height * scale) / 2;
-      
+
       ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
       resolve();
     };
@@ -474,13 +473,13 @@ async function checkProStatus() {
   try {
     const localPro = localStorage.getItem('sigil_pro') === '1';
     const proKey = localStorage.getItem('sigil_pro_key');
-    
+
     let serverPro = false;
     if (proKey) {
       const response = await fetch('/api/pro-status', {
         headers: { 'x-pro-key': proKey }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         serverPro = data.isPro || false;
@@ -516,7 +515,7 @@ async function validateProKey(key) {
     });
 
     const data = await response.json();
-    
+
     if (data.success && data.valid) {
       localStorage.setItem('sigil_pro', '1');
       localStorage.setItem('sigil_pro_key', key);
@@ -545,10 +544,10 @@ function showToast(message, type = 'info') {
       <span>${message}</span>
     </div>
   `;
-  
+
   document.body.appendChild(toast);
   setTimeout(() => toast.classList.add('show'), 100);
-  
+
   setTimeout(() => {
     toast.classList.remove('show');
     setTimeout(() => document.body.removeChild(toast), 300);
@@ -568,7 +567,7 @@ function getToastIcon(type) {
 // ===== EVENT SETUP =====
 function setupEvents() {
   elements.generateBtn?.addEventListener('click', generateSigil);
-  
+
   elements.intentInput?.addEventListener('keypress', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -586,7 +585,7 @@ function setupEvents() {
   const proKeyInput = document.getElementById('proKeyInput');
 
   proKeyBtn?.addEventListener('click', () => proKeyModal?.showModal());
-  
+
   proKeySubmit?.addEventListener('click', async () => {
     const key = proKeyInput?.value?.trim();
     if (key && await validateProKey(key)) {
@@ -606,11 +605,11 @@ function setupEvents() {
 // ===== INITIALIZATION =====
 async function init() {
   console.log('🚀 Initializing Sigil Generator Pro...');
-  
+
   setupEvents();
   await checkProStatus();
   updateUI();
-  
+
   console.log('✅ App initialization complete!');
 }
 
