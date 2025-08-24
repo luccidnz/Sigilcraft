@@ -39,10 +39,11 @@ logger = logging.getLogger(__name__)
 # ===== FLASK APP SETUP =====
 app = Flask(__name__)
 CORS(app, resources={
-    r"/api/*": {
+    r"/*": {
         "origins": "*",
         "methods": ["GET", "POST", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization", "X-Request-ID"]
+        "allow_headers": ["Content-Type", "Authorization", "X-Request-ID"],
+        "supports_credentials": True
     }
 })
 

@@ -26,6 +26,9 @@ console.log(`- Port: ${PORT}`);
 console.log(`- Flask Backend: ${FLASK_URL}`);
 console.log(`- Pro Key: ${PRO_KEY ? 'CONFIGURED' : 'NOT SET'}`);
 
+// ===== TRUST PROXY CONFIGURATION =====
+app.set('trust proxy', true);
+
 // ===== SECURITY MIDDLEWARE =====
 app.use(helmet({
   contentSecurityPolicy: {

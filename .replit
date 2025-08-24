@@ -16,7 +16,7 @@ run = ["sh", "-c", "python main.py & node server.js"]
 deploymentTarget = "cloudrun"
 
 [workflows]
-runButton = "Run Fixed"
+runButton = "Run Application"
 
 [[workflows.workflow]]
 name = "Run"
@@ -56,6 +56,19 @@ args = "node server.js"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python main.py"
+
+[[workflows.workflow]]
+name = "Run Application"
+author = 45492115
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python main.py"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node server.js"
 
 [[ports]]
 localPort = 3000
