@@ -71,110 +71,83 @@ def rate_limit(max_requests=60, per_seconds=60):
 
 
 def create_sigil(phrase, vibe="mystical", size=2048):
-    """Create a highly varied sigil with dramatic differences for each unique input"""
-    print(f"🎨 Creating sigil for: '{phrase}' with vibe: '{vibe}' at size: {size}")
+    """Create a highly varied sigil with dramatic differences for each unique input and enhanced text influence"""
+    print(f"🎨 Creating enhanced sigil for: '{phrase}' with vibe: '{vibe}' at size: {size}")
 
     original_phrase = phrase.strip()
     if not original_phrase:
         return None, "Please enter text with at least one character"
 
-    # Create comprehensive hash for maximum uniqueness with time factor
-    time_factor = str(int(time.time() * 1000) % 10000)  # Small time variation
-    phrase_hash = hashlib.sha256((original_phrase + time_factor).encode()).hexdigest()
+    # Enhanced text analysis for better prompt influence
+    word_meanings = analyze_word_meanings(original_phrase)
+    emotional_weight = calculate_emotional_weight(original_phrase)
+    symbolic_elements = extract_symbolic_elements(original_phrase)
+    
+    # Create comprehensive hash for maximum uniqueness with enhanced text factors
+    phrase_hash = hashlib.sha256(original_phrase.encode()).hexdigest()
     vibe_hash = hashlib.sha256((vibe + original_phrase).encode()).hexdigest()
-    combined_hash = hashlib.sha256((original_phrase + vibe + str(len(original_phrase)) + str(sum(ord(c) for c in original_phrase))).encode()).hexdigest()
+    meaning_hash = hashlib.sha256((str(word_meanings) + original_phrase).encode()).hexdigest()
+    
+    # Generate seeds with much stronger text influence
+    char_data = get_enhanced_phrase_characteristics(original_phrase)
+    text_seed = (int(phrase_hash[:8], 16) + char_data['ascii_sum'] * 2000) % 2147483647
+    vibe_seed = (int(vibe_hash[:8], 16) + char_data['semantic_weight'] * 1000) % 2147483647
+    pattern_seed = (int(meaning_hash[:8], 16) + char_data['complexity_score'] * 500) % 2147483647
+    color_seed = (int(phrase_hash[16:24], 16) + emotional_weight * 100) % 2147483647
 
-    # Generate multiple seeds with enhanced phrase influence
-    ascii_sum = sum(ord(c) for c in original_phrase)
-    text_seed = (int(phrase_hash[:8], 16) + ascii_sum * 1000) % 2147483647
-    vibe_seed = (int(vibe_hash[:8], 16) + len(original_phrase) * 5000) % 2147483647
-    combined_seed = (int(combined_hash[:8], 16) + ascii_sum * len(original_phrase)) % 2147483647
-    pattern_seed = (int(phrase_hash[8:16], 16) + ascii_sum * 100) % 2147483647
-    color_seed = (int(phrase_hash[16:24], 16) + len(original_phrase) * ascii_sum) % 2147483647
+    print(f"🌱 Enhanced seeds - Text: {text_seed}, Meaning: {pattern_seed}, Emotion: {emotional_weight}")
 
-    print(f"🌱 Using seeds - Text: {text_seed}, Vibe: {vibe_seed}, Combined: {combined_seed}")
-    print(f"🎨 Pattern: {pattern_seed}, Color: {color_seed}")
-
-    # Create image with black background
-    img = Image.new('RGBA', (size, size), color=(0, 0, 0, 255))
+    # Create image with deep space background
+    img = Image.new('RGBA', (size, size), color=(5, 5, 15, 255))
     draw = ImageDraw.Draw(img)
     center = (size // 2, size // 2)
 
-    # Generate vibe-specific sigil with phrase-specific variations
+    # Generate base sacred geometry influenced by text
+    create_base_sacred_geometry(draw, center, size, original_phrase, char_data, text_seed)
+
+    # Generate vibe-specific sigil with MUCH stronger phrase influence
     if '+' in vibe:
-        # Handle combined vibes by layering effects
+        # Handle combined vibes with enhanced blending
         vibe_parts = vibe.split('+')
         for i, individual_vibe in enumerate(vibe_parts):
-            # Adjust opacity for layering multiple vibes
-            if i > 0:
-                # Create a semi-transparent overlay for additional vibes
-                overlay = Image.new('RGBA', (size, size), color=(0, 0, 0, 0))
-                overlay_draw = ImageDraw.Draw(overlay)
-
-                if individual_vibe == 'mystical':
-                    create_mystical_sigil(overlay_draw, overlay, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
-                elif individual_vibe == 'cosmic':
-                    create_cosmic_sigil(overlay_draw, overlay, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
-                elif individual_vibe == 'elemental':
-                    create_elemental_sigil(overlay_draw, overlay, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
-                elif individual_vibe == 'crystal':
-                    create_crystal_sigil(overlay_draw, overlay, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
-                elif individual_vibe == 'shadow':
-                    create_shadow_sigil(overlay_draw, overlay, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
-                elif individual_vibe == 'light':
-                    create_light_sigil(overlay_draw, overlay, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
-
-                # Blend the overlay with reduced opacity
-                img = Image.alpha_composite(img, overlay)
-            else:
-                # First vibe at full opacity
-                if individual_vibe == 'mystical':
-                    create_mystical_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
-                elif individual_vibe == 'cosmic':
-                    create_cosmic_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
-                elif individual_vibe == 'elemental':
-                    create_elemental_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
-                elif individual_vibe == 'crystal':
-                    create_crystal_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
-                elif individual_vibe == 'shadow':
-                    create_shadow_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
-                elif individual_vibe == 'light':
-                    create_light_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
+            overlay = Image.new('RGBA', (size, size), color=(0, 0, 0, 0))
+            overlay_draw = ImageDraw.Draw(overlay)
+            
+            # Each vibe gets its own text-influenced generation
+            create_enhanced_vibe_sigil(overlay_draw, overlay, center, size, original_phrase, 
+                                     individual_vibe, char_data, text_seed + i*1000, 
+                                     pattern_seed + i*500, color_seed + i*200)
+            
+            # Blend with proper opacity for layering
+            alpha_factor = 0.8 if i == 0 else 0.6
+            overlay = apply_layer_alpha(overlay, alpha_factor)
+            img = Image.alpha_composite(img, overlay)
     else:
-        # Single vibe
-        if vibe == 'mystical':
-            create_mystical_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
-        elif vibe == 'cosmic':
-            create_cosmic_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
-        elif vibe == 'elemental':
-            create_elemental_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
-        elif vibe == 'crystal':
-            create_crystal_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
-        elif vibe == 'shadow':
-            create_shadow_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
-        elif vibe == 'light':
-            create_light_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
-        else:
-            create_mystical_sigil(draw, img, center, size, original_phrase, text_seed, combined_seed, pattern_seed, color_seed)
+        # Single vibe with maximum text influence
+        create_enhanced_vibe_sigil(draw, img, center, size, original_phrase, vibe, 
+                                 char_data, text_seed, pattern_seed, color_seed)
 
-    print("🎨 Applying optimized enhancements...")
-    # Apply only essential vibe effects for speed
-    img = apply_optimized_vibe_effects(img, vibe, original_phrase)
+    # Add text-specific symbolic elements
+    add_symbolic_elements(draw, center, size, symbolic_elements, char_data, color_seed)
+    
+    # Add word-meaning influenced patterns
+    add_meaning_patterns(draw, center, size, word_meanings, char_data, pattern_seed)
 
-    print("💾 Converting to high-quality base64...")
+    print("🎨 Applying enhanced vibe-specific effects...")
+    img = apply_enhanced_vibe_effects(img, vibe, original_phrase, char_data)
+
+    print("💾 Converting to ultra-high-quality base64...")
     try:
-        # Apply minimal quality enhancements for speed
-        print("🎨 Applying minimal quality pass...")
-        img = apply_minimal_quality_pass(img, vibe, phrase)
+        # Apply enhanced quality improvements
+        img = apply_final_enhancement_pass(img, vibe, phrase, char_data)
 
         img_buffer = io.BytesIO()
-        # Use optimized PNG compression for better file size while maintaining quality
         img.save(img_buffer, format='PNG', optimize=True, compress_level=6)
         img_buffer.seek(0)
         img_data = img_buffer.getvalue()
         img_base64 = base64.b64encode(img_data).decode()
 
-        print(f"✅ High-quality image created successfully: {len(img_base64)} characters")
+        print(f"✅ Enhanced sigil created successfully: {len(img_base64)} characters")
         return img_base64, None
 
     except MemoryError as e:

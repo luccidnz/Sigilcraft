@@ -198,6 +198,10 @@ app.post("/api/create-checkout-session", async (req, res) => {
 // -------- Pro check & verify
 app.get("/api/is-pro", (req, res) => {
   try {
+    // Ensure proper JSON response headers
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Cache-Control', 'no-cache');
+    
     console.log("🔍 === PRO STATUS CHECK STARTED ===");
     console.log("🔍 Request URL:", req.url);
     console.log("🔍 All cookies:", req.cookies);
@@ -206,16 +210,20 @@ app.get("/api/is-pro", (req, res) => {
     console.log("🔍 Pro status check result:", pro);
     console.log("🔍 === PRO STATUS CHECK COMPLETE ===");
     
-    res.status(200).json({ pro });
+    return res.status(200).json({ pro });
   } catch (error) {
     console.error("❌ Pro status check error:", error);
     console.log("❌ === PRO STATUS CHECK ERROR ===");
-    res.status(500).json({ pro: false, error: "Server error" });
+    return res.status(500).json({ pro: false, error: "Server error" });
   }
 });
 
 app.post("/api/verify-pro", (req, res) => {
   try {
+    // Ensure proper JSON response headers
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Cache-Control', 'no-cache');
+    
     console.log("🔑 === PRO KEY VERIFICATION STARTED ===");
     console.log("🔑 Request URL:", req.url);
     console.log("🔑 Request method:", req.method);

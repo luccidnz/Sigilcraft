@@ -4,222 +4,327 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sigilcraft - Quantum Sigil Generator</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <title>🔮 Sigilcraft - Sacred Quantum Manifestation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Philosopher:wght@400;700&family=Marcellus&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/png" href="/generated-icon.png">
-    <meta name="description" content="Generate mystical quantum sigils with AI-powered energy combinations">
 </head>
 <body>
-    <!-- Loading Overlay -->
-    <div id="loadingSpinner" class="loading-overlay hidden">
-        <div class="loading-content">
-            <div class="quantum-spinner">
-                <div class="spinner-ring"></div>
-                <div class="spinner-core"></div>
-            </div>
-            <div class="loading-text">Generating quantum sigil...</div>
-            <div class="progress-container">
-                <div class="progress-bar"></div>
-            </div>
-        </div>
+    <!-- Sacred Background Animation -->
+    <div class="sacred-bg">
+        <div class="mandala-overlay"></div>
+        <div class="energy-particles"></div>
+        <div class="ley-lines"></div>
     </div>
-
-    <!-- Toast Notifications -->
-    <div id="toast" class="toast"></div>
 
     <!-- Header -->
     <header class="header">
         <div class="header-content">
             <div class="logo-section">
-                <h1 class="logo">
-                    <span class="logo-icon">🔮</span>
-                    <span class="logo-text">
-                        Sigilcraft
-                        <span class="logo-subtitle">Quantum Sigil Generator</span>
-                    </span>
-                </h1>
+                <div class="logo-sacred">
+                    <div class="sacred-circle">
+                        <div class="inner-circle">
+                            <i class="fas fa-eye sacred-eye"></i>
+                        </div>
+                    </div>
+                    <div class="logo-text">
+                        <h1 class="logo-title">SIGILCRAFT</h1>
+                        <p class="logo-subtitle">Sacred Quantum Manifestation</p>
+                    </div>
+                </div>
             </div>
             
             <div class="header-actions">
                 <div id="proBadge" class="pro-badge hidden">
-                    <span class="pro-icon">✨</span>
-                    <span>PRO</span>
+                    <i class="fas fa-crown"></i>
+                    <span>Adept Practitioner</span>
                 </div>
                 
                 <div id="proButtons" class="pro-buttons">
-                    <button onclick="goPremiumCheckout()" class="btn btn-premium">
-                        <span class="btn-icon">⚡</span>
-                        <span class="btn-text">Upgrade to Pro</span>
-                    </button>
-                    <button id="enterKeyBtn" class="btn btn-secondary">
-                        <span class="btn-icon">🔑</span>
-                        <span class="btn-text">Enter Pro Key</span>
+                    <a href="#" onclick="goPremiumCheckout()" class="btn btn-premium" id="upgradeBtn">
+                        <i class="fas fa-sparkles"></i>
+                        <span>Ascend to Adept</span>
+                    </a>
+                    <button class="btn btn-secondary" id="enterKeyBtn">
+                        <i class="fas fa-key"></i>
+                        <span>Sacred Key</span>
                     </button>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Main Container -->
-    <main class="container">
-        <!-- Intent Input Section -->
-        <section class="input-section">
+    <div class="container">
+        <!-- Intent Setting Section -->
+        <section class="intent-section sacred-card">
             <div class="section-header">
                 <h2 class="section-title">
-                    <span class="section-icon">🎯</span>
-                    Enter Your Intent
+                    <i class="fas fa-scroll"></i>
+                    Sacred Intent Declaration
                 </h2>
+                <div class="moon-phase">
+                    <i class="fas fa-moon"></i>
+                    <span id="moonPhase">Waxing Crescent</span>
+                </div>
             </div>
-            <div class="input-group">
-                <label for="intentInput" class="input-label">
-                    <span class="label-icon">💭</span>
-                    What do you wish to manifest?
-                </label>
-                <textarea 
-                    id="intentInput" 
-                    class="intent-input"
-                    placeholder="Type your desire or intent here (e.g., 'abundance and prosperity', 'inner peace', 'creative inspiration')"
-                    maxlength="200"
-                    rows="3"
-                ></textarea>
-                <div class="input-footer">
-                    <span id="charCounter" class="char-counter">0/200</span>
+            
+            <div class="intent-container">
+                <div class="input-group">
+                    <label for="intentInput" class="input-label">
+                        <i class="fas fa-feather-alt"></i>
+                        Speak Your Desire Into Being
+                    </label>
+                    <div class="sacred-input-wrapper">
+                        <textarea 
+                            id="intentInput" 
+                            class="intent-input"
+                            placeholder="I manifest abundance, love, protection, healing..."
+                            maxlength="200"
+                            rows="3"
+                        ></textarea>
+                        <div class="input-blessing">
+                            <i class="fas fa-sparkles"></i>
+                        </div>
+                    </div>
+                    <div class="input-footer">
+                        <span id="charCounter" class="char-counter">0/200</span>
+                        <div class="intent-strength">
+                            <span>Intent Clarity: </span>
+                            <div class="strength-bars">
+                                <div class="bar" id="bar1"></div>
+                                <div class="bar" id="bar2"></div>
+                                <div class="bar" id="bar3"></div>
+                                <div class="bar" id="bar4"></div>
+                                <div class="bar" id="bar5"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Pro Controls -->
+                <div id="proControls" class="pro-controls hidden">
+                    <div class="control-grid">
+                        <div class="control-item">
+                            <label class="control-label">
+                                <input type="checkbox" id="comboToggle">
+                                <span class="checkmark"></span>
+                                <i class="fas fa-layer-group"></i>
+                                Multi-Dimensional Weaving
+                            </label>
+                        </div>
+                        
+                        <div class="control-item">
+                            <label class="control-label">
+                                <input type="checkbox" id="batchToggle">
+                                <span class="checkmark"></span>
+                                <i class="fas fa-clone"></i>
+                                Quintuple Manifestation
+                            </label>
+                        </div>
+                        
+                        <div class="control-item">
+                            <label for="seedInput" class="seed-label">
+                                <i class="fas fa-seedling"></i>
+                                Quantum Seed
+                            </label>
+                            <input type="number" id="seedInput" class="seed-input" placeholder="Sacred Number" min="0" max="999999">
+                        </div>
+                        
+                        <div class="control-item">
+                            <label for="exportType" class="export-label">
+                                <i class="fas fa-download"></i>
+                                Sacred Format
+                            </label>
+                            <select id="exportType" class="export-select">
+                                <option value="png">PNG Talisman</option>
+                                <option value="svg">SVG Essence</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- Energy Selection -->
-        <section class="energy-section">
+        <section class="energy-section sacred-card">
             <div class="section-header">
                 <h2 class="section-title">
-                    <span class="section-icon">⚡</span>
-                    Choose Energy Type
+                    <i class="fas fa-atom"></i>
+                    Choose Your Sacred Energies
                 </h2>
                 <div id="comboDisplay" class="combo-display">mystical</div>
             </div>
-            <div id="energyList" class="energy-grid"></div>
+            
+            <div id="energyList" class="energy-grid">
+                <!-- Energy options will be populated by JavaScript -->
+            </div>
+            
+            <div class="energy-guide">
+                <h3>Energy Descriptions:</h3>
+                <div class="guide-grid">
+                    <div class="guide-item">
+                        <span class="energy-name">Mystical</span>
+                        <span class="energy-desc">Ancient wisdom and ethereal power</span>
+                    </div>
+                    <div class="guide-item">
+                        <span class="energy-name">Cosmic</span>
+                        <span class="energy-desc">Stellar consciousness and universal force</span>
+                    </div>
+                    <div class="guide-item">
+                        <span class="energy-name">Elemental</span>
+                        <span class="energy-desc">Primal forces of earth, air, fire, water</span>
+                    </div>
+                    <div class="guide-item">
+                        <span class="energy-name">Crystal</span>
+                        <span class="energy-desc">Geometric perfection and mineral wisdom</span>
+                    </div>
+                    <div class="guide-item">
+                        <span class="energy-name">Shadow</span>
+                        <span class="energy-desc">Hidden depths and transformative darkness</span>
+                    </div>
+                    <div class="guide-item">
+                        <span class="energy-name">Light</span>
+                        <span class="energy-desc">Pure radiance and healing illumination</span>
+                    </div>
+                </div>
+            </div>
         </section>
 
-        <!-- Pro Controls -->
-        <section id="proControls" class="pro-controls hidden">
+        <!-- Generation Section -->
+        <section class="generation-section sacred-card">
             <div class="section-header">
                 <h2 class="section-title">
-                    <span class="section-icon">👑</span>
-                    Pro Controls
+                    <i class="fas fa-magic"></i>
+                    Quantum Manifestation Chamber
                 </h2>
             </div>
-            <div class="control-group">
-                <label class="control-item">
-                    <input type="checkbox" id="comboToggle">
-                    <span class="checkbox-custom"></span>
-                    <span class="control-label">Combo Mode (Multiple Energies)</span>
-                </label>
-                
-                <div class="input-group">
-                    <label for="seedInput" class="input-label">
-                        <span class="label-icon">🌱</span>
-                        Seed (Optional)
-                    </label>
-                    <input type="number" id="seedInput" class="seed-input" placeholder="Random seed for reproducibility">
-                </div>
-                
-                <label class="control-item">
-                    <input type="checkbox" id="batchToggle">
-                    <span class="checkbox-custom"></span>
-                    <span class="control-label">Batch Generation (5 Sigils)</span>
-                </label>
-                
-                <div class="select-group">
-                    <label for="exportType" class="input-label">
-                        <span class="label-icon">📁</span>
-                        Export Format
-                    </label>
-                    <select id="exportType" class="export-select">
-                        <option value="png">PNG (Raster Image)</option>
-                        <option value="svg">SVG (Vector Graphics)</option>
-                    </select>
-                </div>
-            </div>
-        </section>
-
-        <!-- Generation Controls -->
-        <section class="generation-section">
-            <div class="generation-container">
+            
+            <div class="generation-content">
                 <button id="genBtn" class="generate-btn">
-                    <span class="btn-icon">🌟</span>
-                    <span class="generate-text">Initialize Quantum Sigil</span>
+                    <div class="btn-sacred-circle">
+                        <i class="fas fa-pentagram"></i>
+                    </div>
+                    <span class="generate-text">Weave Sacred Sigil</span>
+                    <div class="btn-energy-flow"></div>
                 </button>
                 
                 <div id="cooldown" class="cooldown hidden">
-                    <span class="cooldown-icon">⏱️</span>
-                    <span class="cooldown-text">Ready in 10s</span>
+                    <i class="fas fa-hourglass-half"></i>
+                    <span>Energy Recharging...</span>
                 </div>
             </div>
         </section>
 
-        <!-- Canvas Section -->
-        <section class="canvas-section">
+        <!-- Sigil Canvas -->
+        <section class="canvas-section sacred-card">
             <div class="section-header">
                 <h2 class="section-title">
-                    <span class="section-icon">🎨</span>
-                    Your Sigil
+                    <i class="fas fa-eye"></i>
+                    Your Sacred Manifestation
+                </h2>
+                <div class="canvas-tools">
+                    <button class="tool-btn" onclick="toggleSigilAnimation()" title="Animate Sigil">
+                        <i class="fas fa-play" id="animateIcon"></i>
+                    </button>
+                    <button class="tool-btn" onclick="saveSigilToGallery()" title="Save to Sacred Gallery">
+                        <i class="fas fa-bookmark"></i>
+                    </button>
+                    <button class="tool-btn" onclick="shareSigil()" title="Share Sacred Creation">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="canvas-container">
+                <div id="canvasPlaceholder" class="canvas-placeholder">
+                    <div class="placeholder-content">
+                        <div class="sacred-mandala">
+                            <i class="fas fa-dharmachakra"></i>
+                        </div>
+                        <p class="placeholder-text">Your sigil will manifest here</p>
+                        <p class="placeholder-subtext">Speak your intent and choose your energies</p>
+                    </div>
+                </div>
+                <canvas id="sigilCanvas" width="512" height="512" style="display: none;"></canvas>
+            </div>
+            
+            <div class="canvas-controls">
+                <button id="downloadBtn" class="btn btn-primary" onclick="handleSigilDownload()" style="display: none;">
+                    <i class="fas fa-download"></i>
+                    <span>Download Sacred Talisman</span>
+                </button>
+                
+                <button class="btn btn-secondary" onclick="showSigilGallery()">
+                    <i class="fas fa-images"></i>
+                    <span>Sacred Gallery</span>
+                </button>
+                
+                <button id="animateBtn" class="btn btn-secondary" onclick="toggleSigilAnimation()">
+                    <i class="fas fa-play"></i>
+                    <span>Animate Sigil</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Meditation & Activation -->
+        <section class="meditation-section sacred-card">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-om"></i>
+                    Sacred Activation Ritual
                 </h2>
             </div>
-            <div class="canvas-container">
-                <div class="canvas-wrapper">
-                    <canvas id="sigilCanvas" class="sigil-canvas" width="1200" height="1200"></canvas>
-                    <div class="canvas-placeholder" id="canvasPlaceholder">
-                        <div class="placeholder-content">
-                            <span class="placeholder-icon">🔮</span>
-                            <span class="placeholder-text">Your quantum sigil will appear here</span>
+            
+            <div class="meditation-content">
+                <div class="ritual-steps">
+                    <div class="ritual-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Gaze Upon Your Sigil</h4>
+                            <p>Fix your eyes upon the sacred geometry for 30 seconds</p>
+                        </div>
+                    </div>
+                    <div class="ritual-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Breathe With Intent</h4>
+                            <p>Inhale your desire, exhale doubt and limitation</p>
+                        </div>
+                    </div>
+                    <div class="ritual-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Release Into the Universe</h4>
+                            <p>Let go of attachment to outcome, trust the process</p>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Canvas Controls -->
-                <div class="canvas-controls">
-                    <button id="downloadBtn" class="btn btn-primary" style="display: none;">
-                        <span class="btn-icon">💾</span>
-                        <span class="btn-text">Download Sigil</span>
+                <div class="activation-tools">
+                    <button class="activation-btn" onclick="startMeditation()">
+                        <i class="fas fa-brain"></i>
+                        Guided Activation
                     </button>
-                    
-                    <button id="animateBtn" class="btn btn-secondary" onclick="toggleSigilAnimation()">
-                        <span class="btn-icon">✨</span>
-                        <span class="btn-text">Animate Sigil</span>
-                    </button>
-                    
-                    <button class="btn btn-secondary" onclick="saveSigilToGallery()">
-                        <span class="btn-icon">🖼️</span>
-                        <span class="btn-text">Save to Gallery</span>
-                    </button>
-                    
-                    <button class="btn btn-secondary" onclick="shareSigil()">
-                        <span class="btn-icon">🔗</span>
-                        <span class="btn-text">Share Sigil</span>
+                    <button class="activation-btn" onclick="playBowlSound()">
+                        <i class="fas fa-circle-notch"></i>
+                        Sacred Tone
                     </button>
                 </div>
             </div>
         </section>
 
-        <!-- Action Buttons -->
-        <section class="action-section">
+        <!-- Sigil Rating -->
+        <section class="rating-section sacred-card">
             <div class="section-header">
                 <h2 class="section-title">
-                    <span class="section-icon">🎭</span>
-                    Gallery & Actions
+                    <i class="fas fa-star"></i>
+                    Sacred Resonance
                 </h2>
             </div>
-            <div class="action-buttons">
-                <button class="btn btn-secondary" onclick="showSigilGallery()">
-                    <span class="btn-icon">🖼️</span>
-                    <span class="btn-text">View Gallery</span>
-                </button>
-                
-                <!-- Star Rating -->
+            
+            <div class="rating-content">
                 <div class="star-rating">
-                    <span class="rating-label">Rate this sigil:</span>
+                    <span class="rating-label">How strongly does this sigil resonate with your intent?</span>
                     <div class="stars">
                         <span class="star" onclick="rateSigil(1)">⭐</span>
                         <span class="star" onclick="rateSigil(2)">⭐</span>
@@ -231,85 +336,79 @@
                 </div>
             </div>
         </section>
+    </div>
 
-        <!-- Pro Upgrade Section -->
-        <section id="proUnlock" class="pro-unlock">
-            <div class="unlock-card">
-                <h3>🌟 Unlock Pro Features</h3>
-                <p>Experience the full power of quantum sigil generation</p>
-                <ul class="features-list">
-                    <li>✨ All 6 energy types (Cosmic, Crystal, Shadow)</li>
-                    <li>🔗 Combo mode - blend multiple energies</li>
-                    <li>📦 Batch generation (5 sigils at once)</li>
-                    <li>🎨 SVG export for infinite scaling</li>
-                    <li>🚀 No cooldowns or restrictions</li>
-                    <li>🔮 Advanced seed control</li>
-                </ul>
-                <div class="unlock-actions">
-                    <button onclick="goPremiumCheckout()" class="btn btn-premium">
-                        <span class="btn-icon">⚡</span>
-                        Upgrade to Pro - $4.99
-                    </button>
-                    <button onclick="document.getElementById('proKeyInput2').focus()" class="btn btn-secondary">
-                        <span class="btn-icon">🔑</span>
-                        I have a Pro key
-                    </button>
+    <!-- Pro Unlock Section -->
+    <section id="proUnlock" class="pro-unlock sacred-card">
+        <div class="unlock-content">
+            <div class="unlock-header">
+                <div class="adept-symbol">
+                    <i class="fas fa-crown"></i>
                 </div>
-                <div class="key-input-inline">
-                    <input type="text" id="proKeyInput2" placeholder="Enter your Pro key" class="pro-key-input">
-                    <button onclick="unlockProFeatures()" class="btn btn-primary">Unlock</button>
+                <h3>Ascend to Adept Practitioner</h3>
+                <p>Unlock the full power of quantum manifestation</p>
+            </div>
+            
+            <div class="features-showcase">
+                <div class="feature-item">
+                    <i class="fas fa-layer-group"></i>
+                    <h4>Multi-Dimensional Weaving</h4>
+                    <p>Combine multiple energy types for complex manifestations</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-clone"></i>
+                    <h4>Quintuple Manifestation</h4>
+                    <p>Generate 5 sigil variations in one sacred ritual</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-expand"></i>
+                    <h4>High-Resolution Talismans</h4>
+                    <p>4K sacred geometry for printing and display</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-vector-square"></i>
+                    <h4>Sacred SVG Export</h4>
+                    <p>Scalable vector format for infinite manifestation</p>
                 </div>
             </div>
-        </section>
-    </main>
-
-    <!-- Modals -->
-    
-    <!-- Pro Key Modal -->
-    <dialog id="keyModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>🔑 Enter Pro Key</h3>
-                <button onclick="keyModal.close()" class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p>Enter your Pro key to unlock all premium features:</p>
-                <input type="text" id="proKeyInput" placeholder="Pro key" class="modal-input">
-                <div class="modal-actions">
-                    <button id="unlockBtn" class="btn btn-primary">Unlock Pro</button>
-                    <button onclick="keyModal.close()" class="btn btn-secondary">Cancel</button>
+            
+            <div class="unlock-actions">
+                <button onclick="goPremiumCheckout()" class="btn btn-premium btn-large">
+                    <i class="fas fa-sparkles"></i>
+                    Begin Ascension - $9.99
+                </button>
+                
+                <div class="key-input-section">
+                    <div class="key-input-wrapper">
+                        <input type="text" id="proKeyInput2" class="pro-key-input" placeholder="Enter Sacred Key">
+                        <button onclick="unlockProFeatures()" class="btn btn-secondary">
+                            <i class="fas fa-unlock"></i>
+                            Unlock
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    </dialog>
+    </section>
 
-    <!-- Share Modal -->
-    <div id="shareModal" class="modal-overlay hidden">
+    <!-- Modals -->
+    <dialog id="keyModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>🔗 Share Your Sigil</h3>
-                <button onclick="hideShareModal()" class="modal-close">&times;</button>
+                <h3>Enter Sacred Key</h3>
+                <button class="modal-close" onclick="keyModal.close()">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div class="modal-body">
-                <canvas id="shareCanvas" width="400" height="400"></canvas>
-                <div class="share-buttons">
-                    <button onclick="shareToTwitter()" class="btn btn-social twitter">
-                        <span class="btn-icon">🐦</span>
-                        Twitter
-                    </button>
-                    <button onclick="shareToFacebook()" class="btn btn-social facebook">
-                        <span class="btn-icon">📘</span>
-                        Facebook
-                    </button>
-                    <button onclick="copyShareLink()" class="btn btn-secondary">
-                        <span class="btn-icon">📋</span>
-                        Copy Link
-                    </button>
-                    <button onclick="downloadForShare()" class="btn btn-primary">
-                        <span class="btn-icon">💾</span>
-                        Download
-                    </button>
-                </div>
+                <input type="text" id="proKeyInput" class="modal-input" placeholder="Your sacred key...">
+            </div>
+            <div class="modal-actions">
+                <button id="unlockBtn" class="btn btn-primary">
+                    <i class="fas fa-key"></i>
+                    Unlock Powers
+                </button>
+                <button class="btn btn-secondary" onclick="keyModal.close()">Cancel</button>
             </div>
         </div>
     </dialog>
@@ -318,26 +417,166 @@
     <div id="sigilGallery" class="modal-overlay hidden">
         <div class="modal-content gallery-modal">
             <div class="modal-header">
-                <h3>🖼️ Sigil Gallery</h3>
-                <button onclick="hideSigilGallery()" class="modal-close">&times;</button>
+                <h3>Sacred Gallery</h3>
+                <button class="modal-close" onclick="hideSigilGallery()">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <div class="modal-body">
-                <div id="galleryGrid" class="gallery-grid"></div>
+            <div id="galleryGrid" class="gallery-grid">
+                <!-- Gallery items will be populated by JavaScript -->
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <p>&copy; 2024 Sigilcraft. Manifest your reality through quantum sigil generation.</p>
-            <div class="footer-links">
-                <a href="#" onclick="showAbout()">About</a>
-                <a href="#" onclick="showHelp()">Help</a>
+    <!-- Share Modal -->
+    <div id="shareModal" class="modal-overlay hidden">
+        <div class="modal-content share-modal">
+            <div class="modal-header">
+                <h3>Share Sacred Creation</h3>
+                <button class="modal-close" onclick="hideShareModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <canvas id="shareCanvas" width="512" height="512"></canvas>
+                <div class="share-buttons">
+                    <button class="btn btn-social twitter" onclick="shareToTwitter()">
+                        <i class="fab fa-twitter"></i>
+                        Twitter
+                    </button>
+                    <button class="btn btn-social facebook" onclick="shareToFacebook()">
+                        <i class="fab fa-facebook"></i>
+                        Facebook
+                    </button>
+                    <button class="btn btn-secondary" onclick="copyShareLink()">
+                        <i class="fas fa-link"></i>
+                        Copy Link
+                    </button>
+                    <button class="btn btn-primary" onclick="downloadForShare()">
+                        <i class="fas fa-download"></i>
+                        Download
+                    </button>
+                </div>
             </div>
         </div>
-    </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingSpinner" class="loading-overlay hidden">
+        <div class="loading-content">
+            <div class="quantum-mandala">
+                <div class="mandala-ring ring-1"></div>
+                <div class="mandala-ring ring-2"></div>
+                <div class="mandala-ring ring-3"></div>
+                <div class="mandala-center">
+                    <i class="fas fa-om"></i>
+                </div>
+            </div>
+            <div class="loading-text">Channeling Sacred Energies...</div>
+            <div class="progress-container">
+                <div class="progress-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast" class="toast"></div>
 
     <script src="main.js"></script>
+    
+    <script>
+        // Initialize moon phase
+        function updateMoonPhase() {
+            const phases = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous', 'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent'];
+            const today = new Date();
+            const phase = phases[Math.floor(Math.random() * phases.length)];
+            document.getElementById('moonPhase').textContent = phase;
+        }
+        
+        // Intent strength indicator
+        function updateIntentStrength() {
+            const input = document.getElementById('intentInput');
+            const bars = document.querySelectorAll('.strength-bars .bar');
+            
+            input.addEventListener('input', () => {
+                const length = input.value.length;
+                const strength = Math.min(5, Math.floor(length / 20) + 1);
+                
+                bars.forEach((bar, index) => {
+                    bar.classList.toggle('active', index < strength);
+                });
+            });
+        }
+        
+        // Sacred sound effects
+        function playBowlSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(432, audioContext.currentTime);
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.1);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 3);
+        }
+        
+        // Meditation timer
+        function startMeditation() {
+            const steps = [
+                "Center yourself and breathe deeply...",
+                "Focus on your sigil with soft eyes...",
+                "Feel your intention flowing through the sacred geometry...",
+                "Release attachment to the outcome...",
+                "Your manifestation is complete."
+            ];
+            
+            let stepIndex = 0;
+            const interval = setInterval(() => {
+                if (stepIndex < steps.length) {
+                    toast(steps[stepIndex], 'info', 4000);
+                    stepIndex++;
+                } else {
+                    clearInterval(interval);
+                    playBowlSound();
+                }
+            }, 5000);
+        }
+        
+        // Character counter with sacred styling
+        function initCharCounter() {
+            const input = document.getElementById('intentInput');
+            const counter = document.getElementById('charCounter');
+            
+            input.addEventListener('input', () => {
+                const length = input.value.length;
+                counter.textContent = `${length}/200`;
+                
+                if (length > 180) {
+                    counter.style.color = '#ff6b6b';
+                } else if (length > 150) {
+                    counter.style.color = '#ffd93d';
+                } else {
+                    counter.style.color = '#6bcf7f';
+                }
+            });
+        }
+        
+        // Initialize spiritual features
+        document.addEventListener('DOMContentLoaded', () => {
+            updateMoonPhase();
+            updateIntentStrength();
+            initCharCounter();
+        });
+        
+        // Make functions globally available
+        window.startMeditation = startMeditation;
+        window.playBowlSound = playBowlSound;
+    </script>
 </body>
 </html>
