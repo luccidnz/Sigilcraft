@@ -1,180 +1,157 @@
 
-// ===== MODERN SIGILCRAFT APPLICATION =====
+// ===== SIGILCRAFT - MODERN QUANTUM SIGIL GENERATOR =====
+
+// Configuration
 const FREE_ENERGIES = ["mystical", "elemental", "light"];
 const ALL_ENERGIES = ["mystical", "cosmic", "elemental", "crystal", "shadow", "light"];
+const COOLDOWN_TIME = 10000; // 10 seconds
 
-// Application State
-let selectedEnergies = [FREE_ENERGIES[0]];
-let lastGeneratedImage = null;
-let isGenerating = false;
-let cooldownActive = false;
-let isPro = false;
+// State
+let state = {
+  selectedEnergies: [FREE_ENERGIES[0]],
+  lastGeneratedImage: null,
+  isGenerating: false,
+  cooldownActive: false,
+  isPro: false
+};
 
 // DOM Elements
-const intentInput = document.getElementById('intentInput');
-const generateBtn = document.getElementById('generateBtn');
-const canvas = document.getElementById('sigilCanvas');
-const ctx = canvas?.getContext('2d');
+const elements = {
+  intentInput: document.getElementById('intentInput'),
+  generateBtn: document.getElementById('generateBtn'),
+  canvas: document.getElementById('sigilCanvas'),
+  ctx: document.getElementById('sigilCanvas')?.getContext('2d')
+};
 
-// ===== CORE GENERATION FUNCTION =====
+// ===== CORE GENERATION =====
 async function generateSigil() {
-  if (isGenerating || cooldownActive) return;
+  if (state.isGenerating || state.cooldownActive) return;
 
-  const phrase = intentInput?.value?.trim();
+  const phrase = elements.intentInput?.value?.trim();
   if (!phrase) {
-    showToast('Please enter your intention', 'warning');
+    showToast('Enter your intention', 'warning');
     return;
   }
 
-  if (phrase.length < 2) {
-    showToast('Intention too short (minimum 2 characters)', 'warning');
+  if (phrase.length < 2 || phrase.length > 200) {
+    showToast('Intention must be 2-200 characters', 'warning');
     return;
   }
 
-  if (phrase.length > 200) {
-    showToast('Intention too long (maximum 200 characters)', 'warning');
-    return;
-  }
-
-  const vibe = selectedEnergies.join('+');
+  const vibe = state.selectedEnergies.join('+');
   
   try {
-    isGenerating = true;
-    updateGenerateButton(true);
+    state.isGenerating = true;
+    updateUI();
     showLoading();
 
-    console.log(`🎨 Generating sigil for: "${phrase}" with vibe: ${vibe}`);
+    console.log(`🎨 Starting sigil generation...`);
+    console.log(`📝 Generating: "${phrase}" with vibes: ${vibe}`);
 
-    const result = await generateSigilRequest(phrase, vibe);
+    const result = await makeGenerationRequest(phrase, vibe);
     
     if (result?.success && result?.image) {
-      lastGeneratedImage = result.image;
+      state.lastGeneratedImage = result.image;
       await renderSigil(result.image);
       showResult();
-      showToast('✨ Sigil manifested successfully!', 'success');
+      showToast('✨ Sigil manifested!', 'success');
       
-      if (!isPro) {
-        startCooldown();
-      }
+      if (!state.isPro) startCooldown();
     } else {
       throw new Error(result?.error || 'Generation failed');
     }
 
   } catch (error) {
     console.error('Generation error:', error);
-    showToast(error.message || 'Generation failed. Please try again.', 'error');
+    showToast(error.message || 'Generation failed', 'error');
   } finally {
-    isGenerating = false;
-    updateGenerateButton(false);
+    state.isGenerating = false;
+    updateUI();
     hideLoading();
   }
 }
 
-async function generateSigilRequest(phrase, vibe, retryCount = 0) {
-  const maxRetries = 2;
-  const timeout = 45000;
+async function makeGenerationRequest(phrase, vibe) {
+  const response = await fetch('/api/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phrase, vibe }),
+    signal: AbortSignal.timeout(30000)
+  });
 
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-    const response = await fetch('/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phrase, vibe }),
-      signal: controller.signal
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => `HTTP ${response.status}`);
-      throw new Error(`Server error: ${errorText}`);
-    }
-
-    const data = await response.json();
-    
-    if (!data.success) {
-      const errorMsg = data.error || "Generation failed";
-      if (errorMsg.includes("timeout") && retryCount < maxRetries) {
-        console.log(`⏱️ Timeout, retrying... (${retryCount + 1}/${maxRetries})`);
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        return generateSigilRequest(phrase, vibe, retryCount + 1);
-      }
-      throw new Error(errorMsg);
-    }
-
-    return data;
-
-  } catch (error) {
-    if (error.name === 'AbortError' && retryCount < maxRetries) {
-      console.log(`⏱️ Request timed out, retrying... (${retryCount + 1}/${maxRetries})`);
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      return generateSigilRequest(phrase, vibe, retryCount + 1);
-    }
-    throw error;
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => `HTTP ${response.status}`);
+    throw new Error(`Server error: ${errorText}`);
   }
+
+  return response.json();
 }
 
 // ===== UI MANAGEMENT =====
-function updateGenerateButton(generating) {
-  if (!generateBtn) return;
+function updateUI() {
+  updateGenerateButton();
+  renderEnergies();
+  updateProInterface();
+}
+
+function updateGenerateButton() {
+  if (!elements.generateBtn) return;
   
-  if (generating) {
-    generateBtn.disabled = true;
-    generateBtn.innerHTML = '<span>Channeling Energies...</span>';
-    generateBtn.classList.add('generating');
+  if (state.isGenerating) {
+    elements.generateBtn.disabled = true;
+    elements.generateBtn.innerHTML = '<span>Channeling Energies...</span>';
+    elements.generateBtn.classList.add('generating');
+  } else if (state.cooldownActive) {
+    elements.generateBtn.disabled = true;
+    elements.generateBtn.innerHTML = '<span>Recharging...</span>';
+    elements.generateBtn.classList.remove('generating');
   } else {
-    generateBtn.disabled = cooldownActive;
-    generateBtn.innerHTML = cooldownActive ? 
-      '<span>Recharging...</span>' : 
-      '<span>Generate Sigil</span>';
-    generateBtn.classList.toggle('generating', false);
+    elements.generateBtn.disabled = false;
+    elements.generateBtn.innerHTML = '<span>Generate Sigil</span>';
+    elements.generateBtn.classList.remove('generating');
   }
 }
 
 function startCooldown() {
-  if (isPro) return;
+  if (state.isPro) return;
   
-  cooldownActive = true;
-  const cooldownTime = 10000; // 10 seconds
-  let remaining = cooldownTime;
-
-  updateGenerateButton(false);
+  state.cooldownActive = true;
+  let remaining = COOLDOWN_TIME;
 
   const interval = setInterval(() => {
     remaining -= 1000;
     
-    if (generateBtn) {
-      generateBtn.innerHTML = `<span>Recharging... ${Math.ceil(remaining/1000)}s</span>`;
+    if (elements.generateBtn) {
+      elements.generateBtn.innerHTML = `<span>Recharging... ${Math.ceil(remaining/1000)}s</span>`;
     }
 
     if (remaining <= 0) {
       clearInterval(interval);
-      cooldownActive = false;
-      updateGenerateButton(false);
+      state.cooldownActive = false;
+      updateUI();
     }
   }, 1000);
 }
 
 async function renderSigil(imageData) {
   return new Promise((resolve) => {
-    if (!canvas || !ctx) {
+    if (!elements.canvas || !elements.ctx) {
       resolve();
       return;
     }
 
     const img = new Image();
     img.onload = () => {
-      // Clear canvas
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      elements.ctx.clearRect(0, 0, elements.canvas.width, elements.canvas.height);
       
-      // Draw image centered
-      const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
-      const x = (canvas.width - img.width * scale) / 2;
-      const y = (canvas.height - img.height * scale) / 2;
+      const scale = Math.min(
+        elements.canvas.width / img.width, 
+        elements.canvas.height / img.height
+      );
+      const x = (elements.canvas.width - img.width * scale) / 2;
+      const y = (elements.canvas.height - img.height * scale) / 2;
       
-      ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+      elements.ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
       resolve();
     };
     img.src = imageData;
@@ -185,46 +162,41 @@ function showResult() {
   const canvasContainer = document.getElementById('canvasContainer');
   const downloadBtn = document.getElementById('downloadBtn');
   
-  if (canvasContainer) {
-    canvasContainer.classList.remove('hidden');
-  }
-  
-  if (downloadBtn) {
-    downloadBtn.style.display = 'block';
-  }
+  canvasContainer?.classList.remove('hidden');
+  if (downloadBtn) downloadBtn.style.display = 'block';
 }
 
-// ===== ENERGY/VIBE SELECTION =====
+// ===== ENERGY SELECTION =====
 function renderEnergies() {
   const energyContainer = document.getElementById('energyContainer');
   if (!energyContainer) return;
 
-  const availableEnergies = isPro ? ALL_ENERGIES : FREE_ENERGIES;
+  const availableEnergies = state.isPro ? ALL_ENERGIES : FREE_ENERGIES;
   
   energyContainer.innerHTML = availableEnergies.map(energy => `
-    <div class="energy-option ${selectedEnergies.includes(energy) ? 'selected' : ''}" 
+    <div class="energy-option ${state.selectedEnergies.includes(energy) ? 'selected' : ''}" 
          data-energy="${energy}" onclick="toggleEnergy('${energy}')">
       <span class="energy-name">${energy}</span>
-      ${!FREE_ENERGIES.includes(energy) && !isPro ? '<span class="pro-badge">PRO</span>' : ''}
+      ${!FREE_ENERGIES.includes(energy) && !state.isPro ? '<span class="pro-badge">PRO</span>' : ''}
     </div>
   `).join('');
 }
 
 function toggleEnergy(energy) {
-  if (!FREE_ENERGIES.includes(energy) && !isPro) {
-    showToast('This energy requires Pro upgrade', 'warning');
+  if (!FREE_ENERGIES.includes(energy) && !state.isPro) {
+    showToast('Pro feature - upgrade required', 'warning');
     return;
   }
 
-  if (selectedEnergies.includes(energy)) {
-    if (selectedEnergies.length > 1) {
-      selectedEnergies = selectedEnergies.filter(e => e !== energy);
+  if (state.selectedEnergies.includes(energy)) {
+    if (state.selectedEnergies.length > 1) {
+      state.selectedEnergies = state.selectedEnergies.filter(e => e !== energy);
     }
   } else {
-    if (!isPro && selectedEnergies.length >= 1) {
-      selectedEnergies = [energy];
-    } else if (selectedEnergies.length < 4) {
-      selectedEnergies.push(energy);
+    if (!state.isPro && state.selectedEnergies.length >= 1) {
+      state.selectedEnergies = [energy];
+    } else if (state.selectedEnergies.length < 4) {
+      state.selectedEnergies.push(energy);
     }
   }
   
@@ -235,31 +207,27 @@ function toggleEnergy(energy) {
 async function checkProStatus() {
   try {
     const localPro = localStorage.getItem('sigil_pro') === '1';
+    const proKey = localStorage.getItem('sigil_pro_key');
+    
     let serverPro = false;
-
-    try {
-      const proKey = localStorage.getItem('sigil_pro_key');
+    if (proKey) {
       const response = await fetch('/api/pro-status', {
-        headers: proKey ? { 'x-pro-key': proKey } : {}
+        headers: { 'x-pro-key': proKey }
       });
       
       if (response.ok) {
         const data = await response.json();
         serverPro = data.isPro || false;
       }
-    } catch (error) {
-      console.error('Error checking server pro status:', error);
     }
 
-    isPro = localPro || serverPro;
-    updateProInterface();
-    renderEnergies();
+    state.isPro = localPro || serverPro;
+    updateUI();
 
   } catch (error) {
     console.error('Error checking pro status:', error);
-    isPro = localStorage.getItem('sigil_pro') === '1';
-    updateProInterface();
-    renderEnergies();
+    state.isPro = localStorage.getItem('sigil_pro') === '1';
+    updateUI();
   }
 }
 
@@ -268,17 +236,9 @@ function updateProInterface() {
   const proControls = document.getElementById('proControls');
   const unlockSection = document.getElementById('unlockSection');
 
-  if (proBadge) {
-    proBadge.style.display = isPro ? 'flex' : 'none';
-  }
-  
-  if (proControls) {
-    proControls.style.display = isPro ? 'block' : 'none';
-  }
-  
-  if (unlockSection) {
-    unlockSection.style.display = isPro ? 'none' : 'block';
-  }
+  if (proBadge) proBadge.style.display = state.isPro ? 'flex' : 'none';
+  if (proControls) proControls.style.display = state.isPro ? 'block' : 'none';
+  if (unlockSection) unlockSection.style.display = state.isPro ? 'none' : 'block';
 }
 
 async function validateProKey(key) {
@@ -294,9 +254,8 @@ async function validateProKey(key) {
     if (data.success && data.valid) {
       localStorage.setItem('sigil_pro', '1');
       localStorage.setItem('sigil_pro_key', key);
-      isPro = true;
-      updateProInterface();
-      renderEnergies();
+      state.isPro = true;
+      updateUI();
       showToast('✨ Pro features unlocked!', 'success');
       return true;
     } else {
@@ -304,40 +263,31 @@ async function validateProKey(key) {
       return false;
     }
   } catch (error) {
-    console.error('Pro key validation error:', error);
-    showToast('Validation failed. Please try again.', 'error');
+    console.error('Pro validation error:', error);
+    showToast('Validation failed', 'error');
     return false;
   }
 }
 
-// ===== UTILITY FUNCTIONS =====
+// ===== UTILITIES =====
 function showLoading() {
-  const loadingDiv = document.getElementById('loading');
-  if (loadingDiv) {
-    loadingDiv.style.display = 'block';
-  }
+  const loading = document.getElementById('loading');
+  if (loading) loading.style.display = 'block';
 }
 
 function hideLoading() {
-  const loadingDiv = document.getElementById('loading');
-  if (loadingDiv) {
-    loadingDiv.style.display = 'none';
-  }
+  const loading = document.getElementById('loading');
+  if (loading) loading.style.display = 'none';
 }
 
 function showToast(message, type = 'info') {
-  // Create toast element
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
   toast.textContent = message;
   
-  // Add to page
   document.body.appendChild(toast);
-  
-  // Show toast
   setTimeout(() => toast.classList.add('show'), 100);
   
-  // Remove after 3 seconds
   setTimeout(() => {
     toast.classList.remove('show');
     setTimeout(() => document.body.removeChild(toast), 300);
@@ -345,92 +295,61 @@ function showToast(message, type = 'info') {
 }
 
 function downloadSigil() {
-  if (!lastGeneratedImage) {
+  if (!state.lastGeneratedImage) {
     showToast('Generate a sigil first', 'warning');
     return;
   }
 
   const link = document.createElement('a');
   link.download = `sigil-${Date.now()}.png`;
-  link.href = lastGeneratedImage;
+  link.href = state.lastGeneratedImage;
   link.click();
 }
 
-// ===== EVENT LISTENERS =====
-function setupEventListeners() {
-  // Generate button
-  if (generateBtn) {
-    generateBtn.addEventListener('click', generateSigil);
-  }
+// ===== EVENT SETUP =====
+function setupEvents() {
+  elements.generateBtn?.addEventListener('click', generateSigil);
+  
+  elements.intentInput?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      generateSigil();
+    }
+  });
 
-  // Enter key in input
-  if (intentInput) {
-    intentInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        generateSigil();
-      }
-    });
-  }
+  document.getElementById('downloadBtn')?.addEventListener('click', downloadSigil);
 
-  // Download button
-  const downloadBtn = document.getElementById('downloadBtn');
-  if (downloadBtn) {
-    downloadBtn.addEventListener('click', downloadSigil);
-  }
-
-  // Pro key modal
   const proKeyBtn = document.getElementById('proKeyBtn');
   const proKeyModal = document.getElementById('proKeyModal');
   const proKeySubmit = document.getElementById('proKeySubmit');
   const proKeyInput = document.getElementById('proKeyInput');
 
-  if (proKeyBtn && proKeyModal) {
-    proKeyBtn.addEventListener('click', () => {
-      proKeyModal.showModal();
-    });
-  }
-
-  if (proKeySubmit && proKeyInput) {
-    proKeySubmit.addEventListener('click', async () => {
-      const key = proKeyInput.value.trim();
-      if (key) {
-        const valid = await validateProKey(key);
-        if (valid) {
-          proKeyModal.close();
-          proKeyInput.value = '';
-        }
-      }
-    });
-  }
+  proKeyBtn?.addEventListener('click', () => proKeyModal?.showModal());
+  
+  proKeySubmit?.addEventListener('click', async () => {
+    const key = proKeyInput?.value?.trim();
+    if (key && await validateProKey(key)) {
+      proKeyModal?.close();
+      if (proKeyInput) proKeyInput.value = '';
+    }
+  });
 }
 
 // ===== INITIALIZATION =====
-async function initializeApp() {
+async function init() {
   console.log('🚀 Initializing Sigil Generator Pro...');
-
-  try {
-    // Setup event listeners
-    setupEventListeners();
-
-    // Check pro status
-    await checkProStatus();
-
-    // Render initial UI
-    renderEnergies();
-
-    console.log('✅ App initialization complete!');
-
-  } catch (error) {
-    console.error('Initialization error:', error);
-    showToast('⚠️ App initialization error. Please refresh the page.', 'error');
-  }
+  
+  setupEvents();
+  await checkProStatus();
+  updateUI();
+  
+  console.log('✅ App initialization complete!');
 }
 
-// Start the application
-document.addEventListener('DOMContentLoaded', initializeApp);
+// Start
+document.addEventListener('DOMContentLoaded', init);
 
-// Global function access
+// Global access
 window.generateSigil = generateSigil;
 window.toggleEnergy = toggleEnergy;
 window.downloadSigil = downloadSigil;
