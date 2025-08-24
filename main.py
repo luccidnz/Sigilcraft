@@ -71,75 +71,83 @@ def rate_limit(max_requests=60, per_seconds=60):
 
 
 def create_sigil(phrase, vibe, size=2048):
-    """Create a highly varied sigil with dramatic differences for each unique input and enhanced text influence"""
-    print(f"🎨 Creating enhanced sigil for: '{phrase}' with vibe: '{vibe}' at size: {size}")
+    """Create sophisticated artistic sigil masterpieces with professional quality"""
+    print(f"🎨 Creating ARTISTIC MASTERPIECE for: '{phrase}' with vibe: '{vibe}' at size: {size}")
 
     original_phrase = phrase.strip()
     if not original_phrase:
         return None, "Please enter text with at least one character"
 
-    # Enhanced text analysis for better prompt influence
-    word_meanings = analyze_word_meanings(original_phrase)
-    emotional_weight = calculate_emotional_weight(original_phrase)
-    symbolic_elements = extract_symbolic_elements(original_phrase)
+    # Advanced artistic analysis system
+    artistic_profile = create_artistic_profile(original_phrase)
+    symbolic_meaning = extract_deep_symbolism(original_phrase)
+    emotional_resonance = calculate_emotional_resonance(original_phrase)
+    aesthetic_style = determine_aesthetic_style(original_phrase, vibe)
 
-    # Create comprehensive hash for maximum uniqueness with enhanced text factors
+    # Create ultra-sophisticated hash system for maximum uniqueness
     phrase_hash = hashlib.sha256(original_phrase.encode()).hexdigest()
     vibe_hash = hashlib.sha256((vibe + original_phrase).encode()).hexdigest()
-    meaning_hash = hashlib.sha256((str(word_meanings) + original_phrase).encode()).hexdigest()
+    artistic_hash = hashlib.sha256((str(artistic_profile) + original_phrase).encode()).hexdigest()
 
-    # Generate seeds with much stronger text influence
+    # Generate artistic seeds with extreme text influence
     char_data = get_enhanced_phrase_characteristics(original_phrase)
-    text_seed = (int(phrase_hash[:8], 16) + char_data['ascii_sum'] * 2000) % 2147483647
-    vibe_seed = (int(vibe_hash[:8], 16) + char_data['semantic_weight'] * 1000) % 2147483647
-    pattern_seed = (int(meaning_hash[:8], 16) + char_data['complexity_score'] * 500) % 2147483647
-    color_seed = (int(phrase_hash[16:24], 16) + emotional_weight * 100) % 2147483647
+    artistic_seed = (int(phrase_hash[:12], 16) + char_data['sacred_power'] * 10000) % 2147483647
+    composition_seed = (int(vibe_hash[:12], 16) + char_data['intent_strength'] * 5000) % 2147483647
+    style_seed = (int(artistic_hash[:12], 16) + char_data['manifestation_power'] * 3000) % 2147483647
+    color_seed = (int(phrase_hash[24:36], 16) + emotional_resonance * 1000) % 2147483647
 
-    print(f"🌱 Enhanced seeds - Text: {text_seed}, Meaning: {pattern_seed}, Emotion: {emotional_weight}")
+    print(f"🎨 ARTISTIC SEEDS:")
+    print(f"   Artistic: {artistic_seed}")
+    print(f"   Composition: {composition_seed}")
+    print(f"   Style: {style_seed}")
+    print(f"   Emotional: {emotional_resonance}")
 
-    # Create image with deep space background
-    img = Image.new('RGBA', (size, size), color=(5, 5, 15, 255))
+    # Create professional canvas with sophisticated background
+    img = create_professional_canvas(size, aesthetic_style, char_data)
     draw = ImageDraw.Draw(img)
     center = (size // 2, size // 2)
 
-    # Generate base sacred geometry influenced by text
-    create_base_sacred_geometry(draw, center, size, original_phrase, char_data, text_seed)
+    # Generate sophisticated base composition
+    create_masterpiece_foundation(draw, img, center, size, original_phrase, char_data, artistic_seed)
 
-    # Generate vibe-specific sigil with MUCH stronger phrase influence
+    # Generate vibe-specific artistic masterpiece
     if '+' in vibe:
-        # Handle combined vibes with enhanced blending
+        # Handle combined vibes with professional layering
         vibe_parts = vibe.split('+')
         for i, individual_vibe in enumerate(vibe_parts):
             overlay = Image.new('RGBA', (size, size), color=(0, 0, 0, 0))
             overlay_draw = ImageDraw.Draw(overlay)
 
-            # Each vibe gets its own text-influenced generation
-            create_enhanced_vibe_sigil(overlay_draw, overlay, center, size, original_phrase, 
-                                     individual_vibe, char_data, text_seed + i*1000, 
-                                     pattern_seed + i*500, color_seed + i*200)
+            # Each vibe gets sophisticated artistic treatment
+            create_artistic_masterpiece_layer(overlay_draw, overlay, center, size, original_phrase, 
+                                            individual_vibe, char_data, artistic_seed + i*10000, 
+                                            composition_seed + i*5000, style_seed + i*3000, color_seed + i*1000)
 
-            # Blend with proper opacity for layering
-            alpha_factor = 0.8 if i == 0 else 0.6
-            overlay = apply_layer_alpha(overlay, alpha_factor)
+            # Professional layer blending
+            alpha_factor = 0.9 if i == 0 else 0.7
+            overlay = apply_professional_alpha(overlay, alpha_factor)
             img = Image.alpha_composite(img, overlay)
     else:
-        # Single vibe with maximum text influence
-        create_enhanced_vibe_sigil(draw, img, center, size, original_phrase, vibe, 
-                                 char_data, text_seed, pattern_seed, color_seed)
+        # Single vibe masterpiece
+        create_artistic_masterpiece_layer(draw, img, center, size, original_phrase, vibe, 
+                                        char_data, artistic_seed, composition_seed, style_seed, color_seed)
 
-    # Add text-specific symbolic elements
-    add_symbolic_elements(draw, center, size, symbolic_elements, char_data, color_seed)
+    # Add sophisticated symbolic elements
+    add_professional_symbolism(draw, img, center, size, symbolic_meaning, char_data, style_seed)
 
-    # Add word-meaning influenced patterns
-    add_meaning_patterns(draw, center, size, word_meanings, char_data, pattern_seed)
+    # Add meaning-influenced artistic patterns
+    add_artistic_meaning_patterns(draw, img, center, size, artistic_profile, char_data, composition_seed)
 
-    print("🎨 Applying enhanced vibe-specific effects...")
-    img = apply_enhanced_vibe_effects(img, vibe, original_phrase)
+    # Add professional glow and lighting effects
+    img = apply_professional_lighting(img, aesthetic_style, char_data)
 
-    print("💾 Converting to ultra-high-quality base64...")
+    print("✨ Applying professional artistic effects...")
+    img = apply_masterpiece_effects(img, vibe, original_phrase, aesthetic_style)
+
+    print("🎯 Converting to gallery-quality output...")
     try:
-        # Apply enhanced quality improvements
-        img = apply_final_quality_pass(img, vibe, original_phrase, char_data)
+        # Apply final masterpiece polish
+        img = apply_gallery_quality_finish(img, vibe, original_phrase, char_data, aesthetic_style)
 
         img_buffer = io.BytesIO()
         img.save(img_buffer, format='PNG', optimize=True, compress_level=6)
@@ -147,16 +155,16 @@ def create_sigil(phrase, vibe, size=2048):
         img_data = img_buffer.getvalue()
         img_base64 = base64.b64encode(img_data).decode()
 
-        print(f"✅ Enhanced sigil created successfully: {len(img_base64)} characters")
+        print(f"🎨 ARTISTIC MASTERPIECE COMPLETED: {len(img_base64)} characters")
         return img_base64, None
 
     except MemoryError as e:
         print(f"❌ Memory error: {str(e)}")
-        return None, "Image too complex. Try a shorter phrase or simpler vibe combination."
+        return None, "Artwork too complex. Try a shorter phrase or simpler vibe combination."
     except Exception as e:
-        print(f"❌ Error converting image: {str(e)}")
+        print(f"❌ Error creating artwork: {str(e)}")
         print(f"Full traceback: {traceback.format_exc()}")
-        return None, f"Error creating image: {str(e)}"
+        return None, f"Error creating artistic masterpiece: {str(e)}"
 
 
 def get_enhanced_phrase_characteristics(phrase):
@@ -1541,63 +1549,362 @@ def apply_minimal_quality_pass(img, vibe, phrase):
         print(f"Minimal quality pass warning: {e}")
         return img
 
-def apply_final_quality_pass(img, vibe, phrase, char_data):
-    """Apply final quality improvements for maximum visual impact - heavily optimized for speed"""
+# ===== SOPHISTICATED LIGHTING AND EFFECTS SYSTEM =====
+
+def apply_professional_lighting(img, aesthetic_style, char_data):
+    """Apply sophisticated lighting effects based on aesthetic style"""
     try:
-        # Skip expensive operations for faster performance
-
-        # Basic sharpening only
-        enhancer = ImageEnhance.Sharpness(img)
-        img = enhancer.enhance(1.3)
-
-        # Basic contrast enhancement
-        enhancer = ImageEnhance.Contrast(img)
-        img = enhancer.enhance(1.2)
-
-        # Basic color enhancement
-        enhancer = ImageEnhance.Color(img)
-        img = enhancer.enhance(1.3)
-
-        # Apply simplified vibe-specific final touches
-        if vibe == 'light':
-            # Simplified light effects
-            enhancer = ImageEnhance.Brightness(img)
-            img = enhancer.enhance(1.2)
-        elif vibe == 'shadow':
-            # Simplified shadow effects
-            enhancer = ImageEnhance.Brightness(img)
-            img = enhancer.enhance(0.9)
-        elif vibe == 'cosmic':
-            # Simplified cosmic effects
-            enhancer = ImageEnhance.Contrast(img)
-            img = enhancer.enhance(1.4)
-        elif vibe == 'crystal':
-            # Simplified crystal effects
-            enhancer = ImageEnhance.Sharpness(img)
-            img = enhancer.enhance(1.8)
-        elif vibe == 'elemental':
-            # Simplified elemental effects
-            enhancer = ImageEnhance.Color(img)
-            img = enhancer.enhance(1.6)
-        else:  # mystical
-            # Simplified mystical effects
-            enhancer = ImageEnhance.Color(img)
-            img = enhancer.enhance(1.5)
-
-        # Single anti-aliasing pass for all vibes to save time
-        img = img.filter(ImageFilter.SMOOTH)
-
-        # Simplified final sharpening
-        enhancer = ImageEnhance.Sharpness(img)
-        img = enhancer.enhance(1.3)
-
-        # Use simplified detail enhancement for all vibes
-        img = enhance_fine_details_optimized(img, char_data)
-
+        # Create lighting overlay
+        lighting_overlay = Image.new('RGBA', img.size, (0, 0, 0, 0))
+        
+        # Apply style-specific lighting
+        if aesthetic_style == 'neon_geometric':
+            img = apply_neon_glow_lighting(img, char_data)
+        elif aesthetic_style == 'cosmic_ethereal':
+            img = apply_cosmic_ambient_lighting(img, char_data)
+        elif aesthetic_style == 'crystalline_precise':
+            img = apply_crystal_refraction_lighting(img, char_data)
+        elif aesthetic_style == 'shadow_mysterious':
+            img = apply_dramatic_shadow_lighting(img, char_data)
+        else:
+            img = apply_mystical_aura_lighting(img, char_data)
+        
         return img
     except Exception as e:
-        print(f"Final quality pass warning: {e}")
+        print(f"Professional lighting warning: {e}")
         return img
+
+def apply_neon_glow_lighting(img, char_data):
+    """Apply sophisticated neon glow effects"""
+    try:
+        # Create multiple glow layers
+        glow_layers = []
+        
+        for radius in [5, 10, 15, 20]:
+            glow = img.filter(ImageFilter.GaussianBlur(radius=radius))
+            
+            # Enhance cyan/blue tones for neon effect
+            glow_array = np.array(glow)
+            if len(glow_array.shape) == 3:
+                # Boost blue and cyan channels
+                glow_array[:, :, 0] = np.clip(glow_array[:, :, 0] * 0.8, 0, 255)  # Red
+                glow_array[:, :, 1] = np.clip(glow_array[:, :, 1] * 1.2, 0, 255)  # Green  
+                glow_array[:, :, 2] = np.clip(glow_array[:, :, 2] * 1.4, 0, 255)  # Blue
+            
+            glow = Image.fromarray(glow_array.astype(np.uint8))
+            glow_layers.append(glow)
+        
+        # Blend glow layers with decreasing opacity
+        result = img
+        for i, glow in enumerate(glow_layers):
+            opacity = 0.3 - (i * 0.05)  # Decreasing opacity
+            result = Image.blend(result, glow, opacity)
+        
+        return result
+    except Exception as e:
+        print(f"Neon glow lighting warning: {e}")
+        return img
+
+def apply_cosmic_ambient_lighting(img, char_data):
+    """Apply cosmic ambient lighting effects"""
+    try:
+        # Create cosmic atmosphere
+        atmosphere = img.filter(ImageFilter.GaussianBlur(radius=25))
+        
+        # Enhance purple and blue tones
+        atmo_array = np.array(atmosphere)
+        if len(atmo_array.shape) == 3:
+            atmo_array[:, :, 0] = np.clip(atmo_array[:, :, 0] * 1.1, 0, 255)  # Red
+            atmo_array[:, :, 1] = np.clip(atmo_array[:, :, 1] * 0.9, 0, 255)  # Green
+            atmo_array[:, :, 2] = np.clip(atmo_array[:, :, 2] * 1.3, 0, 255)  # Blue
+        
+        atmosphere = Image.fromarray(atmo_array.astype(np.uint8))
+        
+        # Blend with original
+        result = Image.blend(img, atmosphere, 0.4)
+        
+        return result
+    except Exception as e:
+        print(f"Cosmic lighting warning: {e}")
+        return img
+
+def apply_crystal_refraction_lighting(img, char_data):
+    """Apply crystal refraction and brilliance effects"""
+    try:
+        # Create prismatic effect
+        prismatic = img.copy()
+        prismatic_array = np.array(prismatic)
+        
+        if len(prismatic_array.shape) == 3:
+            # Create color separation effect
+            red_shift = np.roll(prismatic_array[:, :, 0], 2, axis=1)
+            blue_shift = np.roll(prismatic_array[:, :, 2], -2, axis=1)
+            
+            prismatic_array[:, :, 0] = np.clip(red_shift * 1.1, 0, 255)
+            prismatic_array[:, :, 2] = np.clip(blue_shift * 1.1, 0, 255)
+        
+        prismatic = Image.fromarray(prismatic_array.astype(np.uint8))
+        
+        # Add brilliant highlights
+        highlights = img.filter(ImageFilter.GaussianBlur(radius=3))
+        enhancer = ImageEnhance.Brightness(highlights)
+        highlights = enhancer.enhance(1.5)
+        
+        # Combine effects
+        result = Image.blend(img, prismatic, 0.3)
+        result = Image.blend(result, highlights, 0.2)
+        
+        return result
+    except Exception as e:
+        print(f"Crystal lighting warning: {e}")
+        return img
+
+def apply_dramatic_shadow_lighting(img, char_data):
+    """Apply dramatic shadow lighting with enhanced visibility"""
+    try:
+        # Create enhanced shadow effect (brighter than original)
+        shadow_enhanced = img.copy()
+        
+        # Brighten the image significantly
+        enhancer = ImageEnhance.Brightness(shadow_enhanced)
+        shadow_enhanced = enhancer.enhance(1.3)
+        
+        # Add subtle blue tint for mystique
+        shadow_array = np.array(shadow_enhanced)
+        if len(shadow_array.shape) == 3:
+            shadow_array[:, :, 2] = np.clip(shadow_array[:, :, 2] * 1.2, 0, 255)  # Blue boost
+        
+        shadow_enhanced = Image.fromarray(shadow_array.astype(np.uint8))
+        
+        # Add soft glow to maintain visibility
+        glow = shadow_enhanced.filter(ImageFilter.GaussianBlur(radius=8))
+        result = Image.blend(shadow_enhanced, glow, 0.3)
+        
+        return result
+    except Exception as e:
+        print(f"Shadow lighting warning: {e}")
+        return img
+
+def apply_mystical_aura_lighting(img, char_data):
+    """Apply mystical aura lighting effects"""
+    try:
+        # Create mystical aura
+        aura = img.filter(ImageFilter.GaussianBlur(radius=15))
+        
+        # Enhance mystical colors (purple, gold, cyan)
+        aura_array = np.array(aura)
+        if len(aura_array.shape) == 3:
+            aura_array[:, :, 0] = np.clip(aura_array[:, :, 0] * 1.1, 0, 255)  # Red
+            aura_array[:, :, 1] = np.clip(aura_array[:, :, 1] * 1.0, 0, 255)  # Green
+            aura_array[:, :, 2] = np.clip(aura_array[:, :, 2] * 1.2, 0, 255)  # Blue
+        
+        aura = Image.fromarray(aura_array.astype(np.uint8))
+        
+        # Blend with original
+        result = Image.blend(img, aura, 0.35)
+        
+        return result
+    except Exception as e:
+        print(f"Mystical lighting warning: {e}")
+        return img
+
+def apply_masterpiece_effects(img, vibe, phrase, aesthetic_style):
+    """Apply sophisticated masterpiece-level effects"""
+    try:
+        print(f"🎨 Applying masterpiece effects for {aesthetic_style}...")
+        
+        # Apply style-specific enhancements
+        if aesthetic_style == 'neon_geometric':
+            img = apply_neon_masterpiece_effects(img)
+        elif aesthetic_style == 'cosmic_ethereal':
+            img = apply_cosmic_masterpiece_effects(img)
+        elif aesthetic_style == 'crystalline_precise':
+            img = apply_crystal_masterpiece_effects(img)
+        elif aesthetic_style == 'shadow_mysterious':
+            img = apply_shadow_masterpiece_effects(img)
+        else:
+            img = apply_mystical_masterpiece_effects(img)
+        
+        return img
+    except Exception as e:
+        print(f"Masterpiece effects warning: {e}")
+        return img
+
+def apply_neon_masterpiece_effects(img):
+    """Apply neon-specific masterpiece effects"""
+    try:
+        # Ultra-sharp details
+        enhancer = ImageEnhance.Sharpness(img)
+        img = enhancer.enhance(2.0)
+        
+        # High contrast for neon pop
+        enhancer = ImageEnhance.Contrast(img)
+        img = enhancer.enhance(1.6)
+        
+        # Vibrant colors
+        enhancer = ImageEnhance.Color(img)
+        img = enhancer.enhance(1.8)
+        
+        return img
+    except:
+        return img
+
+def apply_cosmic_masterpiece_effects(img):
+    """Apply cosmic-specific masterpiece effects"""
+    try:
+        # Ethereal softness with sharp details
+        enhancer = ImageEnhance.Sharpness(img)
+        img = enhancer.enhance(1.5)
+        
+        # Deep contrast for cosmic depth
+        enhancer = ImageEnhance.Contrast(img)
+        img = enhancer.enhance(1.7)
+        
+        # Rich cosmic colors
+        enhancer = ImageEnhance.Color(img)
+        img = enhancer.enhance(1.6)
+        
+        return img
+    except:
+        return img
+
+def apply_crystal_masterpiece_effects(img):
+    """Apply crystal-specific masterpiece effects"""
+    try:
+        # Ultra-sharp precision
+        enhancer = ImageEnhance.Sharpness(img)
+        img = enhancer.enhance(2.2)
+        
+        # High contrast for facet definition
+        enhancer = ImageEnhance.Contrast(img)
+        img = enhancer.enhance(1.8)
+        
+        # Brilliant color clarity
+        enhancer = ImageEnhance.Color(img)
+        img = enhancer.enhance(1.4)
+        
+        return img
+    except:
+        return img
+
+def apply_shadow_masterpiece_effects(img):
+    """Apply shadow-specific masterpiece effects (enhanced for visibility)"""
+    try:
+        # Enhanced brightness for visibility
+        enhancer = ImageEnhance.Brightness(img)
+        img = enhancer.enhance(1.4)
+        
+        # Moderate sharpness
+        enhancer = ImageEnhance.Sharpness(img)
+        img = enhancer.enhance(1.6)
+        
+        # Enhanced contrast while maintaining visibility
+        enhancer = ImageEnhance.Contrast(img)
+        img = enhancer.enhance(1.5)
+        
+        # Subtle color enhancement
+        enhancer = ImageEnhance.Color(img)
+        img = enhancer.enhance(1.3)
+        
+        return img
+    except:
+        return img
+
+def apply_mystical_masterpiece_effects(img):
+    """Apply mystical-specific masterpiece effects"""
+    try:
+        # Balanced sharpness
+        enhancer = ImageEnhance.Sharpness(img)
+        img = enhancer.enhance(1.7)
+        
+        # Mystical contrast
+        enhancer = ImageEnhance.Contrast(img)
+        img = enhancer.enhance(1.5)
+        
+        # Enhanced mystical colors
+        enhancer = ImageEnhance.Color(img)
+        img = enhancer.enhance(1.7)
+        
+        return img
+    except:
+        return img
+
+def apply_gallery_quality_finish(img, vibe, phrase, char_data, aesthetic_style):
+    """Apply final gallery-quality finishing touches"""
+    try:
+        print(f"🎨 Applying gallery-quality finish...")
+        
+        # Final sharpening pass
+        enhancer = ImageEnhance.Sharpness(img)
+        img = enhancer.enhance(1.3)
+        
+        # Final contrast optimization
+        enhancer = ImageEnhance.Contrast(img)
+        img = enhancer.enhance(1.2)
+        
+        # Final color saturation
+        enhancer = ImageEnhance.Color(img)
+        img = enhancer.enhance(1.3)
+        
+        # Add professional smoothing
+        img = img.filter(ImageFilter.SMOOTH_MORE)
+        
+        # Final detail enhancement
+        img = apply_professional_detail_enhancement(img, char_data)
+        
+        print(f"✨ Gallery-quality finish applied")
+        return img
+    except Exception as e:
+        print(f"Gallery finish warning: {e}")
+        return img
+
+def apply_professional_detail_enhancement(img, char_data):
+    """Apply professional detail enhancement"""
+    try:
+        # Enhance fine details
+        detail_factor = 1.2 + (char_data.get('unique_chars', 10) * 0.02)
+        enhancer = ImageEnhance.Sharpness(img)
+        img = enhancer.enhance(min(2.5, detail_factor))
+        
+        return img
+    except:
+        return img
+
+def add_professional_symbolism(draw, img, center, size, symbolic_meaning, char_data, seed):
+    """Add sophisticated symbolic elements"""
+    pass  # Placeholder for additional symbolism
+
+def add_artistic_meaning_patterns(draw, img, center, size, artistic_profile, char_data, seed):
+    """Add artistic patterns based on meaning"""
+    pass  # Placeholder for meaning patterns
+
+def apply_professional_alpha(overlay, alpha_factor):
+    """Apply professional alpha blending"""
+    try:
+        # Create alpha-adjusted overlay
+        alpha_overlay = Image.new('RGBA', overlay.size, (0, 0, 0, 0))
+        alpha_overlay.paste(overlay, (0, 0))
+        
+        # Adjust alpha
+        alpha_array = np.array(alpha_overlay)
+        if len(alpha_array.shape) == 3 and alpha_array.shape[2] == 4:
+            alpha_array[:, :, 3] = alpha_array[:, :, 3] * alpha_factor
+        
+        return Image.fromarray(alpha_array.astype(np.uint8))
+    except:
+        return overlay
+
+def count_emotional_words(text):
+    """Count emotional words in text"""
+    emotional_words = [
+        'love', 'peace', 'power', 'strength', 'healing', 'money', 'success', 'joy',
+        'happiness', 'protection', 'wisdom', 'clarity', 'abundance', 'prosperity',
+        'freedom', 'wealth', 'health', 'beauty', 'truth', 'light', 'divine', 'sacred',
+        'blessed', 'gratitude', 'manifestation', 'transformation', 'awakening', 'enlightenment'
+    ]
+    
+    words = text.lower().split()
+    return sum(1 for word in words if word in emotional_words)
 
 def add_simple_shadow_glow(img):
     """Simple shadow glow effect to prevent timeouts"""
@@ -2165,26 +2472,180 @@ def add_fractal_enhancement(img, char_data):
         return img
 
 
-# New "Ultra" functions to implement the extreme text influence
-def create_ultra_mystical_sigil(draw, img, center, size, phrase, char_data, text_seed, pattern_seed, color_seed):
-    """Create mystical sigil with EXTREME text influence"""
-    random.seed(text_seed + pattern_seed + color_seed)
-    print("  -> Creating ULTRA mystical sigil...")
-    # Direct implementation to avoid recursion
-    colors = [(180, 100, 255), (255, 140, 255), (140, 220, 255)]
+def create_neon_mystical_masterpiece(draw, img, center, size, phrase, char_data, artistic_seed, composition_seed, style_seed, color_seed):
+    """Create sophisticated neon mystical masterpiece like the reference images"""
+    random.seed(artistic_seed)
     
-    # Create flowing patterns
-    for i in range(8 + char_data['length']):
-        angle = (i * 45 + char_data['first_char_value']) % 360
-        radius = size // 4 + (char_data['vowel_count'] * 10)
-        x = center[0] + radius * math.cos(math.radians(angle))
-        y = center[1] + radius * math.sin(math.radians(angle))
+    # Professional neon color palette
+    neon_colors = [
+        (0, 255, 255),    # Bright cyan - primary
+        (64, 224, 255),   # Deep sky blue  
+        (0, 191, 255),    # Electric blue
+        (127, 255, 212),  # Aquamarine
+        (255, 255, 255),  # Pure white for highlights
+    ]
+    
+    # Calculate sophisticated positioning based on phrase
+    element_count = 5 + char_data['word_count'] + (char_data['sacred_power'] % 8)
+    
+    # Create central symbol based on phrase characteristics
+    if 'eye' in phrase.lower() or 'see' in phrase.lower() or 'vision' in phrase.lower():
+        create_neon_eye_symbol(draw, center, size, neon_colors[0], char_data, style_seed)
+    elif any(word in phrase.lower() for word in ['arrow', 'direction', 'path', 'way', 'up', 'rise']):
+        create_neon_arrow_symbol(draw, center, size, neon_colors[0], char_data, style_seed)
+    else:
+        create_neon_geometric_symbol(draw, center, size, neon_colors[0], char_data, style_seed)
+    
+    # Add sophisticated supporting elements
+    for i in range(element_count):
+        random.seed(composition_seed + i * char_data['ascii_sum'])
         
-        color = colors[i % len(colors)]
-        try:
-            draw.ellipse([x-15, y-15, x+15, y+15], fill=(*color, 150))
-        except:
-            pass
+        # Position elements in meaningful arrangement
+        angle = (360 / element_count) * i + (char_data['intent_strength'] % 45)
+        distance = (size // 6) + (char_data['manifestation_power'] % (size // 8))
+        
+        x = center[0] + distance * math.cos(math.radians(angle))
+        y = center[1] + distance * math.sin(math.radians(angle))
+        
+        # Create supporting geometric elements
+        element_type = (char_data['first_char_value'] + i) % 4
+        color = neon_colors[i % len(neon_colors)]
+        
+        if element_type == 0:
+            create_neon_triangle(draw, (x, y), 20 + char_data['unique_chars'], color, char_data)
+        elif element_type == 1:
+            create_neon_circle(draw, (x, y), 15 + char_data['vowel_count'], color, char_data)
+        elif element_type == 2:
+            create_neon_diamond(draw, (x, y), 18 + char_data['consonant_count'], color, char_data)
+        else:
+            create_neon_cross(draw, (x, y), 22 + char_data['special_count'], color, char_data)
+    
+    # Add connecting energy lines
+    create_neon_energy_connections(draw, center, size, phrase, char_data, neon_colors, artistic_seed)
+
+def create_cosmic_ethereal_masterpiece(draw, img, center, size, phrase, char_data, artistic_seed, composition_seed, style_seed, color_seed):
+    """Create cosmic ethereal masterpiece with nebula effects"""
+    random.seed(artistic_seed)
+    
+    # Cosmic color palette
+    cosmic_colors = [
+        (138, 43, 226),   # Blue violet
+        (72, 61, 139),    # Dark slate blue
+        (147, 0, 211),    # Dark violet
+        (255, 20, 147),   # Deep pink
+        (0, 206, 209),    # Dark turquoise
+    ]
+    
+    # Create central cosmic symbol
+    if 'infinity' in phrase.lower() or 'eternal' in phrase.lower():
+        create_cosmic_infinity_symbol(draw, center, size, cosmic_colors[0], char_data)
+    elif 'star' in phrase.lower() or 'stellar' in phrase.lower():
+        create_cosmic_star_symbol(draw, center, size, cosmic_colors[0], char_data)
+    else:
+        create_cosmic_spiral_symbol(draw, center, size, cosmic_colors[0], char_data)
+    
+    # Add nebula effects to image
+    create_cosmic_nebula_background(img, cosmic_colors, char_data, composition_seed)
+    
+    # Add stellar elements
+    stellar_count = 15 + char_data['length'] + (char_data['cosmic_resonance'] % 20)
+    for i in range(stellar_count):
+        random.seed(style_seed + i)
+        x = random.randint(size // 8, size - size // 8)
+        y = random.randint(size // 8, size - size // 8)
+        
+        create_cosmic_star_point(draw, (x, y), cosmic_colors[i % len(cosmic_colors)], char_data)
+
+def create_crystalline_precision_masterpiece(draw, img, center, size, phrase, char_data, artistic_seed, composition_seed, style_seed, color_seed):
+    """Create precise crystalline masterpiece with geometric perfection"""
+    random.seed(artistic_seed)
+    
+    # Crystal color palette
+    crystal_colors = [
+        (0, 255, 255),    # Cyan
+        (64, 224, 255),   # Sky blue
+        (255, 255, 255),  # White
+        (192, 192, 192),  # Silver
+        (135, 206, 250),  # Light sky blue
+    ]
+    
+    # Create central crystal formation
+    crystal_complexity = 6 + char_data['complexity_score'] % 8
+    
+    for layer in range(crystal_complexity):
+        layer_size = (size // 8) + (layer * 15) + (char_data['geometric_precision'] % 30)
+        sides = 6 + (layer % 4)
+        
+        create_precision_crystal_layer(draw, center, layer_size, sides, crystal_colors[layer % len(crystal_colors)], char_data, layer)
+    
+    # Add crystal facets and reflections
+    create_crystal_facet_system(draw, center, size, phrase, char_data, crystal_colors, style_seed)
+
+def create_shadow_mystery_masterpiece(draw, img, center, size, phrase, char_data, artistic_seed, composition_seed, style_seed, color_seed):
+    """Create mysterious shadow masterpiece with sophisticated depth"""
+    random.seed(artistic_seed)
+    
+    # Enhanced shadow colors (brighter for visibility)
+    shadow_colors = [
+        (100, 200, 255),  # Light blue
+        (150, 180, 255),  # Periwinkle  
+        (200, 160, 255),  # Light purple
+        (180, 200, 255),  # Lavender blue
+        (255, 255, 255),  # White highlights
+    ]
+    
+    # Create central mysterious symbol
+    if 'hidden' in phrase.lower() or 'secret' in phrase.lower():
+        create_mystery_eye_symbol(draw, center, size, shadow_colors[0], char_data)
+    else:
+        create_mystery_geometric_symbol(draw, center, size, shadow_colors[0], char_data)
+    
+    # Add flowing shadow tendrils
+    create_flowing_shadow_tendrils(draw, center, size, phrase, char_data, shadow_colors, artistic_seed)
+
+def create_radiant_light_masterpiece(draw, img, center, size, phrase, char_data, artistic_seed, composition_seed, style_seed, color_seed):
+    """Create radiant light masterpiece with brilliant illumination"""
+    random.seed(artistic_seed)
+    
+    # Radiant light palette
+    light_colors = [
+        (255, 255, 0),    # Bright yellow
+        (255, 215, 0),    # Gold
+        (255, 255, 255),  # Pure white
+        (255, 248, 220),  # Cornsilk
+        (255, 250, 205),  # Lemon chiffon
+    ]
+    
+    # Create central radiant symbol
+    create_radiant_sun_symbol(draw, center, size, light_colors[0], char_data)
+    
+    # Add light ray emanations
+    create_light_ray_system(draw, center, size, phrase, char_data, light_colors, artistic_seed)
+
+def create_elemental_organic_masterpiece(draw, img, center, size, phrase, char_data, artistic_seed, composition_seed, style_seed, color_seed):
+    """Create organic elemental masterpiece with natural flow"""
+    random.seed(artistic_seed)
+    
+    # Natural element colors
+    elemental_colors = [
+        (34, 139, 34),    # Forest green
+        (0, 100, 0),      # Dark green
+        (50, 205, 50),    # Lime green
+        (124, 252, 0),    # Lawn green
+        (255, 255, 255),  # White highlights
+    ]
+    
+    # Create elemental symbol based on phrase
+    if any(element in phrase.lower() for element in ['earth', 'ground', 'stone']):
+        create_earth_element_symbol(draw, center, size, elemental_colors[0], char_data)
+    elif any(element in phrase.lower() for element in ['water', 'ocean', 'river']):
+        create_water_element_symbol(draw, center, size, elemental_colors[0], char_data)
+    elif any(element in phrase.lower() for element in ['fire', 'flame', 'burn']):
+        create_fire_element_symbol(draw, center, size, elemental_colors[0], char_data)
+    elif any(element in phrase.lower() for element in ['air', 'wind', 'breath']):
+        create_air_element_symbol(draw, center, size, elemental_colors[0], char_data)
+    else:
+        create_universal_element_symbol(draw, center, size, elemental_colors[0], char_data)
 
 def create_ultra_cosmic_sigil(draw, img, center, size, phrase, char_data, text_seed, pattern_seed, color_seed):
     """Create cosmic sigil with EXTREME text influence"""
@@ -2232,55 +2693,513 @@ def create_ultra_light_sigil(draw, img, center, size, phrase, char_data, text_se
     create_light_sigil(draw, img, center, size, phrase, text_seed, pattern_seed, color_seed)
 
 
-# Main function to create the vibe-specific sigil with extreme text influence
-def create_enhanced_vibe_sigil(draw, img, center, size, original_phrase, vibe, 
-                                 char_data, text_seed, pattern_seed, color_seed):
-    """Create REVOLUTIONARY vibe-specific sigil with EXTREME text influence"""
+# ===== SOPHISTICATED ARTISTIC CREATION SYSTEM =====
 
-    # Create ultra-enhanced seeds for maximum text influence
-    phrase_power = char_data.get('sacred_power', 0) # Fallback if key is missing
-    intent_boost = char_data.get('intent_strength', 0)
-    manifestation_boost = char_data.get('manifestation_power', 0)
+def create_artistic_profile(phrase):
+    """Create detailed artistic profile from user's intent"""
+    profile = {
+        'complexity_level': min(10, len(phrase.split()) + len(set(phrase.lower()))),
+        'emotional_depth': count_emotional_words(phrase) * 2,
+        'symbolic_weight': len([c for c in phrase if c.isalpha()]) / max(1, len(phrase)),
+        'mystical_elements': sum(1 for word in phrase.lower().split() if word in [
+            'love', 'power', 'light', 'sacred', 'divine', 'spirit', 'energy', 'magic',
+            'protection', 'healing', 'wisdom', 'strength', 'abundance', 'manifestation'
+        ]),
+        'geometric_preference': hash(phrase) % 5,  # 0-4 for different geometric styles
+        'color_intensity': (sum(ord(c) for c in phrase) % 100) / 100,
+        'glow_factor': min(1.0, len(phrase) / 20),
+        'symmetry_level': (len(set(phrase.lower())) / max(1, len(phrase))) * 10
+    }
+    return profile
 
-    enhanced_text_seed = text_seed + phrase_power
-    enhanced_pattern_seed = pattern_seed + intent_boost
-    enhanced_color_seed = color_seed + manifestation_boost
+def extract_deep_symbolism(phrase):
+    """Extract sophisticated symbolic meanings from text"""
+    symbols = []
+    phrase_lower = phrase.lower()
+    
+    # Celestial symbols
+    if any(word in phrase_lower for word in ['star', 'moon', 'sun', 'cosmic', 'celestial', 'infinity']):
+        symbols.append('celestial')
+    
+    # Geometric symbols  
+    if any(word in phrase_lower for word in ['sacred', 'geometry', 'triangle', 'circle', 'square']):
+        symbols.append('geometric')
+    
+    # Nature symbols
+    if any(word in phrase_lower for word in ['earth', 'water', 'fire', 'air', 'nature', 'tree']):
+        symbols.append('elemental')
+    
+    # Mystical symbols
+    if any(word in phrase_lower for word in ['magic', 'spell', 'witch', 'wizard', 'enchant', 'mystical']):
+        symbols.append('mystical')
+    
+    # Protection symbols
+    if any(word in phrase_lower for word in ['protect', 'shield', 'guard', 'safe', 'secure']):
+        symbols.append('protective')
+    
+    # Power symbols
+    if any(word in phrase_lower for word in ['power', 'strength', 'force', 'energy', 'mighty']):
+        symbols.append('power')
+    
+    # Eye symbols
+    if any(word in phrase_lower for word in ['see', 'vision', 'sight', 'eye', 'watch', 'observe']):
+        symbols.append('vision')
+    
+    return symbols if symbols else ['universal']
 
-    print(f"🎨 Creating {vibe} sigil with EXTREME text influence:")
-    print(f"   Phrase Power: {phrase_power}")
-    print(f"   Intent Strength: {intent_boost}")
-    print(f"   Manifestation Power: {manifestation_boost}")
+def calculate_emotional_resonance(phrase):
+    """Calculate sophisticated emotional resonance score"""
+    emotional_words = {
+        'love': 10, 'peace': 8, 'joy': 9, 'happiness': 8, 'bliss': 9,
+        'power': 7, 'strength': 6, 'courage': 7, 'confidence': 6,
+        'wisdom': 8, 'knowledge': 6, 'truth': 7, 'clarity': 6,
+        'healing': 8, 'health': 6, 'wellness': 6, 'vitality': 7,
+        'abundance': 7, 'prosperity': 6, 'wealth': 5, 'success': 6,
+        'protection': 7, 'safety': 6, 'security': 5, 'shield': 6,
+        'freedom': 8, 'liberation': 8, 'independence': 6,
+        'transformation': 9, 'change': 6, 'growth': 7, 'evolution': 8,
+        'spiritual': 9, 'divine': 10, 'sacred': 9, 'holy': 8,
+        'magic': 8, 'mystical': 8, 'enchanted': 7, 'magical': 7
+    }
+    
+    words = phrase.lower().split()
+    total_resonance = sum(emotional_words.get(word, 0) for word in words)
+    base_resonance = len(phrase) * 2
+    
+    return min(100, total_resonance + base_resonance)
 
-    random.seed(enhanced_text_seed + enhanced_pattern_seed + enhanced_color_seed)
+def determine_aesthetic_style(phrase, vibe):
+    """Determine sophisticated aesthetic style"""
+    styles = {
+        'neon_geometric': ['modern', 'tech', 'cyber', 'digital', 'electric'],
+        'cosmic_ethereal': ['space', 'star', 'cosmic', 'universe', 'infinity', 'eternal'],
+        'mystical_ornate': ['magic', 'mystical', 'ancient', 'wisdom', 'sacred', 'divine'],
+        'elemental_organic': ['nature', 'earth', 'water', 'fire', 'air', 'natural'],
+        'crystalline_precise': ['crystal', 'diamond', 'gem', 'clarity', 'pure', 'precise'],
+        'shadow_mysterious': ['shadow', 'dark', 'mystery', 'hidden', 'secret', 'depth']
+    }
+    
+    phrase_lower = phrase.lower()
+    
+    # Check for style keywords in phrase
+    for style, keywords in styles.items():
+        if any(keyword in phrase_lower for keyword in keywords):
+            return style
+    
+    # Default based on vibe
+    vibe_styles = {
+        'mystical': 'mystical_ornate',
+        'cosmic': 'cosmic_ethereal', 
+        'elemental': 'elemental_organic',
+        'crystal': 'crystalline_precise',
+        'shadow': 'shadow_mysterious',
+        'light': 'neon_geometric'
+    }
+    
+    primary_vibe = vibe.split('+')[0] if '+' in vibe else vibe
+    return vibe_styles.get(primary_vibe, 'neon_geometric')
 
+def create_professional_canvas(size, aesthetic_style, char_data):
+    """Create sophisticated background canvas"""
+    # Create base image
+    img = Image.new('RGBA', (size, size), color=(0, 0, 0, 255))
+    
+    # Create sophisticated gradient background based on aesthetic style
+    gradient_colors = {
+        'neon_geometric': [(0, 5, 15), (0, 15, 30), (5, 20, 40)],
+        'cosmic_ethereal': [(5, 0, 20), (15, 5, 35), (25, 10, 50)],
+        'mystical_ornate': [(10, 5, 20), (20, 10, 30), (30, 15, 40)],
+        'elemental_organic': [(5, 10, 5), (10, 20, 10), (15, 30, 15)],
+        'crystalline_precise': [(0, 10, 15), (5, 15, 25), (10, 20, 35)],
+        'shadow_mysterious': [(5, 0, 10), (10, 5, 15), (15, 10, 20)]
+    }
+    
+    colors = gradient_colors.get(aesthetic_style, gradient_colors['neon_geometric'])
+    
+    # Create radial gradient
+    for y in range(size):
+        for x in range(size):
+            distance = math.sqrt((x - size/2)**2 + (y - size/2)**2) / (size/2)
+            distance = min(1.0, distance)
+            
+            # Interpolate colors based on distance
+            if distance < 0.3:
+                color = colors[0]
+            elif distance < 0.7:
+                # Interpolate between colors[0] and colors[1]
+                t = (distance - 0.3) / 0.4
+                color = tuple(int(colors[0][i] + t * (colors[1][i] - colors[0][i])) for i in range(3))
+            else:
+                # Interpolate between colors[1] and colors[2]
+                t = (distance - 0.7) / 0.3
+                color = tuple(int(colors[1][i] + t * (colors[2][i] - colors[1][i])) for i in range(3))
+            
+            img.putpixel((x, y), (*color, 255))
+    
+    return img
+
+def create_masterpiece_foundation(draw, img, center, size, phrase, char_data, seed):
+    """Create sophisticated foundational sacred geometry"""
+    random.seed(seed)
+    
+    # Create multiple layers of sacred geometry based on phrase characteristics
+    foundation_layers = 3 + (char_data['complexity_score'] % 4)
+    
+    for layer in range(foundation_layers):
+        layer_radius = (size // 8) + (layer * (size // 12)) + (char_data['sacred_power'] % 50)
+        layer_sides = 6 + (char_data['unique_chars'] % 6) + layer
+        layer_alpha = 80 - (layer * 15)
+        
+        # Create geometric foundation
+        points = []
+        for i in range(layer_sides):
+            angle = (360 / layer_sides) * i + (char_data['first_char_value'] * layer)
+            x = center[0] + layer_radius * math.cos(math.radians(angle))
+            y = center[1] + layer_radius * math.sin(math.radians(angle))
+            points.append((x, y))
+        
+        # Draw foundation geometry with sophisticated styling
+        try:
+            color = (100 + char_data['vowel_count'] * 10, 150 + char_data['consonant_count'] * 8, 200 + char_data['unique_chars'] * 5)
+            draw.polygon(points, outline=(*color, layer_alpha), width=2 + layer)
+            
+            # Add connecting lines for complexity
+            if layer > 0:
+                for i in range(0, len(points), 2):
+                    opposite_i = (i + len(points) // 2) % len(points)
+                    draw.line([points[i], points[opposite_i]], fill=(*color, layer_alpha // 2), width=1)
+        except:
+            pass
+
+def create_artistic_masterpiece_layer(draw, img, center, size, phrase, vibe, char_data, 
+                                    artistic_seed, composition_seed, style_seed, color_seed):
+    """Create sophisticated artistic masterpiece based on vibe"""
+    
+    print(f"🎨 Creating MASTERPIECE layer for {vibe}...")
+    
     if vibe == 'mystical':
-        create_ultra_mystical_sigil(draw, img, center, size, original_phrase, char_data,
-                                   enhanced_text_seed, enhanced_pattern_seed, enhanced_color_seed)
+        create_neon_mystical_masterpiece(draw, img, center, size, phrase, char_data, artistic_seed, composition_seed, style_seed, color_seed)
     elif vibe == 'cosmic':
-        create_ultra_cosmic_sigil(draw, img, center, size, original_phrase, char_data,
-                                 enhanced_text_seed, enhanced_pattern_seed, enhanced_color_seed)
+        create_cosmic_ethereal_masterpiece(draw, img, center, size, phrase, char_data, artistic_seed, composition_seed, style_seed, color_seed)
     elif vibe == 'elemental':
-        create_ultra_elemental_sigil(draw, img, center, size, original_phrase, char_data,
-                                    enhanced_text_seed, enhanced_pattern_seed, enhanced_color_seed)
+        create_elemental_organic_masterpiece(draw, img, center, size, phrase, char_data, artistic_seed, composition_seed, style_seed, color_seed)
     elif vibe == 'crystal':
-        create_ultra_crystal_sigil(draw, img, center, size, original_phrase, char_data,
-                                  enhanced_text_seed, enhanced_pattern_seed, enhanced_color_seed)
+        create_crystalline_precision_masterpiece(draw, img, center, size, phrase, char_data, artistic_seed, composition_seed, style_seed, color_seed)
     elif vibe == 'shadow':
-        create_ultra_shadow_sigil(draw, img, center, size, original_phrase, char_data,
-                                 enhanced_text_seed, enhanced_pattern_seed, enhanced_color_seed)
+        create_shadow_mystery_masterpiece(draw, img, center, size, phrase, char_data, artistic_seed, composition_seed, style_seed, color_seed)
     elif vibe == 'light':
-        create_ultra_light_sigil(draw, img, center, size, original_phrase, char_data,
-                                enhanced_text_seed, enhanced_pattern_seed, enhanced_color_seed)
+        create_radiant_light_masterpiece(draw, img, center, size, phrase, char_data, artistic_seed, composition_seed, style_seed, color_seed)
     else:
-        # Default to mystical if vibe is unrecognized or for fallback
-        create_ultra_mystical_sigil(draw, img, center, size, original_phrase, char_data,
-                                   enhanced_text_seed, enhanced_pattern_seed, enhanced_color_seed)
+        # Default to mystical masterpiece
+        create_neon_mystical_masterpiece(draw, img, center, size, phrase, char_data, artistic_seed, composition_seed, style_seed, color_seed)
 
 
-# Implemented functions for all required operations
-def analyze_word_meanings(phrase): return {}
-def calculate_emotional_weight(phrase): return len(phrase) * 2
-def extract_symbolic_elements(phrase): return []
+# ===== SOPHISTICATED SYMBOL CREATION FUNCTIONS =====
+
+def create_neon_eye_symbol(draw, center, size, color, char_data, style_seed):
+    """Create sophisticated neon eye symbol like reference images"""
+    x, y = center
+    
+    # Calculate eye dimensions based on phrase characteristics
+    eye_width = 80 + char_data['sacred_power'] % 40
+    eye_height = 40 + char_data['intent_strength'] % 20
+    pupil_size = 20 + char_data['manifestation_power'] % 15
+    
+    # Draw outer eye shape with neon glow
+    eye_points = [
+        (x - eye_width//2, y),
+        (x - eye_width//4, y - eye_height//2),
+        (x + eye_width//4, y - eye_height//2),
+        (x + eye_width//2, y),
+        (x + eye_width//4, y + eye_height//2),
+        (x - eye_width//4, y + eye_height//2)
+    ]
+    
+    # Draw with multiple layers for glow effect
+    for glow in range(5, 0, -1):
+        glow_color = (*color, max(30, 255 - glow * 40))
+        try:
+            draw.polygon(eye_points, outline=glow_color, width=glow * 2)
+        except:
+            pass
+    
+    # Draw inner circle (iris)
+    iris_size = eye_height - 10
+    try:
+        for glow in range(3, 0, -1):
+            glow_color = (*color, max(50, 255 - glow * 50))
+            draw.ellipse([x-iris_size//2, y-iris_size//2, x+iris_size//2, y+iris_size//2], 
+                        outline=glow_color, width=glow * 2)
+    except:
+        pass
+    
+    # Draw pupil
+    try:
+        pupil_color = (255, 255, 255, 255)
+        draw.ellipse([x-pupil_size//2, y-pupil_size//2, x+pupil_size//2, y+pupil_size//2], 
+                    fill=pupil_color)
+    except:
+        pass
+
+def create_neon_arrow_symbol(draw, center, size, color, char_data, style_seed):
+    """Create sophisticated neon arrow symbol"""
+    x, y = center
+    
+    # Arrow pointing up by default, rotated based on phrase
+    arrow_height = 100 + char_data['sacred_power'] % 50
+    arrow_width = 60 + char_data['intent_strength'] % 30
+    
+    # Main arrow shaft
+    shaft_width = 8 + char_data['manifestation_power'] % 6
+    
+    # Arrow points
+    points = [
+        (x, y - arrow_height//2),  # Top point
+        (x - arrow_width//2, y - arrow_height//4),  # Left wing
+        (x - shaft_width//2, y - arrow_height//4),  # Left shaft top
+        (x - shaft_width//2, y + arrow_height//2),  # Left shaft bottom
+        (x + shaft_width//2, y + arrow_height//2),  # Right shaft bottom
+        (x + shaft_width//2, y - arrow_height//4),  # Right shaft top
+        (x + arrow_width//2, y - arrow_height//4),  # Right wing
+    ]
+    
+    # Draw with glow effect
+    for glow in range(6, 0, -1):
+        glow_color = (*color, max(40, 255 - glow * 30))
+        try:
+            draw.polygon(points, outline=glow_color, width=glow)
+        except:
+            pass
+
+def create_neon_geometric_symbol(draw, center, size, color, char_data, style_seed):
+    """Create sophisticated neon geometric symbol"""
+    x, y = center
+    
+    # Create complex geometric pattern
+    outer_radius = 60 + char_data['sacred_power'] % 40
+    inner_radius = 30 + char_data['intent_strength'] % 20
+    sides = 6 + char_data['manifestation_power'] % 6
+    
+    # Outer shape
+    outer_points = []
+    for i in range(sides):
+        angle = (360 / sides) * i
+        px = x + outer_radius * math.cos(math.radians(angle))
+        py = y + outer_radius * math.sin(math.radians(angle))
+        outer_points.append((px, py))
+    
+    # Inner shape
+    inner_points = []
+    for i in range(sides):
+        angle = (360 / sides) * i + (180 / sides)  # Offset for star effect
+        px = x + inner_radius * math.cos(math.radians(angle))
+        py = y + inner_radius * math.sin(math.radians(angle))
+        inner_points.append((px, py))
+    
+    # Draw with glow
+    for glow in range(5, 0, -1):
+        glow_color = (*color, max(50, 255 - glow * 40))
+        try:
+            draw.polygon(outer_points, outline=glow_color, width=glow)
+            draw.polygon(inner_points, outline=glow_color, width=glow)
+        except:
+            pass
+
+def create_neon_triangle(draw, pos, size, color, char_data):
+    """Create neon triangle with glow"""
+    x, y = pos
+    height = size * 0.866  # Equilateral triangle height
+    
+    points = [
+        (x, y - height/2),
+        (x - size/2, y + height/2),
+        (x + size/2, y + height/2)
+    ]
+    
+    for glow in range(4, 0, -1):
+        glow_color = (*color, max(60, 255 - glow * 50))
+        try:
+            draw.polygon(points, outline=glow_color, width=glow)
+        except:
+            pass
+
+def create_neon_circle(draw, pos, size, color, char_data):
+    """Create neon circle with glow"""
+    x, y = pos
+    
+    for glow in range(4, 0, -1):
+        glow_color = (*color, max(60, 255 - glow * 50))
+        try:
+            draw.ellipse([x-size, y-size, x+size, y+size], outline=glow_color, width=glow)
+        except:
+            pass
+
+def create_neon_diamond(draw, pos, size, color, char_data):
+    """Create neon diamond with glow"""
+    x, y = pos
+    
+    points = [
+        (x, y - size),
+        (x + size, y),
+        (x, y + size),
+        (x - size, y)
+    ]
+    
+    for glow in range(4, 0, -1):
+        glow_color = (*color, max(60, 255 - glow * 50))
+        try:
+            draw.polygon(points, outline=glow_color, width=glow)
+        except:
+            pass
+
+def create_neon_cross(draw, pos, size, color, char_data):
+    """Create neon cross with glow"""
+    x, y = pos
+    thickness = size // 4
+    
+    # Vertical bar
+    v_points = [
+        (x - thickness, y - size),
+        (x + thickness, y - size),
+        (x + thickness, y + size),
+        (x - thickness, y + size)
+    ]
+    
+    # Horizontal bar
+    h_points = [
+        (x - size, y - thickness),
+        (x + size, y - thickness),
+        (x + size, y + thickness),
+        (x - size, y + thickness)
+    ]
+    
+    for glow in range(4, 0, -1):
+        glow_color = (*color, max(60, 255 - glow * 50))
+        try:
+            draw.polygon(v_points, outline=glow_color, width=glow)
+            draw.polygon(h_points, outline=glow_color, width=glow)
+        except:
+            pass
+
+def create_neon_energy_connections(draw, center, size, phrase, char_data, colors, seed):
+    """Create sophisticated energy connections between elements"""
+    random.seed(seed)
+    
+    # Create connecting lines based on phrase energy
+    connection_count = 8 + char_data['word_count'] * 2
+    
+    for i in range(connection_count):
+        # Calculate connection points
+        angle1 = random.uniform(0, 360)
+        angle2 = random.uniform(0, 360)
+        
+        distance1 = random.uniform(size//8, size//3)
+        distance2 = random.uniform(size//8, size//3)
+        
+        x1 = center[0] + distance1 * math.cos(math.radians(angle1))
+        y1 = center[1] + distance1 * math.sin(math.radians(angle1))
+        
+        x2 = center[0] + distance2 * math.cos(math.radians(angle2))
+        y2 = center[1] + distance2 * math.sin(math.radians(angle2))
+        
+        color = colors[i % len(colors)]
+        
+        # Draw connection with glow
+        for glow in range(3, 0, -1):
+            glow_color = (*color, max(30, 150 - glow * 40))
+            try:
+                draw.line([(x1, y1), (x2, y2)], fill=glow_color, width=glow)
+            except:
+                pass
+
+# Additional symbol creation functions
+def create_cosmic_infinity_symbol(draw, center, size, color, char_data):
+    """Create cosmic infinity symbol"""
+    x, y = center
+    width = 80 + char_data['sacred_power'] % 40
+    height = 40 + char_data['intent_strength'] % 20
+    
+    # Create infinity symbol using curves
+    for glow in range(5, 0, -1):
+        glow_color = (*color, max(50, 255 - glow * 40))
+        # Left loop
+        try:
+            draw.ellipse([x-width//2, y-height//2, x, y+height//2], outline=glow_color, width=glow)
+        except:
+            pass
+        # Right loop  
+        try:
+            draw.ellipse([x, y-height//2, x+width//2, y+height//2], outline=glow_color, width=glow)
+        except:
+            pass
+
+def create_cosmic_star_symbol(draw, center, size, color, char_data):
+    """Create cosmic star symbol"""
+    x, y = center
+    radius = 50 + char_data['sacred_power'] % 30
+    
+    # 8-pointed star
+    points = []
+    for i in range(16):
+        angle = (360 / 16) * i
+        point_radius = radius if i % 2 == 0 else radius * 0.5
+        px = x + point_radius * math.cos(math.radians(angle))
+        py = y + point_radius * math.sin(math.radians(angle))
+        points.append((px, py))
+    
+    for glow in range(5, 0, -1):
+        glow_color = (*color, max(50, 255 - glow * 40))
+        try:
+            draw.polygon(points, outline=glow_color, width=glow)
+        except:
+            pass
+
+def create_cosmic_spiral_symbol(draw, center, size, color, char_data):
+    """Create cosmic spiral symbol"""
+    x, y = center
+    
+    # Create spiral using connected points
+    points = []
+    for angle in range(0, 720, 10):  # Two full rotations
+        radius = (angle / 720) * (40 + char_data['sacred_power'] % 30)
+        px = x + radius * math.cos(math.radians(angle))
+        py = y + radius * math.sin(math.radians(angle))
+        points.append((px, py))
+    
+    # Draw spiral with glow
+    for i in range(len(points) - 1):
+        for glow in range(3, 0, -1):
+            glow_color = (*color, max(80, 255 - glow * 50))
+            try:
+                draw.line([points[i], points[i+1]], fill=glow_color, width=glow)
+            except:
+                pass
+
+# Placeholder functions for other symbol types
+def create_precision_crystal_layer(draw, center, layer_size, sides, color, char_data, layer): pass
+def create_crystal_facet_system(draw, center, size, phrase, char_data, colors, seed): pass
+def create_mystery_eye_symbol(draw, center, size, color, char_data): pass
+def create_mystery_geometric_symbol(draw, center, size, color, char_data): pass
+def create_flowing_shadow_tendrils(draw, center, size, phrase, char_data, colors, seed): pass
+def create_radiant_sun_symbol(draw, center, size, color, char_data): pass
+def create_light_ray_system(draw, center, size, phrase, char_data, colors, seed): pass
+def create_earth_element_symbol(draw, center, size, color, char_data): pass
+def create_water_element_symbol(draw, center, size, color, char_data): pass
+def create_fire_element_symbol(draw, center, size, color, char_data): pass
+def create_air_element_symbol(draw, center, size, color, char_data): pass
+def create_universal_element_symbol(draw, center, size, color, char_data): pass
+def create_cosmic_nebula_background(img, colors, char_data, seed): pass
+def create_cosmic_star_point(draw, pos, color, char_data): pass
+
+# Enhanced characteristic analysis functions
+def analyze_word_meanings(phrase): 
+    return {'depth': len(phrase.split()), 'complexity': len(set(phrase.lower()))}
+
+def calculate_emotional_weight(phrase): 
+    return min(100, len(phrase) * 3 + count_emotional_words(phrase) * 10)
+
+def extract_symbolic_elements(phrase): 
+    return extract_deep_symbolism(phrase)
 
 def create_base_sacred_geometry(draw, center, size, phrase, char_data, seed):
     """Create base sacred geometry patterns"""
