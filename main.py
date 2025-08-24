@@ -1,6 +1,10 @@
 
 from flask import Flask, request, jsonify
-from flask_cors import CORS
+try:
+    from flask_cors import CORS
+except ImportError:
+    print("⚠️  flask-cors not installed, using basic CORS headers")
+    CORS = None
 from PIL import Image, ImageDraw, ImageFilter, ImageEnhance
 import numpy as np
 import os
@@ -18,7 +22,18 @@ from functools import wraps
 import socket
 
 app = Flask(__name__)
-CORS(app, origins=["*"])
+
+# Configure CORS properly
+if CORS:
+    CORS(app, origins=["*"], allow_headers=["Content-Type", "Authorization", "X-Pro-Key"])
+else:
+    # Fallback CORS headers
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Pro-Key')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        return response
 
 # Configure logging
 import logging
@@ -39,11 +54,13 @@ def handle_errors(f):
         try:
             return f(*args, **kwargs)
         except Exception as e:
-            app.logger.error(f"Error in {f.__name__}: {str(e)}")
+            error_msg = str(e)
+            app.logger.error(f"Error in {f.__name__}: {error_msg}")
             app.logger.error(f"Traceback: {traceback.format_exc()}")
             return jsonify({
                 'success': False,
-                'error': 'Internal server error occurred',
+                'error': f'Generation failed: {error_msg}',
+                'details': error_msg,
                 'timestamp': str(datetime.now())
             }), 500
     return decorated_function
@@ -357,6 +374,10 @@ if __name__ == '__main__':
               channel_timeout=300)
     except ImportError:
         print("⚠️  Waitress not available, using Flask dev server...")
+        app.run(host="0.0.0.0", port=port, debug=False, threaded=True)
+    except Exception as e:
+        print(f"❌ Server startup error: {e}")
+        print("🔄 Falling back to Flask dev server...")
         app.run(host="0.0.0.0", port=port, debug=False, threaded=True)
     except OSError as e:
         if "Address already in use" in str(e):

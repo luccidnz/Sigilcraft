@@ -38,13 +38,21 @@ app.get('/api/health', (req, res) => {
 
 // Pro status endpoint
 app.get('/api/pro-status', (req, res) => {
-  const providedKey = req.headers['x-pro-key'] || req.query.key;
-  
-  res.json({
-    success: true,
-    isPro: providedKey === PRO_KEY,
-    timestamp: new Date().toISOString()
-  });
+  try {
+    const providedKey = req.headers['x-pro-key'] || req.query.key;
+    
+    res.json({
+      success: true,
+      isPro: providedKey === PRO_KEY,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Pro status error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to check pro status'
+    });
+  }
 });
 
 // Pro key validation
@@ -92,11 +100,21 @@ app.post('/api/generate', async (req, res) => {
 
   } catch (error) {
     const duration = Date.now() - startTime;
-    console.error(`❌ Generation failed after ${duration}ms:`, error.message);
+    console.error(`❌ Generation failed after ${duration}ms:`, error);
+    
+    let errorMessage = 'Generation service unavailable';
+    if (error.name === 'AbortError') {
+      errorMessage = 'Generation timed out';
+    } else if (error.code === 'ECONNREFUSED') {
+      errorMessage = 'Backend service not available';
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
     
     res.status(500).json({
       success: false,
-      error: 'Generation service unavailable'
+      error: errorMessage,
+      details: error.message || 'Unknown error'
     });
   }
 });

@@ -35,7 +35,7 @@ function renderEnergySelection() {
   if (!elements.energyContainer) return;
 
   const availableEnergies = state.isPro ? ALL_ENERGIES : FREE_ENERGIES;
-  
+
   elements.energyContainer.innerHTML = `
     <h3>Choose Your Vibe</h3>
     <div class="energy-grid">
@@ -178,10 +178,13 @@ function hideSpiritualLoading() {
 
 async function makeGenerationRequest(phrase, vibe) {
   console.log(`🌟 Sending request: phrase="${phrase}", vibe="${vibe}"`);
-  
+
   const response = await fetch('/api/generate', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
     body: JSON.stringify({ phrase: phrase.trim(), vibe: vibe || 'mystical' }),
     signal: AbortSignal.timeout(45000)
   });
