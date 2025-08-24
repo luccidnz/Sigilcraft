@@ -176,14 +176,18 @@ app.get("/api/is-pro", (req, res) => {
     console.log("🔍 Request URL:", req.url);
     console.log("🔍 All cookies:", req.cookies);
 
+    // Ensure JSON response
+    res.setHeader('Content-Type', 'application/json');
+    
     const pro = req.cookies && req.cookies.sigil_pro === "1";
     console.log("🔍 Pro status check result:", pro);
     console.log("🔍 === PRO STATUS CHECK COMPLETE ===");
 
-    res.json({ pro });
+    return res.json({ pro, timestamp: Date.now() });
   } catch (error) {
     console.error("❌ Pro status check error:", error);
-    res.status(500).json({ pro: false, error: "Server error" });
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(500).json({ pro: false, error: "Server error" });
   }
 });
 
@@ -193,6 +197,9 @@ app.post("/api/verify-pro", (req, res) => {
     console.log("🔑 Request URL:", req.url);
     console.log("🔑 Request method:", req.method);
     console.log("🔑 Request body:", req.body);
+
+    // Ensure JSON response
+    res.setHeader('Content-Type', 'application/json');
 
     const { key } = req.body;
     if (!key) {
@@ -219,7 +226,7 @@ app.post("/api/verify-pro", (req, res) => {
       const idx = list.findIndex(x => x.key === key);
       if (idx >= 0) { list[idx].used = true; saveKeys(list); }
       console.log("✅ === PRO KEY VERIFICATION SUCCESS ===");
-      return res.json({ ok: true });
+      return res.json({ ok: true, message: "Pro features unlocked!" });
     }
 
     console.log("❌ Pro key verification failed");
@@ -227,6 +234,7 @@ app.post("/api/verify-pro", (req, res) => {
     return res.json({ ok: false, error: "Invalid key" });
   } catch (error) {
     console.error("❌ Pro key verification error:", error);
+    res.setHeader('Content-Type', 'application/json');
     return res.status(500).json({ ok: false, error: "Server error" });
   }
 });

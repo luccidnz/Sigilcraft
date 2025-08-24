@@ -1,53 +1,48 @@
 /* ===== SACRED DESIGN SYSTEM ===== */
 :root {
-    /* Sacred Color Palette */
-    --sacred-primary: #8b5cf6;
-    --sacred-secondary: #06d6a0;
-    --sacred-tertiary: #f72585;
-    --sacred-gold: #ffd60a;
-    --sacred-silver: #e9ecef;
+    /* Enhanced Sacred Color Palette */
+    --sacred-primary: #9b59b6;
+    --sacred-secondary: #00d4aa;
+    --sacred-tertiary: #ff6b9d;
+    --sacred-gold: #ffd700;
+    --sacred-silver: #e8e8e8;
     --sacred-bronze: #cd7f32;
+    --sacred-violet: #8a2be2;
+    --sacred-emerald: #50c878;
+    --sacred-ruby: #e0115f;
+    --sacred-sapphire: #0f52ba;
 
-    /* Mystical Colors */
-    --mystical-purple: #6b46c1;
-    --mystical-blue: #3b82f6;
-    --mystical-teal: #14b8a6;
-    --mystical-pink: #ec4899;
-    --mystical-orange: #f59e0b;
+    /* Mystical Energy Colors */
+    --mystical-aura: #6b46c1;
+    --cosmic-void: #0f0f23;
+    --elemental-earth: #8b4513;
+    --crystal-light: #e0ffff;
+    --shadow-mist: #2f2f2f;
+    --divine-light: #fff8dc;
 
-    /* Background & Surface */
-    --bg-void: #0a0a0f;
-    --bg-deep: #1a1a2e;
-    --bg-surface: #16213e;
-    --surface-sacred: rgba(139, 92, 246, 0.1);
-    --surface-glow: rgba(139, 92, 246, 0.2);
-
-    /* Text */
-    --text-sacred: #f8fafc;
-    --text-ethereal: #cbd5e1;
-    --text-whisper: #64748b;
+    /* Enhanced Backgrounds */
+    --bg-void: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #2d1b69 100%);
+    --bg-sacred: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.15) 0%, rgba(0, 0, 0, 0.95) 70%);
+    --surface-ethereal: rgba(139, 92, 246, 0.08);
+    --surface-divine: rgba(255, 215, 0, 0.05);
 
     /* Sacred Geometry */
     --golden-ratio: 1.618;
     --sacred-spacing: calc(1rem * var(--golden-ratio));
+    --phi: 1.618033988749894;
 
-    /* Shadows & Glows */
-    --sacred-glow: 0 0 30px rgba(139, 92, 246, 0.6);
-    --ethereal-glow: 0 0 20px rgba(6, 214, 160, 0.4);
-    --divine-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    /* Enhanced Shadows & Auras */
+    --divine-aura: 0 0 40px rgba(139, 92, 246, 0.8), 0 0 80px rgba(139, 92, 246, 0.4);
+    --sacred-glow: 0 0 30px rgba(255, 215, 0, 0.6), inset 0 0 30px rgba(255, 215, 0, 0.1);
+    --mystical-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 5px 15px rgba(139, 92, 246, 0.2);
 
-    /* Transitions */
-    --sacred-transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-    --ethereal-transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-
-    /* Refresh styling with enhanced spiritual and modern themes */
-    --primary-color: #9b59b6;
-    --secondary-color: #3498db;
-    --background-color: #1c1e26;
-    --spiritual-glow: 0 0 10px rgba(155, 89, 182, 0.9);
+    /* Sacred Transitions */
+    --ethereal-ease: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    --divine-ease: cubic-bezier(0.23, 1, 0.32, 1);
+    --sacred-duration: 0.6s;
 }
 
-/* ===== GLOBAL RESET ===== */
+/* ===== GLOBAL FOUNDATION ===== */
 * {
     margin: 0;
     padding: 0;
@@ -57,120 +52,81 @@
 html {
     scroll-behavior: smooth;
     font-size: 16px;
+    height: 100%;
 }
 
 body {
-    font-family: 'Philosopher', 'Georgia', serif;
-    background: linear-gradient(135deg, var(--bg-void) 0%, var(--bg-deep) 50%, var(--bg-surface) 100%);
-    color: var(--text-sacred);
+    font-family: 'Cinzel', 'Times New Roman', serif;
+    background: var(--bg-void);
+    color: #f8fafc;
     line-height: 1.7;
     min-height: 100vh;
     position: relative;
     overflow-x: hidden;
-
-    /* Updated body styles */
-    background: var(--background-color);
-    color: azure;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    letter-spacing: 0.3px;
 }
 
-/* ===== SACRED BACKGROUND ===== */
-.sacred-bg {
+/* ===== ENHANCED MYSTICAL BACKGROUND ===== */
+.cosmic-canvas {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: -2;
+    z-index: -3;
+    background: var(--bg-sacred);
 }
 
-.mandala-overlay {
+.sacred-geometry {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 120vmax;
-    height: 120vmax;
+    width: 150vmax;
+    height: 150vmax;
     transform: translate(-50%, -50%);
     background: 
-        radial-gradient(circle at center, transparent 40%, rgba(139, 92, 246, 0.03) 41%, rgba(139, 92, 246, 0.03) 42%, transparent 43%),
-        radial-gradient(circle at center, transparent 60%, rgba(6, 214, 160, 0.02) 61%, rgba(6, 214, 160, 0.02) 62%, transparent 63%),
-        radial-gradient(circle at center, transparent 80%, rgba(247, 37, 133, 0.02) 81%, rgba(247, 37, 133, 0.02) 82%, transparent 83%);
-    animation: mandalaRotate 120s linear infinite;
-}
-
-.energy-particles {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-image: 
-        radial-gradient(2px 2px at 20px 30px, rgba(139, 92, 246, 0.8), transparent),
-        radial-gradient(2px 2px at 40px 70px, rgba(6, 214, 160, 0.6), transparent),
-        radial-gradient(1px 1px at 90px 40px, rgba(247, 37, 133, 0.7), transparent),
-        radial-gradient(1px 1px at 130px 80px, rgba(255, 214, 10, 0.5), transparent),
-        radial-gradient(2px 2px at 160px 30px, rgba(139, 92, 246, 0.4), transparent);
-    background-repeat: repeat;
-    background-size: 200px 200px;
-    animation: particleFloat 30s ease-in-out infinite;
+        radial-gradient(circle at 30% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 70% 80%, rgba(0, 212, 170, 0.06) 0%, transparent 50%),
+        radial-gradient(circle at 20% 80%, rgba(255, 107, 157, 0.05) 0%, transparent 50%);
+    animation: sacredFlow 120s linear infinite;
 }
 
 .ley-lines {
     position: absolute;
     width: 100%;
     height: 100%;
-    background: 
-        linear-gradient(0deg, transparent 24%, rgba(139, 92, 246, 0.05) 25%, rgba(139, 92, 246, 0.05) 26%, transparent 27%, transparent 74%, rgba(139, 92, 246, 0.05) 75%, rgba(139, 92, 246, 0.05) 76%, transparent 77%),
-        linear-gradient(90deg, transparent 24%, rgba(6, 214, 160, 0.05) 25%, rgba(6, 214, 160, 0.05) 26%, transparent 27%, transparent 74%, rgba(6, 214, 160, 0.05) 75%, rgba(6, 214, 160, 0.05) 76%, transparent 77%);
-    background-size: 100px 100px;
-    animation: leyFlow 60s linear infinite;
+    background-image: 
+        linear-gradient(45deg, transparent 48%, rgba(139, 92, 246, 0.03) 49%, rgba(139, 92, 246, 0.03) 51%, transparent 52%),
+        linear-gradient(-45deg, transparent 48%, rgba(0, 212, 170, 0.03) 49%, rgba(0, 212, 170, 0.03) 51%, transparent 52%);
+    background-size: 150px 150px;
+    animation: leyPulse 60s ease-in-out infinite;
 }
 
-/* ===== TYPOGRAPHY ===== */
-h1, h2, h3, h4, h5, h6 {
-    font-family: 'Cinzel', serif;
-    font-weight: 600;
-    margin-bottom: 1rem;
+.quantum-particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(3px 3px at 25px 35px, rgba(139, 92, 246, 0.7), transparent),
+        radial-gradient(2px 2px at 50px 75px, rgba(255, 215, 0, 0.6), transparent),
+        radial-gradient(1px 1px at 90px 40px, rgba(0, 212, 170, 0.8), transparent),
+        radial-gradient(2px 2px at 130px 90px, rgba(255, 107, 157, 0.5), transparent);
+    background-repeat: repeat;
+    background-size: 180px 180px;
+    animation: particleDance 45s ease-in-out infinite;
 }
 
-.logo-title {
-    font-family: 'Cinzel', serif;
-    font-size: 2.5rem;
-    font-weight: 700;
-    background: linear-gradient(45deg, var(--sacred-primary), var(--sacred-secondary), var(--sacred-tertiary));
-    background-size: 300% 300%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: sacredGradient 6s ease-in-out infinite;
-    text-shadow: var(--sacred-glow);
-    letter-spacing: 0.1em;
-}
-
-.logo-subtitle {
-    font-family: 'Marcellus', serif;
-    font-size: 0.9rem;
-    color: var(--text-ethereal);
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    margin-top: 0.5rem;
-}
-
-/* ===== HEADER ===== */
+/* ===== ENHANCED HEADER ===== */
 .header {
-    background: rgba(26, 27, 46, 0.95);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(139, 92, 246, 0.2);
-    padding: 1rem 0;
+    background: rgba(10, 10, 26, 0.95);
+    backdrop-filter: blur(25px);
+    border-bottom: 2px solid rgba(139, 92, 246, 0.3);
+    padding: 2rem 0;
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: var(--divine-shadow);
-
-    /* Updated header styles */
-    background-color: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(12px);
-    padding: 1em;
-    border-bottom: 2px solid var(--secondary-color);
+    box-shadow: var(--mystical-shadow);
 }
 
 .header-content {
@@ -181,89 +137,135 @@ h1, h2, h3, h4, h5, h6 {
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 2rem;
 }
 
 .logo-sacred {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 1.5rem;
 }
 
-.sacred-circle {
+.sacred-mandala {
     position: relative;
-    width: 60px;
-    height: 60px;
-    border: 2px solid var(--sacred-primary);
+    width: 80px;
+    height: 80px;
+    border: 3px solid var(--sacred-primary);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: radial-gradient(circle, rgba(139, 92, 246, 0.2), transparent);
-    box-shadow: var(--sacred-glow);
-    animation: sacredPulse 4s ease-in-out infinite;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.3), transparent);
+    box-shadow: var(--divine-aura);
+    animation: mandalaSpin 20s linear infinite;
 }
 
-.inner-circle {
-    width: 40px;
-    height: 40px;
-    border: 1px solid var(--sacred-secondary);
+.inner-mandala {
+    width: 50px;
+    height: 50px;
+    border: 2px solid var(--sacred-gold);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(6, 214, 160, 0.1);
+    background: rgba(255, 215, 0, 0.15);
+    animation: innerSpin 15s linear infinite reverse;
 }
 
 .sacred-eye {
     color: var(--sacred-gold);
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     animation: eyeBlink 8s ease-in-out infinite;
+    filter: drop-shadow(0 0 10px var(--sacred-gold));
 }
 
-.header-actions {
+.logo-text {
     display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
+.logo-title {
+    font-family: 'Cinzel', serif;
+    font-size: 2.8rem;
+    font-weight: 700;
+    background: linear-gradient(45deg, var(--sacred-primary), var(--sacred-gold), var(--sacred-secondary));
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: sacredGradient 6s ease-in-out infinite;
+    text-shadow: 0 0 30px rgba(139, 92, 246, 0.5);
+    letter-spacing: 0.15em;
+    position: relative;
+}
+
+.logo-subtitle {
+    font-family: 'Philosopher', serif;
+    font-size: 1rem;
+    color: #cbd5e1;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    text-align: center;
+    opacity: 0.9;
+}
+
+/* ===== ENHANCED PRO BADGE ===== */
 .pro-badge {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
     background: linear-gradient(135deg, var(--sacred-gold), var(--sacred-bronze));
-    color: var(--bg-void);
-    padding: 0.75rem 1.5rem;
-    border-radius: 25px;
+    color: var(--cosmic-void);
+    padding: 1rem 2rem;
+    border-radius: 30px;
     font-family: 'Cinzel', serif;
-    font-weight: 600;
-    font-size: 0.9rem;
-    box-shadow: 0 0 25px rgba(255, 214, 10, 0.5);
-    animation: crownGlow 3s ease-in-out infinite alternate;
+    font-weight: 700;
+    font-size: 1rem;
+    box-shadow: var(--sacred-glow);
+    animation: crownGlow 4s ease-in-out infinite alternate;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
+    position: relative;
+    overflow: hidden;
 }
 
-/* ===== CARDS & SECTIONS ===== */
+.pro-badge::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.8s ease;
+}
+
+.pro-badge:hover::before {
+    left: 100%;
+}
+
+/* ===== CONTAINER & CARDS ===== */
 .container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 3rem 2rem;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 3rem;
+    position: relative;
 }
 
 .sacred-card {
-    background: rgba(22, 33, 62, 0.8);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(139, 92, 246, 0.3);
-    border-radius: 20px;
-    padding: 2rem;
-    box-shadow: var(--divine-shadow);
+    background: rgba(22, 33, 62, 0.85);
+    backdrop-filter: blur(25px);
+    border: 2px solid rgba(139, 92, 246, 0.4);
+    border-radius: 25px;
+    padding: 3rem;
+    box-shadow: var(--mystical-shadow);
     position: relative;
     overflow: hidden;
+    transition: transform var(--sacred-duration) var(--ethereal-ease);
 }
 
 .sacred-card::before {
@@ -272,27 +274,34 @@ h1, h2, h3, h4, h5, h6 {
     top: 0;
     left: 0;
     width: 100%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--sacred-primary), transparent);
-    opacity: 0.7;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--sacred-primary), var(--sacred-gold), var(--sacred-secondary), transparent);
+    opacity: 0.8;
 }
 
 .sacred-card::after {
     content: '';
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(139, 92, 246, 0.03) 0%, transparent 70%);
-    animation: cardAura 20s linear infinite;
+    top: -100%;
+    left: -100%;
+    width: 300%;
+    height: 300%;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.04) 0%, transparent 70%);
+    animation: cardAura 30s linear infinite;
 }
 
+.sacred-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--sacred-primary);
+    box-shadow: var(--divine-aura);
+}
+
+/* ===== SECTION HEADERS ===== */
 .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
     position: relative;
     z-index: 1;
 }
@@ -300,22 +309,25 @@ h1, h2, h3, h4, h5, h6 {
 .section-title {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    font-size: 1.6rem;
+    gap: 1rem;
+    font-size: 2rem;
     color: var(--sacred-primary);
     font-family: 'Cinzel', serif;
+    font-weight: 600;
+    letter-spacing: 0.05em;
 }
 
 .section-title i {
-    font-size: 1.4em;
-    filter: drop-shadow(0 0 10px var(--sacred-primary));
+    font-size: 1.6em;
+    filter: drop-shadow(0 0 15px var(--sacred-primary));
+    animation: iconPulse 3s ease-in-out infinite;
 }
 
-/* ===== INPUTS & FORMS ===== */
+/* ===== ENHANCED INPUT SYSTEM ===== */
 .input-group {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
     position: relative;
     z-index: 1;
 }
@@ -323,12 +335,13 @@ h1, h2, h3, h4, h5, h6 {
 .input-label {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
     font-weight: 600;
-    color: var(--text-ethereal);
+    color: #e2e8f0;
     font-family: 'Cinzel', serif;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
+    font-size: 1.1rem;
 }
 
 .sacred-input-wrapper {
@@ -337,205 +350,74 @@ h1, h2, h3, h4, h5, h6 {
 
 .intent-input {
     width: 100%;
-    padding: 1.5rem;
-    font-size: 1.1rem;
+    padding: 2rem;
+    font-size: 1.2rem;
     font-family: 'Philosopher', serif;
-    background: rgba(0, 0, 0, 0.4);
-    border: 2px solid rgba(139, 92, 246, 0.3);
-    border-radius: 15px;
-    color: var(--text-sacred);
-    transition: var(--sacred-transition);
+    background: rgba(0, 0, 0, 0.5);
+    border: 3px solid rgba(139, 92, 246, 0.4);
+    border-radius: 20px;
+    color: #f8fafc;
+    transition: all var(--sacred-duration) var(--ethereal-ease);
     resize: vertical;
-    min-height: 120px;
-    backdrop-filter: blur(10px);
+    min-height: 140px;
+    backdrop-filter: blur(15px);
+    box-shadow: inset 0 0 20px rgba(139, 92, 246, 0.1);
 }
 
 .intent-input::placeholder {
-    color: var(--text-whisper);
+    color: #64748b;
     font-style: italic;
+    opacity: 0.8;
 }
 
 .intent-input:focus {
     outline: none;
     border-color: var(--sacred-primary);
-    box-shadow: var(--sacred-glow);
-    background: rgba(139, 92, 246, 0.05);
-    transform: scale(1.01);
+    box-shadow: var(--divine-aura), inset 0 0 30px rgba(139, 92, 246, 0.2);
+    background: rgba(139, 92, 246, 0.08);
+    transform: scale(1.02);
 }
 
 .input-blessing {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
+    top: 1.5rem;
+    right: 1.5rem;
     color: var(--sacred-secondary);
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     opacity: 0;
-    transition: var(--sacred-transition);
+    transition: all var(--sacred-duration) var(--ethereal-ease);
     pointer-events: none;
 }
 
 .intent-input:focus + .input-blessing {
     opacity: 1;
-    animation: blessingGlow 2s ease-in-out infinite;
+    animation: blessingGlow 3s ease-in-out infinite;
 }
 
-.input-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-}
-
-.char-counter {
-    font-family: 'Cinzel', serif;
-    font-size: 0.9rem;
-    color: var(--text-whisper);
-}
-
-.intent-strength {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.9rem;
-    color: var(--text-ethereal);
-}
-
-.strength-bars {
-    display: flex;
-    gap: 2px;
-}
-
-.strength-bars .bar {
-    width: 4px;
-    height: 12px;
-    background: rgba(139, 92, 246, 0.3);
-    border-radius: 2px;
-    transition: var(--sacred-transition);
-}
-
-.strength-bars .bar.active {
-    background: linear-gradient(to top, var(--sacred-secondary), var(--sacred-primary));
-    box-shadow: 0 0 4px var(--sacred-primary);
-}
-
-/* ===== MOON PHASE ===== */
-.moon-phase {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-family: 'Marcellus', serif;
-    color: var(--text-ethereal);
-    font-size: 0.9rem;
-}
-
-.moon-phase i {
-    color: var(--sacred-silver);
-    filter: drop-shadow(0 0 8px var(--sacred-silver));
-}
-
-/* ===== PRO CONTROLS ===== */
-.pro-controls {
-    margin-top: 2rem;
-    padding: 2rem;
-    background: rgba(139, 92, 246, 0.05);
-    border: 1px solid rgba(139, 92, 246, 0.2);
-    border-radius: 15px;
-    backdrop-filter: blur(10px);
-}
-
-.control-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-}
-
-.control-item {
-    position: relative;
-}
-
-.control-label {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    cursor: pointer;
-    font-weight: 500;
-    color: var(--text-ethereal);
-    transition: var(--sacred-transition);
-}
-
-.control-label:hover {
-    color: var(--text-sacred);
-}
-
-.control-label input[type="checkbox"] {
-    display: none;
-}
-
-.checkmark {
-    width: 20px;
-    height: 20px;
-    border: 2px solid rgba(139, 92, 246, 0.5);
-    border-radius: 4px;
-    position: relative;
-    transition: var(--sacred-transition);
-}
-
-.control-label input[type="checkbox"]:checked + .checkmark {
-    background: linear-gradient(135deg, var(--sacred-primary), var(--sacred-secondary));
-    border-color: var(--sacred-primary);
-}
-
-.control-label input[type="checkbox"]:checked + .checkmark::after {
-    content: '✓';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-weight: bold;
-    font-size: 0.8rem;
-}
-
-.seed-input, .export-select {
-    width: 100%;
-    padding: 0.75rem;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(139, 92, 246, 0.3);
-    border-radius: 8px;
-    color: var(--text-sacred);
-    font-family: inherit;
-    transition: var(--sacred-transition);
-}
-
-.seed-input:focus, .export-select:focus {
-    outline: none;
-    border-color: var(--sacred-primary);
-    box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
-}
-
-/* ===== ENERGY GRID ===== */
+/* ===== ENHANCED ENERGY GRID ===== */
 .energy-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
 }
 
 .energy {
-    background: rgba(0, 0, 0, 0.3);
-    border: 2px solid rgba(139, 92, 246, 0.3);
-    border-radius: 15px;
-    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.4);
+    border: 3px solid rgba(139, 92, 246, 0.4);
+    border-radius: 20px;
+    padding: 2rem;
     text-align: center;
     font-family: 'Cinzel', serif;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     cursor: pointer;
-    transition: var(--ethereal-transition);
+    transition: all var(--sacred-duration) var(--ethereal-ease);
     position: relative;
     overflow: hidden;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(15px);
+    font-size: 1.1rem;
 }
 
 .energy::before {
@@ -545,8 +427,8 @@ h1, h2, h3, h4, h5, h6 {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.2), transparent);
-    transition: left 0.6s ease;
+    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.3), transparent);
+    transition: left 0.8s ease;
 }
 
 .energy:hover::before {
@@ -555,147 +437,87 @@ h1, h2, h3, h4, h5, h6 {
 
 .energy:hover {
     border-color: var(--sacred-primary);
-    box-shadow: var(--sacred-glow);
-    transform: translateY(-4px) scale(1.02);
-    transition: all 0.3s ease-in-out;
-    background: radial-gradient(circle, rgba(139, 92, 246, 0.2), transparent);
-    animation: float 4s ease-in-out infinite;
-    color: var(--text-sacred);
+    box-shadow: var(--divine-aura);
+    transform: translateY(-6px) scale(1.03);
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.25), transparent);
+    color: #fff;
 }
 
 .energy.selected {
     border-color: var(--sacred-secondary) !important;
-    background: rgba(6, 214, 160, 0.15) !important;
-    box-shadow: var(--ethereal-glow) !important;
-    transform: scale(1.05) !important;
-    color: var(--text-sacred);
+    background: rgba(0, 212, 170, 0.2) !important;
+    box-shadow: 0 0 40px rgba(0, 212, 170, 0.6) !important;
+    transform: scale(1.08) !important;
+    color: #fff;
+    animation: selectedPulse 3s ease-in-out infinite;
 }
 
-.energy.locked {
-    opacity: 0.5;
-    cursor: not-allowed;
-    position: relative;
+/* Enhanced vibe-specific styling */
+.energy[data-vibe="mystical"] {
+    border-color: rgba(139, 92, 246, 0.6);
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.15), transparent);
 }
 
-.energy.locked::after {
-    content: '🔒';
-    position: absolute;
-    top: 50%;
-    right: 1rem;
-    transform: translateY(-50%);
-    font-size: 1.2em;
+.energy[data-vibe="cosmic"] {
+    border-color: rgba(15, 15, 35, 0.8);
+    background: radial-gradient(circle, rgba(15, 15, 35, 0.3), transparent);
 }
 
-.energy.pro-unlocked::after {
-    content: '✨';
-    position: absolute;
-    top: 50%;
-    right: 1rem;
-    transform: translateY(-50%);
-    font-size: 1.2em;
-    color: var(--sacred-gold);
-    animation: sparkle 2s ease-in-out infinite;
+.energy[data-vibe="elemental"] {
+    border-color: rgba(139, 69, 19, 0.6);
+    background: radial-gradient(circle, rgba(139, 69, 19, 0.15), transparent);
 }
 
-.combo-display {
-    font-family: 'Cinzel', serif;
-    font-weight: 600;
-    padding: 0.75rem 1.5rem;
-    background: rgba(139, 92, 246, 0.1);
-    border: 1px solid rgba(139, 92, 246, 0.3);
-    border-radius: 20px;
-    font-size: 0.9rem;
-    color: var(--sacred-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+.energy[data-vibe="crystal"] {
+    border-color: rgba(224, 255, 255, 0.6);
+    background: radial-gradient(circle, rgba(224, 255, 255, 0.1), transparent);
 }
 
-/* ===== ENERGY GUIDE ===== */
-.energy-guide {
-    margin-top: 2rem;
-    padding: 1.5rem;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 12px;
-    border: 1px solid rgba(139, 92, 246, 0.2);
+.energy[data-vibe="shadow"] {
+    border-color: rgba(47, 47, 47, 0.8);
+    background: radial-gradient(circle, rgba(47, 47, 47, 0.3), transparent);
 }
 
-.energy-guide h3 {
-    font-family: 'Cinzel', serif;
-    color: var(--sacred-primary);
-    margin-bottom: 1rem;
-    text-align: center;
+.energy[data-vibe="light"] {
+    border-color: rgba(255, 248, 220, 0.8);
+    background: radial-gradient(circle, rgba(255, 248, 220, 0.1), transparent);
 }
 
-.guide-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
-}
-
-.guide-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    padding: 0.75rem;
-    background: rgba(139, 92, 246, 0.05);
-    border-radius: 8px;
-}
-
-.energy-name {
-    font-family: 'Cinzel', serif;
-    font-weight: 600;
-    color: var(--sacred-secondary);
-    text-transform: uppercase;
-    font-size: 0.9rem;
-}
-
-.energy-desc {
-    font-size: 0.85rem;
-    color: var(--text-ethereal);
-    font-style: italic;
-}
-
-/* ===== GENERATION BUTTON ===== */
-.generation-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2rem;
-}
-
+/* ===== ENHANCED GENERATE BUTTON ===== */
 .generate-btn {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
-    padding: 2rem 3rem;
-    font-size: 1.3rem;
+    gap: 1.5rem;
+    padding: 2.5rem 4rem;
+    font-size: 1.5rem;
     font-family: 'Cinzel', serif;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     background: linear-gradient(135deg, var(--sacred-primary), var(--sacred-secondary), var(--sacred-tertiary));
     background-size: 300% 300%;
     color: white;
     border: none;
-    border-radius: 50px;
+    border-radius: 60px;
     cursor: pointer;
-    transition: var(--ethereal-transition);
-    box-shadow: var(--sacred-glow);
+    transition: all var(--sacred-duration) var(--ethereal-ease);
+    box-shadow: var(--divine-aura);
     overflow: hidden;
-    animation: sacredGradient 6s ease-in-out infinite;
+    animation: sacredGradient 8s ease-in-out infinite;
+    margin: 2rem auto;
 }
 
-.btn-sacred-circle {
-    width: 40px;
-    height: 40px;
-    border: 2px solid rgba(255, 255, 255, 0.5);
+.btn-sacred-mandala {
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(255, 255, 255, 0.6);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: sacredSpin 8s linear infinite;
+    animation: mandalaSpin 12s linear infinite;
 }
 
 .btn-energy-flow {
@@ -704,8 +526,8 @@ h1, h2, h3, h4, h5, h6 {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    transition: left 0.6s ease;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.8s ease;
 }
 
 .generate-btn:hover .btn-energy-flow {
@@ -713,139 +535,77 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .generate-btn:hover {
-    transform: translateY(-6px) scale(1.05);
-    box-shadow: 0 15px 50px rgba(139, 92, 246, 0.8);
+    transform: translateY(-8px) scale(1.08);
+    box-shadow: 0 20px 60px rgba(139, 92, 246, 0.8), 0 0 100px rgba(139, 92, 246, 0.4);
 }
 
 .generate-btn:active {
-    transform: translateY(-3px) scale(1.02);
+    transform: translateY(-4px) scale(1.04);
 }
 
-.cooldown {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem 2rem;
-    background: rgba(247, 37, 133, 0.2);
-    border: 1px solid var(--sacred-tertiary);
-    border-radius: 25px;
-    color: var(--sacred-tertiary);
-    font-family: 'Cinzel', serif;
-    font-weight: 600;
-    animation: cooldownPulse 2s ease-in-out infinite;
-}
-
-/* ===== CANVAS ===== */
+/* ===== ENHANCED CANVAS AREA ===== */
 .canvas-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2rem;
+    gap: 2.5rem;
     position: relative;
 }
 
 .canvas-placeholder {
-    width: 512px;
-    height: 512px;
+    width: 600px;
+    height: 600px;
     max-width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.3);
-    border: 2px dashed rgba(139, 92, 246, 0.3);
-    border-radius: 20px;
-    backdrop-filter: blur(10px);
-    transition: var(--sacred-transition);
+    background: rgba(0, 0, 0, 0.4);
+    border: 3px dashed rgba(139, 92, 246, 0.4);
+    border-radius: 25px;
+    backdrop-filter: blur(15px);
+    transition: all var(--sacred-duration) var(--ethereal-ease);
+    position: relative;
+    overflow: hidden;
 }
 
-.placeholder-content {
-    text-align: center;
-    color: var(--text-whisper);
-}
-
-.sacred-mandala {
-    font-size: 4rem;
+.placeholder-mandala {
+    font-size: 5rem;
     color: var(--sacred-primary);
-    margin-bottom: 1rem;
-    animation: mandalaRotate 20s linear infinite;
-    filter: drop-shadow(0 0 20px var(--sacred-primary));
-}
-
-.placeholder-text {
-    font-family: 'Cinzel', serif;
-    font-size: 1.2rem;
-    margin-bottom: 0.5rem;
-    color: var(--text-ethereal);
-}
-
-.placeholder-subtext {
-    font-size: 0.9rem;
-    color: var(--text-whisper);
-    font-style: italic;
+    margin-bottom: 1.5rem;
+    animation: mandalaSpin 25s linear infinite;
+    filter: drop-shadow(0 0 25px var(--sacred-primary));
 }
 
 .sigil-canvas {
     max-width: 100%;
     height: auto;
-    border: 2px solid rgba(139, 92, 246, 0.3);
-    border-radius: 20px;
-    box-shadow: var(--divine-shadow);
-    background: var(--bg-void);
-    transition: var(--sacred-transition);
+    border: 3px solid rgba(139, 92, 246, 0.5);
+    border-radius: 25px;
+    box-shadow: var(--mystical-shadow);
+    background: var(--cosmic-void);
+    transition: all var(--sacred-duration) var(--ethereal-ease);
 }
 
 .sigil-canvas:hover {
-    box-shadow: var(--sacred-glow);
-    transform: scale(1.02);
+    box-shadow: var(--divine-aura);
+    transform: scale(1.03);
+    border-color: var(--sacred-primary);
 }
 
-.canvas-tools {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.tool-btn {
-    width: 40px;
-    height: 40px;
-    background: rgba(139, 92, 246, 0.2);
-    border: 1px solid rgba(139, 92, 246, 0.3);
-    border-radius: 50%;
-    color: var(--sacred-primary);
-    cursor: pointer;
-    transition: var(--sacred-transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.tool-btn:hover {
-    background: rgba(139, 92, 246, 0.3);
-    box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
-    transform: scale(1.1);
-}
-
-.canvas-controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: center;
-    align-items: center;
-}
-
-/* ===== BUTTONS ===== */
+/* ===== ENHANCED BUTTONS ===== */
 .btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
     border: none;
-    border-radius: 12px;
+    border-radius: 15px;
     font-family: 'Cinzel', serif;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 1rem;
     cursor: pointer;
-    transition: var(--sacred-transition);
+    transition: all var(--sacred-duration) var(--ethereal-ease);
     text-decoration: none;
     position: relative;
     overflow: hidden;
@@ -860,8 +620,8 @@ h1, h2, h3, h4, h5, h6 {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.6s;
 }
 
 .btn:hover::before {
@@ -871,677 +631,34 @@ h1, h2, h3, h4, h5, h6 {
 .btn-primary {
     background: linear-gradient(135deg, var(--sacred-primary), var(--sacred-secondary));
     color: white;
-    box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+    box-shadow: 0 0 25px rgba(139, 92, 246, 0.5);
 }
 
 .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 30px rgba(139, 92, 246, 0.6);
-}
-
-.btn-secondary {
-    background: rgba(139, 92, 246, 0.1);
-    color: var(--sacred-primary);
-    border: 1px solid rgba(139, 92, 246, 0.3);
-}
-
-.btn-secondary:hover {
-    background: rgba(139, 92, 246, 0.2);
-    border-color: var(--sacred-primary);
-    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 0 35px rgba(139, 92, 246, 0.7);
 }
 
 .btn-premium {
     background: linear-gradient(135deg, var(--sacred-gold), var(--sacred-bronze));
-    color: var(--bg-void);
-    box-shadow: 0 0 25px rgba(255, 214, 10, 0.5);
+    color: var(--cosmic-void);
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
 }
 
 .btn-premium:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 35px rgba(255, 214, 10, 0.7);
+    transform: translateY(-3px);
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
 }
 
-.btn-large {
-    padding: 1.25rem 2.5rem;
-    font-size: 1.1rem;
-}
-
-/* ===== MEDITATION SECTION ===== */
-.meditation-content {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 2rem;
-    align-items: start;
-}
-
-.ritual-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.ritual-step {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    background: rgba(139, 92, 246, 0.05);
-    border-radius: 12px;
-    border-left: 4px solid var(--sacred-primary);
-}
-
-.step-number {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, var(--sacred-primary), var(--sacred-secondary));
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Cinzel', serif;
-    font-weight: 700;
-    flex-shrink: 0;
-}
-
-.step-content h4 {
-    font-family: 'Cinzel', serif;
-    color: var(--sacred-primary);
-    margin-bottom: 0.5rem;
-}
-
-.step-content p {
-    color: var(--text-ethereal);
-    font-size: 0.95rem;
-}
-
-.activation-tools {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.activation-btn {
-    padding: 1rem 1.5rem;
-    background: rgba(6, 214, 160, 0.1);
-    border: 1px solid var(--sacred-secondary);
-    border-radius: 12px;
-    color: var(--sacred-secondary);
-    font-family: 'Cinzel', serif;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--sacred-transition);
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.activation-btn:hover {
-    background: rgba(6, 214, 160, 0.2);
-    box-shadow: var(--ethereal-glow);
-    transform: translateY(-2px);
-}
-
-/* ===== RATING SECTION ===== */
-.rating-content {
-    text-align: center;
-}
-
-.star-rating {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-}
-
-.rating-label {
-    font-family: 'Philosopher', serif;
-    font-size: 1.1rem;
-    color: var(--text-ethereal);
-}
-
-.stars {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.star {
-    font-size: 2rem;
-    cursor: pointer;
-    transition: var(--sacred-transition);
-    opacity: 0.3;
-    filter: drop-shadow(0 0 5px gold);
-}
-
-.star:hover, .star.active {
-    opacity: 1;
-    transform: scale(1.2);
-    filter: drop-shadow(0 0 15px gold);
-}
-
-.average-rating {
-    font-size: 0.9rem;
-    color: var(--text-whisper);
-    font-family: 'Cinzel', serif;
-}
-
-/* ===== PRO UNLOCK ===== */
-.pro-unlock {
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(255, 214, 10, 0.1));
-    border: 2px solid rgba(139, 92, 246, 0.3);
-    margin-top: 2rem;
-}
-
-.unlock-content {
-    text-align: center;
-}
-
-.unlock-header {
-    margin-bottom: 2rem;
-}
-
-.adept-symbol {
-    font-size: 3rem;
-    color: var(--sacred-gold);
-    margin-bottom: 1rem;
-    animation: crownGlow 3s ease-in-out infinite alternate;
-}
-
-.unlock-header h3 {
-    font-family: 'Cinzel', serif;
-    font-size: 2rem;
-    color: var(--sacred-primary);
-    margin-bottom: 0.5rem;
-}
-
-.unlock-header p {
-    font-size: 1.1rem;
-    color: var(--text-ethereal);
-}
-
-.features-showcase {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin: 2rem 0;
-}
-
-.feature-item {
-    padding: 1.5rem;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 15px;
-    border: 1px solid rgba(139, 92, 246, 0.2);
-    text-align: center;
-    transition: var(--sacred-transition);
-}
-
-.feature-item:hover {
-    transform: translateY(-4px);
-    border-color: var(--sacred-primary);
-    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
-}
-
-.feature-item i {
-    font-size: 2rem;
-    color: var(--sacred-secondary);
-    margin-bottom: 1rem;
-}
-
-.feature-item h4 {
-    font-family: 'Cinzel', serif;
-    color: var(--sacred-primary);
-    margin-bottom: 0.75rem;
-}
-
-.feature-item p {
-    color: var(--text-ethereal);
-    font-size: 0.95rem;
-}
-
-.unlock-actions {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2rem;
-}
-
-.key-input-section {
-    width: 100%;
-    max-width: 400px;
-}
-
-.key-input-wrapper {
-    display: flex;
-    gap: 1rem;
-    align-items: stretch;
-}
-
-.pro-key-input {
-    flex: 1;
-    padding: 1rem;
-    background: rgba(0, 0, 0, 0.4);
-    border: 2px solid rgba(139, 92, 246, 0.3);
-    border-radius: 12px;
-    color: var(--text-sacred);
-    font-family: inherit;
-    text-align: center;
-    letter-spacing: 0.1em;
-}
-
-.pro-key-input:focus {
-    outline: none;
-    border-color: var(--sacred-primary);
-    box-shadow: var(--sacred-glow);
-}
-
-/* ===== MODALS ===== */
-.modal {
-    border: none;
-    background: var(--bg-surface);
-    color: var(--text-sacred);
-    border-radius: 20px;
-    padding: 0;
-    box-shadow: var(--divine-shadow);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(139, 92, 246, 0.3);
-    max-width: 90vw;
-    max-height: 90vh;
-}
-
-.modal::backdrop {
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(5px);
-}
-
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    backdrop-filter: blur(5px);
-    transition: opacity 0.3s ease;
-}
-
-.modal-overlay.hidden {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.modal-content {
-    background: var(--bg-surface);
-    border-radius: 20px;
-    padding: 2rem;
-    border: 1px solid rgba(139, 92, 246, 0.3);
-    box-shadow: var(--divine-shadow);
-    max-width: 90vw;
-    max-height: 90vh;
-    overflow-y: auto;
-    position: relative;
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    border-bottom: 1px solid rgba(139, 92, 246, 0.2);
-    padding-bottom: 1rem;
-}
-
-.modal-header h3 {
-    font-family: 'Cinzel', serif;
-    color: var(--sacred-primary);
-    margin: 0;
-}
-
-.modal-close {
-    background: none;
-    border: none;
-    color: var(--text-ethereal);
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 50%;
-    transition: var(--sacred-transition);
-}
-
-.modal-close:hover {
-    color: var(--text-sacred);
-    background: rgba(139, 92, 246, 0.2);
-}
-
-.modal-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
-    margin-top: 2rem;
-}
-
-.modal-input {
-    width: 100%;
-    padding: 1rem;
-    background: rgba(0, 0, 0, 0.3);
-    border: 2px solid rgba(139, 92, 246, 0.3);
-    border-radius: 12px;
-    color: var(--text-sacred);
-    font-family: inherit;
-    margin-bottom: 1rem;
-}
-
-.modal-input:focus {
-    outline: none;
-    border-color: var(--sacred-primary);
-    box-shadow: var(--sacred-glow);
-}
-
-/* ===== GALLERY ===== */
-.gallery-modal {
-    min-width: 80vw;
-    min-height: 80vh;
-}
-
-.gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1.5rem;
-    max-height: 60vh;
-    overflow-y: auto;
-    padding: 1rem 0;
-}
-
-.gallery-item {
-    background: rgba(0, 0, 0, 0.3);
-    border: 2px solid rgba(139, 92, 246, 0.2);
-    border-radius: 15px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: var(--sacred-transition);
-    position: relative;
-}
-
-.gallery-item:hover {
-    transform: translateY(-4px);
-    border-color: var(--sacred-primary);
-    box-shadow: var(--sacred-glow);
-}
-
-.gallery-item img {
-    width: 100%;
-    height: 150px;
-    object-fit: cover;
-    display: block;
-}
-
-.gallery-info {
-    padding: 1rem;
-    position: relative;
-}
-
-.gallery-phrase {
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-    color: var(--text-sacred);
-    font-size: 0.9rem;
-    font-family: 'Cinzel', serif;
-}
-
-.gallery-vibe {
-    display: block;
-    color: var(--sacred-secondary);
-    font-size: 0.8rem;
-    margin-bottom: 0.3rem;
-    text-transform: uppercase;
-}
-
-.gallery-date {
-    display: block;
-    color: var(--text-whisper);
-    font-size: 0.7rem;
-}
-
-.gallery-delete-btn {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: rgba(247, 37, 133, 0.8);
-    border: none;
-    border-radius: 50%;
-    width: 28px;
-    height: 28px;
-    font-size: 14px;
-    cursor: pointer;
-    opacity: 0;
-    transition: all 0.3s ease;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.gallery-item:hover .gallery-delete-btn {
-    opacity: 1;
-}
-
-.gallery-empty {
-    grid-column: 1 / -1;
-    text-align: center;
-    color: var(--text-ethereal);
-    padding: 3rem;
-    animation: float 6s ease-in-out infinite;
-}
-
-/* ===== SHARE MODAL ===== */
-.share-modal {
-    min-width: 500px;
-}
-
-.share-buttons {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 1rem;
-    margin-top: 2rem;
-}
-
-.btn-social {
-    justify-content: center;
-    padding: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.btn-social.twitter {
-    background: #1da1f2;
-    color: white;
-}
-
-.btn-social.facebook {
-    background: #3b5998;
-    color: white;
-}
-
-#shareCanvas {
-    border: 2px solid rgba(139, 92, 246, 0.3);
-    border-radius: 15px;
-    margin-bottom: 1rem;
-    max-width: 100%;
-}
-
-/* ===== LOADING OVERLAY ===== */
-.loading-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(10, 10, 15, 0.95);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    backdrop-filter: blur(10px);
-}
-
-.loading-content {
-    text-align: center;
-    color: var(--text-sacred);
-}
-
-.quantum-mandala {
-    position: relative;
-    width: 150px;
-    height: 150px;
-    margin: 0 auto 2rem;
-}
-
-.mandala-ring {
-    position: absolute;
-    border: 2px solid transparent;
-    border-radius: 50%;
-    animation: mandalaRotate 3s linear infinite;
-}
-
-.ring-1 {
-    width: 100%;
-    height: 100%;
-    border-top-color: var(--sacred-primary);
-    border-right-color: var(--sacred-primary);
-    animation-duration: 2s;
-}
-
-.ring-2 {
-    width: 80%;
-    height: 80%;
-    top: 10%;
-    left: 10%;
-    border-left-color: var(--sacred-secondary);
-    border-bottom-color: var(--sacred-secondary);
-    animation-duration: 3s;
-    animation-direction: reverse;
-}
-
-.ring-3 {
-    width: 60%;
-    height: 60%;
-    top: 20%;
-    left: 20%;
-    border-top-color: var(--sacred-tertiary);
-    border-right-color: var(--sacred-tertiary);
-    animation-duration: 4s;
-}
-
-.mandala-center {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 40px;
-    height: 40px;
-    background: radial-gradient(circle, var(--sacred-primary), transparent);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    color: var(--sacred-gold);
-    animation: sacredPulse 2s ease-in-out infinite;
-}
-
-.loading-text {
-    font-family: 'Cinzel', serif;
-    font-size: 1.3rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--sacred-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-}
-
-.progress-container {
-    width: 250px;
-    height: 4px;
-    background: rgba(139, 92, 246, 0.2);
-    border-radius: 2px;
-    overflow: hidden;
-    margin: 0 auto;
-}
-
-.progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--sacred-primary), var(--sacred-secondary));
-    border-radius: 2px;
-    animation: progressFlow 3s ease-in-out infinite;
-}
-
-/* ===== TOAST NOTIFICATIONS ===== */
-.toast {
-    position: fixed;
-    top: 2rem;
-    right: 2rem;
-    background: var(--bg-surface);
-    color: var(--text-sacred);
-    padding: 1rem 1.5rem;
-    border-radius: 15px;
-    border: 1px solid rgba(139, 92, 246, 0.3);
-    box-shadow: var(--divine-shadow);
-    backdrop-filter: blur(20px);
-    font-family: 'Cinzel', serif;
-    font-weight: 600;
-    z-index: 1001;
-    transform: translateX(400px);
-    opacity: 0;
-    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-    max-width: 350px;
-
-    /* Updated toast styles */
-    background-color: rgba(0, 0, 0, 0.8);
-    border: 1px solid var(--secondary-color);
-}
-
-.toast.show {
-    transform: translateX(0);
-    opacity: 1;
-}
-
-.toast.error {
-    border-color: var(--sacred-tertiary);
-    box-shadow: 0 0 25px rgba(247, 37, 133, 0.4);
-}
-
-.toast.success {
-    border-color: var(--sacred-secondary);
-    box-shadow: 0 0 25px rgba(6, 214, 160, 0.4);
-}
-
-.toast.warning {
-    border-color: var(--sacred-gold);
-    box-shadow: 0 0 25px rgba(255, 214, 10, 0.4);
-}
-
-/* ===== ANIMATIONS ===== */
-@keyframes mandalaRotate {
+/* ===== ENHANCED ANIMATIONS ===== */
+@keyframes mandalaSpin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
 
-@keyframes particleFloat {
-    0%, 100% { transform: translateY(0px) translateX(0px); }
-    25% { transform: translateY(-10px) translateX(5px); }
-    50% { transform: translateY(-5px) translateX(-5px); }
-    75% { transform: translateY(-15px) translateX(10px); }
-}
-
-@keyframes leyFlow {
-    0% { background-position: 0 0; }
-    100% { background-position: 100px 100px; }
+@keyframes innerSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(-360deg); }
 }
 
 @keyframes sacredGradient {
@@ -1549,34 +666,47 @@ h1, h2, h3, h4, h5, h6 {
     50% { background-position: 100% 50%; }
 }
 
-@keyframes sacredPulse {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.1); opacity: 0.8; }
+@keyframes sacredFlow {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
-@keyframes sacredSpin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+@keyframes leyPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.7; }
+}
+
+@keyframes particleDance {
+    0%, 100% { transform: translateY(0px) translateX(0px); }
+    25% { transform: translateY(-15px) translateX(10px); }
+    50% { transform: translateY(-8px) translateX(-8px); }
+    75% { transform: translateY(-20px) translateX(15px); }
 }
 
 @keyframes eyeBlink {
     0%, 90%, 100% { opacity: 1; }
-    95% { opacity: 0.3; }
+    95% { opacity: 0.2; }
 }
 
 @keyframes crownGlow {
-    0% { filter: drop-shadow(0 0 10px rgba(255, 214, 10, 0.5)); }
-    100% { filter: drop-shadow(0 0 25px rgba(255, 214, 10, 0.8)); }
-}
-
-@keyframes sparkle {
-    0%, 100% { opacity: 0.7; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.2); }
+    0% { 
+        filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.6));
+        transform: scale(1);
+    }
+    100% { 
+        filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.9));
+        transform: scale(1.05);
+    }
 }
 
 @keyframes blessingGlow {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
+    0%, 100% { opacity: 0.6; filter: drop-shadow(0 0 5px var(--sacred-secondary)); }
+    50% { opacity: 1; filter: drop-shadow(0 0 15px var(--sacred-secondary)); }
+}
+
+@keyframes selectedPulse {
+    0%, 100% { box-shadow: 0 0 40px rgba(0, 212, 170, 0.6); }
+    50% { box-shadow: 0 0 60px rgba(0, 212, 170, 0.9); }
 }
 
 @keyframes cardAura {
@@ -1584,27 +714,16 @@ h1, h2, h3, h4, h5, h6 {
     100% { transform: rotate(360deg); }
 }
 
-@keyframes cooldownPulse {
-    0%, 100% { opacity: 0.8; }
-    50% { opacity: 1; }
+@keyframes iconPulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.1); opacity: 1; }
 }
 
-@keyframes progressFlow {
-    0% { width: 0%; }
-    50% { width: 70%; }
-    100% { width: 100%; }
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
-}
-
-/* ===== RESPONSIVE DESIGN ===== */
+/* ===== RESPONSIVE ENHANCEMENTS ===== */
 @media (max-width: 768px) {
     .container {
-        padding: 1rem;
-        gap: 1.5rem;
+        padding: 2rem 1rem;
+        gap: 2rem;
     }
 
     .header-content {
@@ -1614,219 +733,86 @@ h1, h2, h3, h4, h5, h6 {
         gap: 1.5rem;
     }
 
-    .logo-sacred {
-        justify-content: center;
-    }
-
     .logo-title {
-        font-size: 2rem;
+        font-size: 2.2rem;
     }
 
-    .header-actions {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .pro-buttons {
-        flex-direction: column;
-        gap: 0.75rem;
-        width: 100%;
-        max-width: 300px;
+    .sacred-mandala {
+        width: 60px;
+        height: 60px;
     }
 
     .energy-grid {
         grid-template-columns: 1fr;
-        gap: 0.75rem;
-    }
-
-    .control-grid {
-        grid-template-columns: 1fr;
         gap: 1rem;
-    }
-
-    .meditation-content {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-
-    .activation-tools {
-        flex-direction: row;
-        gap: 0.75rem;
-    }
-
-    .features-showcase {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-
-    .canvas-controls {
-        flex-direction: column;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .canvas-controls .btn {
-        width: 100%;
-        max-width: 250px;
-        justify-content: center;
-    }
-
-    .unlock-actions {
-        gap: 1.5rem;
-    }
-
-    .key-input-wrapper {
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    .toast {
-        right: 1rem;
-        left: 1rem;
-        max-width: none;
-        transform: translateY(-100px);
-    }
-
-    .toast.show {
-        transform: translateY(0);
-    }
-
-    .gallery-grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 1rem;
-    }
-
-    .guide-grid {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
-    }
-
-    .share-buttons {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
-    }
-
-    .modal-content {
-        padding: 1.5rem;
-        margin: 1rem;
-        max-width: calc(100vw - 2rem);
-    }
-
-    .gallery-modal, .share-modal {
-        min-width: 95vw;
-    }
-
-    .section-title {
-        font-size: 1.3rem;
     }
 
     .generate-btn {
-        padding: 1.5rem 2rem;
-        font-size: 1.1rem;
-    }
-
-    .ritual-step {
-        flex-direction: column;
-        text-align: center;
-        gap: 0.75rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .sacred-card {
-        padding: 1.5rem;
-    }
-
-    .logo-title {
-        font-size: 1.8rem;
-    }
-
-    .logo-subtitle {
-        font-size: 0.8rem;
-    }
-
-    .energy {
-        padding: 1rem;
-        font-size: 0.9rem;
-    }
-
-    .btn {
-        padding: 0.6rem 1rem;
-        font-size: 0.8rem;
-    }
-
-    .generate-btn {
-        padding: 1.2rem 1.8rem;
-        font-size: 1rem;
+        padding: 2rem 3rem;
+        font-size: 1.2rem;
     }
 
     .canvas-placeholder {
         width: 100%;
-        height: 300px;
-    }
-
-    .sacred-mandala {
-        font-size: 3rem;
-    }
-
-    .placeholder-text {
-        font-size: 1rem;
-    }
-
-    .placeholder-subtext {
-        font-size: 0.8rem;
+        height: 400px;
     }
 }
 
-/* ===== HIGH CONTRAST MODE ===== */
+/* ===== HIGH CONTRAST & ACCESSIBILITY ===== */
 @media (prefers-contrast: high) {
     :root {
-        --text-sacred: #ffffff;
-        --text-ethereal: #f0f0f0;
-        --bg-void: #000000;
-        --bg-surface: #1a1a1a;
+        --sacred-primary: #bb7ce8;
+        --sacred-secondary: #00ffdd;
+        --sacred-gold: #ffff00;
     }
 
-    .energy, .btn {
-        border-width: 3px;
+    .energy, .btn, .intent-input {
+        border-width: 4px;
     }
 }
 
-/* ===== REDUCED MOTION ===== */
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
     }
-
-    .loading-overlay {
-        animation: none;
-    }
-
-    .quantum-mandala * {
-        animation: none;
-    }
-
-    .energy::before {
-        display: none;
-    }
 }
 
-/* ===== PRINT STYLES ===== */
-@media print {
-    .header, .footer, .loading-overlay, .toast, .modal-overlay {
-        display: none;
-    }
+/* ===== NEW FEATURE STYLES ===== */
+.feature-gallery, .meditation-mode, .sigil-journal {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: var(--surface-ethereal);
+    border-radius: 20px;
+    border: 2px solid rgba(139, 92, 246, 0.3);
+}
 
-    .sigil-canvas {
-        max-width: 100%;
-        break-inside: avoid;
-    }
+.modal {
+    background: rgba(22, 33, 62, 0.95);
+    backdrop-filter: blur(25px);
+    border: 3px solid rgba(139, 92, 246, 0.5);
+    border-radius: 25px;
+    color: #f8fafc;
+    box-shadow: var(--divine-aura);
+}
 
-    .sacred-card {
-        break-inside: avoid;
-        box-shadow: none;
-        border: 1px solid #666;
-    }
+.toast {
+    background: rgba(22, 33, 62, 0.95);
+    backdrop-filter: blur(25px);
+    border: 2px solid rgba(139, 92, 246, 0.5);
+    border-radius: 15px;
+    color: #f8fafc;
+    box-shadow: var(--mystical-shadow);
+    font-family: 'Cinzel', serif;
+}
+
+.toast.success {
+    border-color: var(--sacred-secondary);
+    box-shadow: 0 0 30px rgba(0, 212, 170, 0.5);
+}
+
+.toast.error {
+    border-color: var(--sacred-tertiary);
+    box-shadow: 0 0 30px rgba(255, 107, 157, 0.5);
 }
