@@ -3,9 +3,11 @@
 // Enhanced with quantum-level text analysis and true uniqueness
 
 // ===== CONSTANTS =====
-const FREE_ENERGIES = ['mystical', 'elemental', 'light'];
-const PRO_ENERGIES = ['cosmic', 'crystal', 'shadow'];
-const ALL_ENERGIES = [...FREE_ENERGIES, ...PRO_ENERGIES];
+if (typeof FREE_ENERGIES === 'undefined') {
+  var FREE_ENERGIES = ['mystical', 'elemental', 'light'];
+  var PRO_ENERGIES = ['cosmic', 'crystal', 'shadow'];
+  var ALL_ENERGIES = [...FREE_ENERGIES, ...PRO_ENERGIES];
+}
 
 // Energy descriptions for better UX
 const ENERGY_DESCRIPTIONS = {
@@ -18,7 +20,8 @@ const ENERGY_DESCRIPTIONS = {
 };
 
 // ===== STATE MANAGEMENT =====
-const appState = {
+if (typeof appState === 'undefined') {
+var appState = {
   isPro: false,
   isGenerating: false,
   cooldownActive: false,
@@ -31,7 +34,8 @@ const appState = {
 };
 
 // ===== DOM ELEMENTS =====
-const domElements = {
+if (typeof domElements === 'undefined') {
+var domElements = {
   intentInput: null,
   generateBtn: null,
   downloadBtn: null,
@@ -89,15 +93,24 @@ async function checkProStatus() {
     const storedKey = localStorage.getItem('pro_key');
     
     const response = await fetch('/api/pro-status', {
-      headers: storedKey ? { 'X-Pro-Key': storedKey } : {},
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(storedKey ? { 'X-Pro-Key': storedKey } : {})
+      },
     });
     
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error('Response is not JSON');
     }
     
     const data = await response.json();
-    appState.isPro = data.isPro;
+    appState.isPro = data.isPro || false;
     updateProStatus();
   } catch (error) {
     console.error('Error checking pro status:', error);
@@ -244,7 +257,10 @@ async function generateSigil() {
 
     const response = await fetch('/api/generate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
       body: JSON.stringify(uniqueParams),
       signal: AbortSignal.timeout(30000)
     });

@@ -1,4 +1,3 @@
-
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -29,58 +28,20 @@ app.use(express.static('public'));
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'healthy', 
+  res.json({
+    status: 'healthy',
     server: 'sigilcraft',
     timestamp: new Date().toISOString()
-  });
-});
-
-// Pro status endpoint
-app.get('/api/pro-status', (req, res) => {
-  try {
-    const providedKey = req.headers['x-pro-key'] || req.query.key;
-    
-    const response = {
-      success: true,
-      isPro: providedKey === PRO_KEY,
-      timestamp: new Date().toISOString()
-    };
-    
-    console.log(`Pro status check: ${providedKey ? 'Key provided' : 'No key'}, isPro: ${response.isPro}`);
-    
-    res.json(response);
-  } catch (error) {
-    console.error('Pro status error:', error);
-    res.status(500).json({
-      success: false,
-      isPro: false,
-      error: 'Failed to check pro status',
-      details: error.message,
-      timestamp: new Date().toISOString()
-    });
-  }
-});
-
-// Pro key validation
-app.post('/api/validate-key', (req, res) => {
-  const { key } = req.body;
-  const isValid = key === PRO_KEY;
-  
-  res.json({
-    success: true,
-    valid: isValid,
-    message: isValid ? 'Pro key validated' : 'Invalid pro key'
   });
 });
 
 // Sigil generation
 app.post('/api/generate', async (req, res) => {
   const startTime = Date.now();
-  
+
   try {
     const { phrase, vibe } = req.body;
-    
+
     if (!phrase?.trim()) {
       return res.status(400).json({
         success: false,
@@ -105,16 +66,16 @@ app.post('/api/generate', async (req, res) => {
 
     const data = await response.json();
     const duration = Date.now() - startTime;
-    
+
     console.log(`✅ Generation completed in ${duration}ms`);
-    
+
     res.setHeader('Content-Type', 'application/json');
     res.json(data);
 
   } catch (error) {
     const duration = Date.now() - startTime;
     console.error(`❌ Generation failed after ${duration}ms:`, error);
-    
+
     let errorMessage = 'Generation service unavailable';
     if (error.name === 'AbortError') {
       errorMessage = 'Generation timed out';
@@ -123,7 +84,7 @@ app.post('/api/generate', async (req, res) => {
     } else if (error.message) {
       errorMessage = error.message;
     }
-    
+
     res.setHeader('Content-Type', 'application/json');
     res.status(500).json({
       success: false,
@@ -140,7 +101,7 @@ app.get('/', (req, res) => {
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({ 
+  res.status(404).json({
     error: 'Not found',
     path: req.path
   });
