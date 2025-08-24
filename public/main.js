@@ -57,20 +57,47 @@ class SigilcraftApp {
   }
 
   setupEventListeners() {
+    // Mobile detection
+    this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    this.isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
     // Input handling
     if (this.domElements.intentInput) {
       this.domElements.intentInput.addEventListener('input', () => this.handleTextInput());
+      
+      // Mobile-friendly Enter key handling
       this.domElements.intentInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
+        if (e.key === 'Enter' && !e.shiftKey && !this.isMobile) {
           e.preventDefault();
           this.generateSigil();
         }
       });
+
+      // Prevent zoom on focus for iOS
+      if (this.isMobile) {
+        this.domElements.intentInput.addEventListener('focus', () => {
+          if (window.innerWidth < 768) {
+            this.domElements.intentInput.style.fontSize = '16px';
+          }
+        });
+      }
     }
 
-    // Generation button
+    // Generation button with touch feedback
     if (this.domElements.generateBtn) {
       this.domElements.generateBtn.addEventListener('click', () => this.generateSigil());
+      
+      if (this.isTouchDevice) {
+        this.domElements.generateBtn.addEventListener('touchstart', (e) => {
+          e.target.style.transform = 'scale(0.98)';
+        });
+        
+        this.domElements.generateBtn.addEventListener('touchend', (e) => {
+          setTimeout(() => {
+            e.target.style.transform = '';
+          }, 150);
+        });
+      }
     }
 
     // Download button
@@ -88,28 +115,65 @@ class SigilcraftApp {
       });
     }
 
-    // Modal close events
+    // Modal close events with touch support
     document.addEventListener('click', (e) => {
       if (e.target.classList.contains('modal')) {
         this.closeModals();
       }
     });
 
-    // Keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-      if (e.ctrlKey || e.metaKey) {
-        switch (e.key) {
-          case 'Enter':
-            e.preventDefault();
-            this.generateSigil();
-            break;
-          case 's':
-            e.preventDefault();
-            this.downloadSigil();
-            break;
+    // Keyboard shortcuts (disabled on mobile)
+    if (!this.isMobile) {
+      document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey || e.metaKey) {
+          switch (e.key) {
+            case 'Enter':
+              e.preventDefault();
+              this.generateSigil();
+              break;
+            case 's':
+              e.preventDefault();
+              this.downloadSigil();
+              break;
+          }
         }
-      }
+      });
+    }
+
+    // Handle orientation changes
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => {
+        this.handleOrientationChange();
+      }, 500);
     });
+
+    // Handle viewport resize for mobile browsers
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        this.handleViewportResize();
+      }, 250);
+    });
+
+    // Prevent double-tap zoom on specific elements
+    if (this.isTouchDevice) {
+      const preventDoubleTap = (e) => {
+        e.preventDefault();
+        e.target.click();
+      };
+
+      document.querySelectorAll('.btn, .energy-option, .gallery-btn').forEach(el => {
+        el.addEventListener('touchend', preventDoubleTap);
+      });
+    }
+
+    // Add pull-to-refresh prevention
+    document.body.addEventListener('touchstart', e => {
+      if (e.touches.length === 1 && window.scrollY === 0) {
+        e.preventDefault();
+      }
+    }, { passive: false });
   }
 
   async generateSigil() {
@@ -117,15 +181,20 @@ class SigilcraftApp {
     
     if (!phrase) {
       this.showToast('⚠️ Please enter your intention first', 'warning');
+      this.vibrate([100, 50, 100]);
       return;
     }
 
     if (this.state.cooldownActive && !this.state.isPro) {
       this.showToast('⏳ Please wait for cooldown', 'warning');
+      this.vibrate([200]);
       return;
     }
 
     if (this.state.isGenerating) return;
+
+    // Haptic feedback on generation start
+    this.vibrate([50]);
 
     this.state.isGenerating = true;
     this.updateGenerateButton();
@@ -150,15 +219,25 @@ class SigilcraftApp {
       const data = await response.json();
       
       if (data.success) {
-        this.displaySigil({
+        const sigilData = {
           image: data.image,
           phrase,
           vibe: selectedEnergy,
           timestamp: Date.now(),
           id: Date.now()
-        });
+        };
+
+        this.displaySigil(sigilData);
         
         this.showToast('✨ Revolutionary sigil manifested!', 'success');
+        this.vibrate([100, 50, 100, 50, 100]); // Success vibration pattern
+        
+        // Scroll to result on mobile
+        if (this.isMobile && this.domElements.sigilDisplay) {
+          setTimeout(() => {
+            this.scrollToElement(this.domElements.sigilDisplay, 20);
+          }, 300);
+        }
         
         if (!this.state.isPro) {
           this.startCooldown();
@@ -169,6 +248,7 @@ class SigilcraftApp {
     } catch (error) {
       console.error('Generation error:', error);
       this.showToast(`❌ ${error.message}`, 'error');
+      this.vibrate([200, 100, 200]); // Error vibration pattern
     } finally {
       this.state.isGenerating = false;
       this.updateGenerateButton();
@@ -348,12 +428,27 @@ class SigilcraftApp {
     this.domElements.energyGrid.innerHTML = availableEnergies.map((energy, index) => `
       <div class="energy-option ${index === 0 ? 'selected' : ''}" 
            data-vibe="${energy.id}" 
-           onclick="app.selectEnergy('${energy.id}')">
-        <i>${energy.icon}</i>
-        <span class="energy-name">${energy.name}</span>
-        <span class="energy-desc">${energy.description}</span>
+           onclick="app.selectEnergy('${energy.id}')"
+           role="button"
+           tabindex="0"
+           aria-label="Select ${energy.name} energy: ${energy.description}">
+        <i role="img" aria-label="${energy.name} icon">${energy.icon}</i>
+        <div class="energy-text">
+          <span class="energy-name">${energy.name}</span>
+          <span class="energy-desc">${energy.description}</span>
+        </div>
       </div>
     `).join('');
+
+    // Add keyboard navigation for energy options
+    document.querySelectorAll('.energy-option').forEach(option => {
+      option.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          option.click();
+        }
+      });
+    });
   }
 
   selectEnergy(vibeId) {
@@ -380,21 +475,52 @@ class SigilcraftApp {
     }
 
     this.domElements.galleryGrid.innerHTML = this.state.sigilGallery.map(sigil => `
-      <div class="gallery-item" onclick="app.viewGalleryItem(${sigil.id})">
-        <img src="data:image/png;base64,${sigil.image}" alt="Sigil">
+      <div class="gallery-item" 
+           onclick="app.viewGalleryItem(${sigil.id})"
+           role="button"
+           tabindex="0"
+           aria-label="View sigil: ${sigil.phrase}">
+        <img src="data:image/png;base64,${sigil.image}" 
+             alt="Sigil for '${sigil.phrase}'"
+             loading="lazy">
         <div class="gallery-overlay">
           <div class="gallery-info">
-            <div class="gallery-phrase">"${sigil.phrase}"</div>
+            <div class="gallery-phrase" title="${sigil.phrase}">"${this.truncateText(sigil.phrase, this.isMobile ? 30 : 50)}"</div>
             <div class="gallery-energy">${sigil.vibe}</div>
             <div class="gallery-date">${new Date(sigil.timestamp).toLocaleDateString()}</div>
           </div>
           <div class="gallery-actions">
-            <button class="gallery-btn" onclick="event.stopPropagation(); app.downloadGalleryItem(${sigil.id})">📥</button>
-            <button class="gallery-btn delete" onclick="event.stopPropagation(); app.deleteGalleryItem(${sigil.id})">🗑️</button>
+            <button class="gallery-btn" 
+                    onclick="event.stopPropagation(); app.downloadGalleryItem(${sigil.id})"
+                    aria-label="Download sigil"
+                    title="Download">
+              📥
+            </button>
+            <button class="gallery-btn delete" 
+                    onclick="event.stopPropagation(); app.deleteGalleryItem(${sigil.id})"
+                    aria-label="Delete sigil"
+                    title="Delete">
+              🗑️
+            </button>
           </div>
         </div>
       </div>
     `).join('');
+
+    // Add keyboard navigation for gallery items
+    document.querySelectorAll('.gallery-item').forEach(item => {
+      item.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          item.click();
+        }
+      });
+    });
+  }
+
+  truncateText(text, maxLength) {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength - 3) + '...';
   }
 
   viewGalleryItem(itemId) {
@@ -528,24 +654,74 @@ class SigilcraftApp {
   }
 
   initializeAnimations() {
-    // Add floating particles effect
-    this.createParticles();
+    // Reduce particles on mobile for performance
+    if (!this.isMobile) {
+      this.createParticles();
+    }
     
     // Add smooth scroll behavior
     document.documentElement.style.scrollBehavior = 'smooth';
     
-    // Initialize intersection observer for animations
+    // Initialize intersection observer for animations (reduced on mobile)
+    const observerOptions = {
+      threshold: this.isMobile ? 0.1 : 0.3,
+      rootMargin: this.isMobile ? '20px' : '50px'
+    };
+
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add('animate-in');
         }
       });
-    });
+    }, observerOptions);
 
     document.querySelectorAll('.card, .energy-option, .gallery-item').forEach(el => {
       observer.observe(el);
     });
+  }
+
+  handleOrientationChange() {
+    // Force layout recalculation on orientation change
+    document.body.style.height = '100vh';
+    setTimeout(() => {
+      document.body.style.height = 'auto';
+    }, 100);
+
+    // Update gallery layout if needed
+    this.updateGallery();
+  }
+
+  handleViewportResize() {
+    // Handle mobile browser address bar changes
+    if (this.isMobile) {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+  }
+
+  // Mobile-optimized vibration feedback
+  vibrate(pattern = [50]) {
+    if (navigator.vibrate && this.isMobile) {
+      navigator.vibrate(pattern);
+    }
+  }
+
+  // Optimized scroll to element for mobile
+  scrollToElement(element, offset = 0) {
+    if (!element) return;
+
+    const elementPosition = element.offsetTop - offset;
+    const offsetPosition = elementPosition - (this.isMobile ? 80 : 100);
+
+    if ('scrollBehavior' in document.documentElement.style) {
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    } else {
+      window.scrollTo(0, offsetPosition);
+    }
   }
 
   createParticles() {

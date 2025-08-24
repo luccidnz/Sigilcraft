@@ -784,73 +784,444 @@ body::before {
   background: rgba(59, 130, 246, 0.9);
 }
 
-/* ===== RESPONSIVE DESIGN ===== */
+/* ===== MOBILE OPTIMIZATIONS ===== */
+
+/* Touch-friendly scrollbars */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: var(--sacred-primary);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* Mobile viewport fix */
+html {
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  touch-action: manipulation;
+}
+
+/* Improved touch targets */
+.btn, .energy-option, .gallery-btn {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Mobile-first responsive design */
+@media (max-width: 1024px) {
+  .container {
+    max-width: 100%;
+    padding: 2rem 1.5rem;
+  }
+
+  .header {
+    padding: 3rem 1.5rem 2rem;
+  }
+
+  .energy-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .analysis-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+  }
+}
+
 @media (max-width: 768px) {
   .container {
-    padding: 2rem 1rem;
-    gap: 2rem;
+    padding: 1.5rem 1rem;
+    gap: 1.5rem;
+  }
+
+  .header {
+    padding: 2rem 1rem 1.5rem;
   }
 
   .logo {
     font-size: 2.5rem;
+    line-height: 1.1;
   }
 
   .logo-subtitle {
-    font-size: 1rem;
+    font-size: 0.9rem;
+    letter-spacing: 0.2em;
   }
 
   .card {
     padding: 1.5rem;
+    border-radius: 15px;
   }
 
   .card-title {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .text-input {
+    padding: 1.25rem;
+    font-size: 16px; /* Prevents zoom on iOS */
+    border-radius: 12px;
+    min-height: 100px;
+  }
+
+  .form-label {
+    font-size: 1rem;
   }
 
   .energy-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .energy-option {
+    padding: 1.5rem;
+    border-radius: 12px;
+    flex-direction: row;
+    text-align: left;
+    gap: 1rem;
+  }
+
+  .energy-option i {
+    font-size: 2rem;
+    min-width: 40px;
+  }
+
+  .energy-name {
+    font-size: 1.1rem;
+  }
+
+  .energy-desc {
+    font-size: 0.85rem;
+    text-align: left;
   }
 
   .analysis-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .analysis-item {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+  }
+
+  .analysis-item .label {
+    font-size: 0.85rem;
+  }
+
+  .analysis-item .value {
+    font-size: 1rem;
+  }
+
+  .energy-prediction {
+    padding: 1.25rem;
+    border-radius: 10px;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
   }
 
   .gallery-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .gallery-item {
+    border-radius: 12px;
+  }
+
+  .gallery-overlay {
+    padding: 1rem;
+  }
+
+  .gallery-phrase {
+    font-size: 0.9rem;
+    line-height: 1.3;
+  }
+
+  .gallery-actions {
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .gallery-btn {
+    padding: 1rem;
+    border-radius: 10px;
+    font-size: 1.1rem;
   }
 
   .btn {
-    min-width: auto;
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    border-radius: 12px;
     width: 100%;
+    min-height: 50px;
   }
 
   .modal-content {
-    padding: 2rem;
+    padding: 1.5rem;
     margin: 1rem;
+    border-radius: 15px;
+    max-height: 85vh;
+  }
+
+  .modal h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .modal input {
+    padding: 1rem;
+    font-size: 16px; /* Prevents zoom on iOS */
+    border-radius: 10px;
   }
 
   .toast {
     right: 1rem;
     left: 1rem;
+    top: 1rem;
+    padding: 1rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
     transform: translateY(-100px);
   }
 
   .toast.show {
     transform: translateY(0);
   }
+
+  .sigil-container {
+    padding: 1.5rem;
+    border-radius: 15px;
+  }
+
+  .sigil-image {
+    max-height: 300px;
+    border-radius: 10px;
+  }
+
+  .sigil-info h3 {
+    font-size: 1.2rem;
+  }
+
+  .sigil-vibe {
+    font-size: 1rem;
+  }
 }
 
 @media (max-width: 480px) {
+  .container {
+    padding: 1rem 0.75rem;
+    gap: 1.25rem;
+  }
+
+  .header {
+    padding: 1.5rem 0.75rem 1rem;
+  }
+
   .logo {
     font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .logo-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .card {
+    padding: 1.25rem;
+    border-radius: 12px;
+  }
+
+  .card-title {
+    font-size: 1.2rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .text-input {
+    padding: 1rem;
+    min-height: 80px;
+    border-radius: 10px;
+  }
+
+  .energy-option {
+    padding: 1.25rem;
+    border-radius: 10px;
+  }
+
+  .energy-option i {
+    font-size: 1.75rem;
+    min-width: 35px;
+  }
+
+  .energy-name {
+    font-size: 1rem;
+  }
+
+  .energy-desc {
+    font-size: 0.8rem;
   }
 
   .analysis-grid {
     grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .analysis-item {
+    padding: 0.75rem;
+    border-radius: 8px;
+    flex-direction: column;
+    text-align: center;
+    gap: 0.25rem;
+  }
+
+  .energy-prediction {
+    padding: 1rem;
   }
 
   .gallery-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .gallery-overlay {
+    padding: 0.75rem;
+  }
+
+  .gallery-phrase {
+    font-size: 0.85rem;
+  }
+
+  .gallery-energy {
+    font-size: 0.75rem;
+  }
+
+  .gallery-date {
+    font-size: 0.7rem;
+  }
+
+  .btn {
+    padding: 0.875rem 1.5rem;
+    font-size: 0.9rem;
+    min-height: 44px;
+  }
+
+  .modal-content {
+    padding: 1.25rem;
+    margin: 0.75rem;
+  }
+
+  .modal h3 {
+    font-size: 1.3rem;
+  }
+
+  .sigil-image {
+    max-height: 250px;
+  }
+}
+
+/* ===== MOBILE LANDSCAPE OPTIMIZATIONS ===== */
+@media (max-width: 896px) and (orientation: landscape) {
+  .header {
+    padding: 1.5rem 1rem 1rem;
+  }
+
+  .logo {
+    font-size: 2rem;
+  }
+
+  .logo-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .energy-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .analysis-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .gallery-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ===== TOUCH IMPROVEMENTS ===== */
+@media (hover: none) and (pointer: coarse) {
+  .btn:hover,
+  .energy-option:hover,
+  .gallery-item:hover {
+    transform: none;
+  }
+
+  .btn:active {
+    transform: scale(0.98);
+  }
+
+  .energy-option:active {
+    transform: scale(0.98);
+  }
+
+  .gallery-item:active {
+    transform: scale(0.98);
+  }
+
+  /* Always show gallery overlay on touch devices */
+  .gallery-overlay {
+    transform: translateY(0);
+    background: linear-gradient(transparent 30%, rgba(0, 0, 0, 0.9));
+  }
+
+  .gallery-item:hover .gallery-overlay {
+    background: linear-gradient(transparent 30%, rgba(0, 0, 0, 0.95));
+  }
+}
+
+/* ===== HIGH DPI DISPLAYS ===== */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .sigil-image {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* ===== SAFE AREA SUPPORT (iPhone X+) ===== */
+@supports (padding: max(0px)) {
+  .container {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+
+  .toast {
+    top: max(1rem, env(safe-area-inset-top));
+    left: max(1rem, env(safe-area-inset-left));
+    right: max(1rem, env(safe-area-inset-right));
+  }
+}
+
+/* ===== IMPROVED MOBILE ANIMATIONS ===== */
+@media (prefers-reduced-motion: no-preference) {
+  .energy-option {
+    transition: all 0.2s ease;
+  }
+
+  .btn {
+    transition: all 0.2s ease;
+  }
+
+  .gallery-item {
+    transition: all 0.2s ease;
+  }
+
+  .modal {
+    backdrop-filter: blur(8px);
   }
 }
 
