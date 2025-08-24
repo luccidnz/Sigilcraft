@@ -119,23 +119,6 @@ app.post("/api/stripe-webhook",
 // After webhook, enable JSON for the rest
 app.use(express.json());
 
-// -------- Static with caching (moved before API routes to prevent conflicts)
-app.use(express.static(path.join(__dirname, "public"), {
-  setHeaders: (res, p) => {
-    if (p.endsWith(".svg")) res.setHeader("Content-Type", "image/svg+xml");
-
-    // Cache static assets for 1 hour
-    if (p.endsWith('.css') || p.endsWith('.js') || p.endsWith('.png') ||
-        p.endsWith('.jpg') || p.endsWith('.svg') || p.endsWith('.ico')) {
-      res.setHeader('Cache-Control', 'public, max-age=3600');
-    } else {
-      // HTML files - no cache for dynamic content
-      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
-    }
-  },
-  maxAge: '1h'
-}));
-
 // -------- Simple key store (JSON file)
 const KEYS_FILE = path.join(__dirname, "keys.json");
 function loadKeys() {
@@ -193,6 +176,13 @@ app.post("/api/create-checkout-session", async (req, res) => {
     console.error("Stripe session error:", err);
     res.status(500).json({ error: "checkout_session_failed" });
   }
+});
+
+// -------- API Request Logging Middleware
+app.use('/api', (req, res, next) => {
+  console.log(`[API] ${req.method} ${req.url} from ${req.ip}`);
+  res.setHeader('Content-Type', 'application/json');
+  next();
 });
 
 // -------- Pro check & verify
@@ -439,6 +429,23 @@ app.post("/generate", generationLimiter, async (req, res) => {
     });
   }
 });
+
+// -------- Static files (after API routes to prevent conflicts)
+app.use(express.static(path.join(__dirname, "public"), {
+  setHeaders: (res, p) => {
+    if (p.endsWith(".svg")) res.setHeader("Content-Type", "image/svg+xml");
+
+    // Cache static assets for 1 hour
+    if (p.endsWith('.css') || p.endsWith('.js') || p.endsWith('.png') ||
+        p.endsWith('.jpg') || p.endsWith('.svg') || p.endsWith('.ico')) {
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+    } else {
+      // HTML files - no cache for dynamic content
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    }
+  },
+  maxAge: '1h'
+}));
 
 // Global error handlers to prevent server crashes
 process.on('unhandledRejection', (reason, promise) => {
