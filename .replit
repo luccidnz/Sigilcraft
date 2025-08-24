@@ -27,6 +27,19 @@ mode = "parallel"
 task = "shell.exec"
 args = "node server.js"
 
+[[workflows.workflow]]
+name = "Run Backend"
+author = 45492115
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python main.py"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node server.js"
+
 [[ports]]
 localPort = 3000
 externalPort = 3000
