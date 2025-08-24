@@ -17,6 +17,72 @@ let state = {
 };
 
 // DOM Elements Cache
+let elements = {};
+
+function cacheElements() {
+  elements = {
+    intentInput: document.getElementById('intentInput'),
+    generateBtn: document.getElementById('generateBtn'),
+    canvas: document.getElementById('sigilCanvas'),
+    canvasContainer: document.getElementById('canvasContainer'),
+    downloadBtn: document.getElementById('downloadBtn'),
+    loading: document.getElementById('loading'),
+    energyContainer: document.getElementById('energyContainer')
+  };
+}
+
+function renderEnergySelection() {
+  if (!elements.energyContainer) return;
+
+  const availableEnergies = state.isPro ? ALL_ENERGIES : FREE_ENERGIES;
+  
+  elements.energyContainer.innerHTML = `
+    <h3>Choose Your Vibe</h3>
+    <div class="energy-grid">
+      ${availableEnergies.map(energy => `
+        <div class="energy-option ${state.selectedEnergies.includes(energy) ? 'selected' : ''}" 
+             onclick="toggleEnergy('${energy}')">
+          <i class="fas ${getEnergyIcon(energy)}"></i>
+          <span>${energy.charAt(0).toUpperCase() + energy.slice(1)}</span>
+          ${!FREE_ENERGIES.includes(energy) ? '<span class="pro-badge">PRO</span>' : ''}
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function getEnergyIcon(energy) {
+  const icons = {
+    mystical: 'fa-moon',
+    cosmic: 'fa-star',
+    elemental: 'fa-fire',
+    crystal: 'fa-gem',
+    shadow: 'fa-eye',
+    light: 'fa-sun'
+  };
+  return icons[energy] || 'fa-circle';
+}
+
+function toggleEnergy(energy) {
+  if (!FREE_ENERGIES.includes(energy) && !state.isPro) {
+    showToast('Unlock Pro for premium vibes', 'warning');
+    return;
+  }
+
+  if (state.selectedEnergies.includes(energy)) {
+    state.selectedEnergies = state.selectedEnergies.filter(e => e !== energy);
+  } else {
+    state.selectedEnergies = state.isPro ? [energy] : [energy];
+  }
+
+  if (state.selectedEnergies.length === 0) {
+    state.selectedEnergies = [FREE_ENERGIES[0]];
+  }
+
+  renderEnergySelection();
+}
+
+// DOM Elements Cache
 const elements = {
   intentInput: document.getElementById('intentInput'),
   generateBtn: document.getElementById('generateBtn'),
@@ -51,6 +117,27 @@ async function generateSigil() {
     state.isGenerating = true;
     updateUI();
     showSpiritualLoading();
+  }
+}
+
+function showSpiritualLoading() {
+  if (elements.loading) {
+    elements.loading.style.display = 'flex';
+    elements.loading.innerHTML = `
+      <div class="spiritual-loader">
+        <div class="sacred-circle">
+          <div class="inner-circle"></div>
+          <div class="outer-ring"></div>
+        </div>
+        <p class="loading-text">🌟 Channeling cosmic energies...</p>
+      </div>
+    `;
+  }
+}
+
+function hideSpiritualLoading() {
+  if (elements.loading) {
+    elements.loading.style.display = 'none';
 
     console.log(`🎨 Channeling cosmic energies...`);
     console.log(`📝 Manifesting: "${phrase}" with vibes: ${vibe}`);
@@ -80,7 +167,8 @@ async function generateSigil() {
 
   } catch (error) {
     console.error('Generation error:', error);
-    showToast(error.message || 'Generation temporarily unavailable', 'error');
+    const errorMessage = error.message || error.toString() || 'Generation temporarily unavailable';
+    showToast(errorMessage, 'error');
   } finally {
     state.isGenerating = false;
     updateUI();
@@ -488,13 +576,20 @@ async function checkProStatus() {
 
     let serverPro = false;
     if (proKey) {
-      const response = await fetch('/api/pro-status', {
-        headers: { 'x-pro-key': proKey }
-      });
+      try {
+        const response = await fetch('/api/pro-status', {
+          headers: { 'x-pro-key': proKey }
+        });
 
-      if (response.ok && response.headers.get('content-type')?.includes('application/json')) {
-        const data = await response.json();
-        serverPro = data.isPro || false;
+        if (response.ok) {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const data = await response.json();
+            serverPro = data.isPro || false;
+          }
+        }
+      } catch (fetchError) {
+        console.log('Pro status fetch failed:', fetchError.message);
       }
     }
 
@@ -503,7 +598,7 @@ async function checkProStatus() {
 
   } catch (error) {
     console.log('Pro status check failed, using local storage');
-    state.isPro = localStorage.getItem('sigil_pro') === '1';
+    state.isPro = localStorage.getItem('sigil_pro') === '1';torage.getItem('sigil_pro') === '1';
     updateUI();
   }
 }
@@ -614,13 +709,47 @@ function setupEvents() {
   });
 }
 
+function updateUI() {
+  // Update generate button state
+  if (elements.generateBtn) {
+    elements.generateBtn.disabled = state.isGenerating || state.cooldownActive;
+    if (state.cooldownActive) {
+      elements.generateBtn.innerHTML = '<span>Cooldown Active...</span>';
+    } else if (state.isGenerating) {
+      elements.generateBtn.innerHTML = '<span>Generating...</span>';
+    } else {
+      elements.generateBtn.innerHTML = '<span>Generate Sigil</span>';
+    }
+  }
+
+  // Render energy selection
+  renderEnergySelection();
+
+  // Update pro status indicators
+  const proElements = document.querySelectorAll('.pro-indicator');
+  proElements.forEach(el => {
+    el.style.display = state.isPro ? 'none' : 'block';
+  });
+}
+
+function updateCharCounter() {
+  const counter = document.getElementById('charCounter');
+  if (counter && elements.intentInput) {
+    const length = elements.intentInput.value.length;
+    counter.textContent = `${length}/200`;
+    counter.style.color = length > 180 ? '#ff6b6b' : '#666';
+  }
+}
+
 // ===== INITIALIZATION =====
 async function init() {
   console.log('🚀 Initializing Sigil Generator Pro...');
 
+  cacheElements();
   setupEvents();
   await checkProStatus();
   updateUI();
+  renderGallery();
 
   console.log('✅ App initialization complete!');
 }
