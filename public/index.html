@@ -9,6 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/png" href="/generated-icon.png">
+    <meta name="description" content="Generate mystical quantum sigils with AI-powered energy combinations">
 </head>
 <body>
     <!-- Loading Overlay -->
@@ -31,11 +32,15 @@
     <!-- Header -->
     <header class="header">
         <div class="header-content">
-            <h1 class="logo">
-                <span class="logo-icon">🔮</span>
-                Sigilcraft
-                <span class="logo-subtitle">Quantum Sigil Generator</span>
-            </h1>
+            <div class="logo-section">
+                <h1 class="logo">
+                    <span class="logo-icon">🔮</span>
+                    <span class="logo-text">
+                        Sigilcraft
+                        <span class="logo-subtitle">Quantum Sigil Generator</span>
+                    </span>
+                </h1>
+            </div>
             
             <div class="header-actions">
                 <div id="proBadge" class="pro-badge hidden">
@@ -46,11 +51,11 @@
                 <div id="proButtons" class="pro-buttons">
                     <button onclick="goPremiumCheckout()" class="btn btn-premium">
                         <span class="btn-icon">⚡</span>
-                        Upgrade to Pro
+                        <span class="btn-text">Upgrade to Pro</span>
                     </button>
                     <button id="enterKeyBtn" class="btn btn-secondary">
                         <span class="btn-icon">🔑</span>
-                        Enter Pro Key
+                        <span class="btn-text">Enter Pro Key</span>
                     </button>
                 </div>
             </div>
@@ -61,15 +66,21 @@
     <main class="container">
         <!-- Intent Input Section -->
         <section class="input-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="section-icon">🎯</span>
+                    Enter Your Intent
+                </h2>
+            </div>
             <div class="input-group">
                 <label for="intentInput" class="input-label">
-                    <span class="label-icon">🎯</span>
-                    Enter your intent or desire
+                    <span class="label-icon">💭</span>
+                    What do you wish to manifest?
                 </label>
                 <textarea 
                     id="intentInput" 
                     class="intent-input"
-                    placeholder="What do you wish to manifest? (e.g., 'abundance and prosperity')"
+                    placeholder="Type your desire or intent here (e.g., 'abundance and prosperity', 'inner peace', 'creative inspiration')"
                     maxlength="200"
                     rows="3"
                 ></textarea>
@@ -93,6 +104,12 @@
 
         <!-- Pro Controls -->
         <section id="proControls" class="pro-controls hidden">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="section-icon">👑</span>
+                    Pro Controls
+                </h2>
+            </div>
             <div class="control-group">
                 <label class="control-item">
                     <input type="checkbox" id="comboToggle">
@@ -101,8 +118,11 @@
                 </label>
                 
                 <div class="input-group">
-                    <label for="seedInput" class="input-label">Seed (Optional)</label>
-                    <input type="number" id="seedInput" class="seed-input" placeholder="Random seed">
+                    <label for="seedInput" class="input-label">
+                        <span class="label-icon">🌱</span>
+                        Seed (Optional)
+                    </label>
+                    <input type="number" id="seedInput" class="seed-input" placeholder="Random seed for reproducibility">
                 </div>
                 
                 <label class="control-item">
@@ -112,10 +132,13 @@
                 </label>
                 
                 <div class="select-group">
-                    <label for="exportType" class="input-label">Export Format</label>
+                    <label for="exportType" class="input-label">
+                        <span class="label-icon">📁</span>
+                        Export Format
+                    </label>
                     <select id="exportType" class="export-select">
-                        <option value="png">PNG (Raster)</option>
-                        <option value="svg">SVG (Vector)</option>
+                        <option value="png">PNG (Raster Image)</option>
+                        <option value="svg">SVG (Vector Graphics)</option>
                     </select>
                 </div>
             </div>
@@ -123,41 +146,58 @@
 
         <!-- Generation Controls -->
         <section class="generation-section">
-            <button id="genBtn" class="generate-btn">
-                <span class="btn-icon">🌟</span>
-                Initialize Quantum Sigil
-            </button>
-            
-            <div id="cooldown" class="cooldown hidden">
-                Ready in 10s
+            <div class="generation-container">
+                <button id="genBtn" class="generate-btn">
+                    <span class="btn-icon">🌟</span>
+                    <span class="generate-text">Initialize Quantum Sigil</span>
+                </button>
+                
+                <div id="cooldown" class="cooldown hidden">
+                    <span class="cooldown-icon">⏱️</span>
+                    <span class="cooldown-text">Ready in 10s</span>
+                </div>
             </div>
         </section>
 
         <!-- Canvas Section -->
         <section class="canvas-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="section-icon">🎨</span>
+                    Your Sigil
+                </h2>
+            </div>
             <div class="canvas-container">
-                <canvas id="sigilCanvas" class="sigil-canvas" width="1200" height="1200"></canvas>
+                <div class="canvas-wrapper">
+                    <canvas id="sigilCanvas" class="sigil-canvas" width="1200" height="1200"></canvas>
+                    <div class="canvas-placeholder" id="canvasPlaceholder">
+                        <div class="placeholder-content">
+                            <span class="placeholder-icon">🔮</span>
+                            <span class="placeholder-text">Your quantum sigil will appear here</span>
+                        </div>
+                    </div>
+                </div>
                 
                 <!-- Canvas Controls -->
                 <div class="canvas-controls">
                     <button id="downloadBtn" class="btn btn-primary" style="display: none;">
                         <span class="btn-icon">💾</span>
-                        Download Sigil
+                        <span class="btn-text">Download Sigil</span>
                     </button>
                     
                     <button id="animateBtn" class="btn btn-secondary" onclick="toggleSigilAnimation()">
                         <span class="btn-icon">✨</span>
-                        Animate Sigil
+                        <span class="btn-text">Animate Sigil</span>
                     </button>
                     
                     <button class="btn btn-secondary" onclick="saveSigilToGallery()">
                         <span class="btn-icon">🖼️</span>
-                        Save to Gallery
+                        <span class="btn-text">Save to Gallery</span>
                     </button>
                     
                     <button class="btn btn-secondary" onclick="shareSigil()">
                         <span class="btn-icon">🔗</span>
-                        Share Sigil
+                        <span class="btn-text">Share Sigil</span>
                     </button>
                 </div>
             </div>
@@ -165,10 +205,16 @@
 
         <!-- Action Buttons -->
         <section class="action-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="section-icon">🎭</span>
+                    Gallery & Actions
+                </h2>
+            </div>
             <div class="action-buttons">
                 <button class="btn btn-secondary" onclick="showSigilGallery()">
                     <span class="btn-icon">🖼️</span>
-                    View Gallery
+                    <span class="btn-text">View Gallery</span>
                 </button>
                 
                 <!-- Star Rating -->
@@ -181,9 +227,8 @@
                         <span class="star" onclick="rateSigil(4)">⭐</span>
                         <span class="star" onclick="rateSigil(5)">⭐</span>
                     </div>
+                    <div id="averageRating" class="average-rating"></div>
                 </div>
-                
-                <div id="averageRating" class="average-rating"></div>
             </div>
         </section>
 
@@ -191,6 +236,7 @@
         <section id="proUnlock" class="pro-unlock">
             <div class="unlock-card">
                 <h3>🌟 Unlock Pro Features</h3>
+                <p>Experience the full power of quantum sigil generation</p>
                 <ul class="features-list">
                     <li>✨ All 6 energy types (Cosmic, Crystal, Shadow)</li>
                     <li>🔗 Combo mode - blend multiple energies</li>
@@ -222,12 +268,17 @@
     <!-- Pro Key Modal -->
     <dialog id="keyModal" class="modal">
         <div class="modal-content">
-            <h3>🔑 Enter Pro Key</h3>
-            <p>Enter your Pro key to unlock all premium features:</p>
-            <input type="text" id="proKeyInput" placeholder="Pro key" class="modal-input">
-            <div class="modal-actions">
-                <button id="unlockBtn" class="btn btn-primary">Unlock Pro</button>
-                <button onclick="keyModal.close()" class="btn btn-secondary">Cancel</button>
+            <div class="modal-header">
+                <h3>🔑 Enter Pro Key</h3>
+                <button onclick="keyModal.close()" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Enter your Pro key to unlock all premium features:</p>
+                <input type="text" id="proKeyInput" placeholder="Pro key" class="modal-input">
+                <div class="modal-actions">
+                    <button id="unlockBtn" class="btn btn-primary">Unlock Pro</button>
+                    <button onclick="keyModal.close()" class="btn btn-secondary">Cancel</button>
+                </div>
             </div>
         </div>
     </dialog>
@@ -261,7 +312,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </dialog>
 
     <!-- Gallery Modal -->
     <div id="sigilGallery" class="modal-overlay hidden">
@@ -278,7 +329,13 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <p>&copy; 2024 Sigilcraft. Manifest your reality through quantum sigil generation.</p>
+        <div class="footer-content">
+            <p>&copy; 2024 Sigilcraft. Manifest your reality through quantum sigil generation.</p>
+            <div class="footer-links">
+                <a href="#" onclick="showAbout()">About</a>
+                <a href="#" onclick="showHelp()">Help</a>
+            </div>
+        </div>
     </footer>
 
     <script src="main.js"></script>

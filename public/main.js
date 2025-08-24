@@ -1565,7 +1565,6 @@ window.addEventListener("load", async () => {
   }
 });
 
-// keep previewSvg hidden unless you want to show the SVG string; we use direct download instead.
 // Helper function to get vibe-specific colors
 function getVibeColors(vibe) {
     switch (vibe) {
@@ -1617,4 +1616,24 @@ function generateSVG(phrase, vibe, size, seed) {
 
     svg += '</svg>';
     return svg;
+}
+
+function showResult(imageData) {
+    const canvas = document.getElementById('sigilCanvas');
+    const canvasPlaceholder = document.getElementById('canvasPlaceholder');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    // Hide placeholder and show canvas
+    if (canvasPlaceholder) {
+        canvasPlaceholder.classList.add('hidden');
+    }
+
+    if (canvas) {
+        canvas.style.display = 'block';
+    }
+
+    // Show download button
+    if (downloadBtn) {
+        downloadBtn.style.display = 'inline-flex';
+    }
 }
