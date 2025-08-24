@@ -35,14 +35,41 @@ let cacheExpiry = 0;
 
 async function serverIsPro() {
   try {
-    const r = await fetch("/api/is-pro");
+    console.log("🔍 Checking server Pro status...");
+    const r = await fetch("/api/is-pro", {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Cache-Control': 'no-cache'
+      }
+    });
+    
+    if (!r.ok) {
+      console.error("❌ Server Pro check failed:", r.status, r.statusText);
+      return false;
+    }
+    
+    const contentType = r.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error("❌ Server returned non-JSON response:", contentType);
+      const text = await r.text();
+      console.error("Response text:", text.substring(0, 200));
+      return false;
+    }
+    
     const j = await r.json();
+    console.log("✅ Server Pro status:", j);
     return !!j.pro;
-  } catch { return false; }
+  } catch (error) {
+    console.error("❌ Error checking pro status:", error);
+    return false;
+  }
 }
 
 function localIsPro() {
-  return localStorage.getItem("sigil_pro") === "1";
+  const localStatus = localStorage.getItem("sigil_pro") === "1";
+  console.log("🔍 Local Pro status:", localStatus);
+  return localStatus;
 }
 
 async function isUserPro() {
@@ -370,13 +397,39 @@ async function unlockProFeatures() {
     return;
   }
 
+  console.log("🔑 Starting Pro unlock...");
+
   try {
     const r = await fetch("/api/verify-pro", {
       method: "POST",
-      headers: {"Content-Type":"application/json"},
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Cache-Control": "no-cache"
+      },
       body: JSON.stringify({ key })
     });
+
+    console.log("🔑 Unlock response status:", r.status);
+    
+    if (!r.ok) {
+      console.error("❌ Pro unlock failed:", r.status, r.statusText);
+      toast("❌ Server error during unlock", 'error');
+      return;
+    }
+
+    const contentType = r.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error("❌ Pro unlock returned non-JSON:", contentType);
+      const text = await r.text();
+      console.error("Response text:", text.substring(0, 200));
+      toast("❌ Server error - invalid response format", 'error');
+      return;
+    }
+
     const j = await r.json();
+    console.log("🔑 Unlock response:", j);
+
     if (j.ok) {
       localStorage.setItem("sigil_pro","1");
       clearProCache();
@@ -392,8 +445,8 @@ async function unlockProFeatures() {
       toast("❌ Invalid Pro key", 'error');
     }
   } catch (error) {
-    console.error("Pro unlock error:", error);
-    toast("❌ Error unlocking. Please try again.", 'error');
+    console.error("❌ Error unlocking:", error);
+    toast("❌ Network error during unlock. Please try again.", 'error');
   }
 }
 
@@ -403,13 +456,39 @@ unlockBtn.onclick = async () => {
   const key = proKeyInput.value.trim();
   if (!key) return toast("Enter a key", 'warning');
 
+  console.log("🔑 Starting Pro key verification...");
+
   try {
     const r = await fetch("/api/verify-pro", {
       method: "POST",
-      headers: {"Content-Type":"application/json"},
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Cache-Control": "no-cache"
+      },
       body: JSON.stringify({ key })
     });
+
+    console.log("🔑 Verify response status:", r.status);
+    
+    if (!r.ok) {
+      console.error("❌ Pro verify failed:", r.status, r.statusText);
+      toast("❌ Server error during verification", 'error');
+      return;
+    }
+
+    const contentType = r.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error("❌ Pro verify returned non-JSON:", contentType);
+      const text = await r.text();
+      console.error("Response text:", text.substring(0, 200));
+      toast("❌ Server error - invalid response format", 'error');
+      return;
+    }
+
     const j = await r.json();
+    console.log("🔑 Verify response:", j);
+
     if (j.ok) {
       localStorage.setItem("sigil_pro","1");
       clearProCache(); // Clear the cache so next check gets fresh data
@@ -427,8 +506,8 @@ unlockBtn.onclick = async () => {
       toast("❌ Invalid Pro key", 'error');
     }
   } catch (error) {
-    console.error("Pro key verification error:", error);
-    toast("❌ Error verifying key. Please try again.", 'error');
+    console.error("❌ Error verifying pro key:", error);
+    toast("❌ Network error during verification. Please try again.", 'error');
   }
 };
 
@@ -554,18 +633,17 @@ async function renderSigil(imageSrc, isSvg = false) {
 
 // Generate sigil using backend with retry logic
 async function generateSigilRequest(phrase = "default", vibe = "mystical", retryCount = 0) {
-  const maxRetries = 2; // Reduced retries for faster response
-  const retryDelay = 500 * Math.min(retryCount + 1, 3); // Faster retry delay
+  const maxRetries = 2;
+  const retryDelay = 500 * Math.min(retryCount + 1, 3);
 
   clearCanvas();
 
   try {
-    console.log(`Sending sigil generation request (attempt ${retryCount + 1}):`, { phrase, vibe });
+    console.log(`🎨 Sending sigil generation request (attempt ${retryCount + 1}):`, { phrase, vibe });
 
-    // Reduced timeout for faster response
     const controller = new AbortController();
     const isComplexRequest = vibe.includes('+') || phrase.length > 50;
-    const timeoutDuration = isComplexRequest ? 25000 : 15000; // Much shorter timeouts
+    const timeoutDuration = isComplexRequest ? 25000 : 15000;
     const timeoutId = setTimeout(() => controller.abort(), timeoutDuration);
 
     const response = await fetch("/generate", {
@@ -580,37 +658,38 @@ async function generateSigilRequest(phrase = "default", vibe = "mystical", retry
     });
     clearTimeout(timeoutId);
 
-    // Enhanced response validation with better error handling
+    console.log("🎨 Generation response status:", response.status);
+
     if (!response) {
       throw new Error("No response received from server");
     }
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => `HTTP ${response.status}`);
+      console.error("🎨 Generation error response:", errorText.substring(0, 500));
       throw new Error(`Server error: ${errorText}`);
     }
 
     const contentType = response.headers.get("content-type");
     if (!contentType || !contentType.includes("application/json")) {
       const text = await response.text();
-      console.error("Non-JSON response:", text.substring(0, 500));
+      console.error("🎨 Non-JSON generation response:", text.substring(0, 500));
       throw new Error("Server returned invalid response format");
     }
 
     const data = await response.json();
+    console.log("🎨 Generation response data:", data);
 
-    // Better validation of response data
     if (!data) {
       throw new Error("Empty response from server");
     }
 
     if (!data.success) {
       const errorMsg = data.error || "Generation failed";
-      console.error("Generation failed:", errorMsg);
+      console.error("🎨 Generation failed:", errorMsg);
 
-      // Show user-friendly error message
       if (errorMsg.includes("timeout") || errorMsg.includes("timed out")) {
-        toast("⏱️ Generation taking longer than expected. Retrying with optimized settings...", 'warning', 3000);
+        toast("⏱️ Generation taking longer than expected. Retrying...", 'warning', 3000);
         throw new Error("timeout");
       } else if (errorMsg.includes("rate limit")) {
         toast("⏳ Rate limit reached. Please wait a moment...", 'warning', 3000);
@@ -625,36 +704,42 @@ async function generateSigilRequest(phrase = "default", vibe = "mystical", retry
       throw new Error("No image data received");
     }
 
+    // Store the generated image
+    lastGeneratedImage = data.image;
+    
     // Successfully generated - render the sigil
     await renderSigil(data.image, false);
+    
+    // Show download button and other controls
+    showResult(data.image);
+    
+    console.log("✅ Sigil generation completed successfully");
     return data;
 
   } catch (error) {
-    console.error("Generation request error:", error);
+    console.error("❌ Generation request error:", error);
 
-    // Handle specific error types
     if (error.name === 'AbortError' || error.message === 'timeout') {
       if (retryCount < maxRetries) {
-        console.log(`Request timed out, retrying... (${retryCount + 1}/${maxRetries})`);
+        console.log(`⏱️ Request timed out, retrying... (${retryCount + 1}/${maxRetries})`);
         await new Promise(resolve => setTimeout(resolve, retryDelay));
         return generateSigilRequest(phrase, vibe, retryCount + 1);
       } else {
-        toast("⏱️ Generation is taking too long. Please try a shorter phrase or simpler vibe.", 'error', 5000);
+        toast("⏱️ Generation timed out. Please try a shorter phrase.", 'error', 5000);
         throw new Error("Generation timed out after multiple attempts");
       }
     }
 
     if (error.message === 'rate_limit') {
-      throw error; // Don't retry rate limit errors
+      throw error;
     }
 
-    // Only retry on network errors or server errors
     if (retryCount < maxRetries && (
       error.message.includes('fetch') ||
       error.message.includes('network') ||
       error.message.includes('Server error')
     )) {
-      console.log(`Retrying due to network/server error... (${retryCount + 1}/${maxRetries})`);
+      console.log(`🔄 Retrying due to network/server error... (${retryCount + 1}/${maxRetries})`);
       await new Promise(resolve => setTimeout(resolve, retryDelay));
       return generateSigilRequest(phrase, vibe, retryCount + 1);
     }
@@ -1457,6 +1542,74 @@ async function checkProStatus() {
   return false;
 }
 
+// -------- Main Generation Function --------
+async function generateSigil() {
+  const intentInput = document.getElementById("intentInput");
+  if (!intentInput) {
+    toast("❌ Intent input not found", 'error');
+    return;
+  }
+
+  const phrase = intentInput.value.trim();
+  if (!phrase) {
+    toast("⚠️ Please enter your intent first", 'warning');
+    intentInput.focus();
+    return;
+  }
+
+  console.log("🎨 Starting sigil generation...");
+  console.log(`📝 Generating: "${phrase}" with vibes: ${selectedEnergies.join(' + ')}`);
+
+  // Check if user is pro for advanced features
+  const isPro = await isUserPro();
+  const vibe = selectedEnergies.join('+');
+
+  // Check cooldown for free users
+  if (!isPro) {
+    const now = Date.now();
+    const timeSinceLastGen = now - lastGenAt;
+    const cooldownPeriod = 10000; // 10 seconds
+    
+    if (timeSinceLastGen < cooldownPeriod) {
+      const remaining = Math.ceil((cooldownPeriod - timeSinceLastGen) / 1000);
+      toast(`⏳ Please wait ${remaining} more seconds`, 'warning');
+      return;
+    }
+  }
+
+  try {
+    // Disable generation button
+    genBtn.disabled = true;
+    genBtn.innerHTML = '<span class="btn-icon">⚡</span><span class="generate-text">Generating...</span>';
+
+    // Show loading
+    showLoading("Channeling quantum energies...");
+
+    // Generate the sigil
+    const result = await generateSigilRequest(phrase, vibe);
+
+    if (result && result.success) {
+      toast("✨ Quantum sigil generated successfully!", 'success');
+      
+      // Start cooldown for free users
+      if (!isPro) {
+        startCooldownIfNeeded();
+      }
+    }
+
+  } catch (error) {
+    console.error("❌ Generation failed:", error);
+    toast("❌ Generation failed. Please try again.", 'error');
+  } finally {
+    // Re-enable generation button
+    genBtn.disabled = false;
+    genBtn.innerHTML = '<span class="btn-icon">🌟</span><span class="generate-text">Initialize Quantum Sigil</span>';
+    
+    // Hide loading
+    hideLoading();
+  }
+}
+
 // Enhanced App Initialization
 window.addEventListener("load", async () => {
   try {
@@ -1473,6 +1626,18 @@ window.addEventListener("load", async () => {
         charCounter.textContent = `${length}/200`;
         charCounter.style.color = length > 180 ? 'var(--neon-orange)' : 'var(--text-muted)';
       });
+    }
+
+    // Add generate button event listener
+    if (genBtn) {
+      genBtn.addEventListener('click', generateSigil);
+      console.log("✅ Generate button event listener added");
+    }
+
+    // Add download button event listener
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', handleSigilDownload);
+      console.log("✅ Download button event listener added");
     }
 
     // Initialize app state

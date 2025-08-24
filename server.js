@@ -18,6 +18,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+const PORT = process.env.PORT || 5000;
+
+console.log("🚀 Starting Sigilcraft Node.js server...");
+console.log("🔧 Server configuration:");
+console.log("   - Port:", PORT);
+console.log("   - Pro Key:", process.env.PRO_KEY ? "SET" : "NOT SET");
+console.log("   - Stripe Secret:", process.env.STRIPE_SECRET ? "SET" : "NOT SET");
 
 // Trust proxy for proper IP detection in Replit
 app.set('trust proxy', 1);
@@ -119,12 +126,6 @@ app.post("/api/stripe-webhook",
 // After webhook, enable JSON for the rest
 app.use(express.json());
 
-// -------- Explicit API route protection (prevents static file interference)
-app.use('/api/*', (req, res, next) => {
-  // This ensures ALL API routes are processed before static files
-  next();
-});
-
 // -------- Simple key store (JSON file)
 const KEYS_FILE = path.join(__dirname, "keys.json");
 function loadKeys() {
@@ -166,10 +167,13 @@ async function tryEmailKey(to, key) {
   return false;
 }
 
-// -------- API Request Logging Middleware (MUST be before API routes)
+// ======== ALL API ROUTES MUST BE DEFINED BEFORE STATIC FILES ========
+
+// -------- API Request Logging Middleware
 app.use('/api', (req, res, next) => {
-  console.log(`[API] ${req.method} ${req.url} from ${req.ip}`);
+  console.log(`🔌 [API] ${req.method} ${req.url} from ${req.ip}`);
   res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Cache-Control', 'no-cache');
   next();
 });
 
@@ -194,35 +198,28 @@ app.post("/api/create-checkout-session", async (req, res) => {
 // -------- Pro check & verify
 app.get("/api/is-pro", (req, res) => {
   try {
-    console.log("=== PRO STATUS CHECK STARTED ===");
-    console.log("Request URL:", req.url);
-    console.log("All cookies:", req.cookies);
-    
-    // Force JSON response
-    res.setHeader('Content-Type', 'application/json');
+    console.log("🔍 === PRO STATUS CHECK STARTED ===");
+    console.log("🔍 Request URL:", req.url);
+    console.log("🔍 All cookies:", req.cookies);
     
     const pro = req.cookies && req.cookies.sigil_pro === "1";
-    console.log("Pro status check result:", pro);
-    console.log("=== PRO STATUS CHECK COMPLETE ===");
+    console.log("🔍 Pro status check result:", pro);
+    console.log("🔍 === PRO STATUS CHECK COMPLETE ===");
     
     res.status(200).json({ pro });
   } catch (error) {
     console.error("❌ Pro status check error:", error);
-    console.log("=== PRO STATUS CHECK ERROR ===");
+    console.log("❌ === PRO STATUS CHECK ERROR ===");
     res.status(500).json({ pro: false, error: "Server error" });
   }
 });
 
 app.post("/api/verify-pro", (req, res) => {
   try {
-    console.log("=== PRO KEY VERIFICATION STARTED ===");
-    console.log("Request URL:", req.url);
-    console.log("Request method:", req.method);
-    console.log("Request headers:", req.headers);
-    console.log("Request body:", req.body);
-    
-    // Force JSON response
-    res.setHeader('Content-Type', 'application/json');
+    console.log("🔑 === PRO KEY VERIFICATION STARTED ===");
+    console.log("🔑 Request URL:", req.url);
+    console.log("🔑 Request method:", req.method);
+    console.log("🔑 Request body:", req.body);
     
     const { key } = req.body;
     if (!key) {
@@ -248,23 +245,24 @@ app.post("/api/verify-pro", (req, res) => {
       const list = loadKeys();
       const idx = list.findIndex(x => x.key === key);
       if (idx >= 0) { list[idx].used = true; saveKeys(list); }
-      console.log("=== PRO KEY VERIFICATION SUCCESS ===");
+      console.log("✅ === PRO KEY VERIFICATION SUCCESS ===");
       return res.status(200).json({ ok: true });
     }
     
     console.log("❌ Pro key verification failed");
-    console.log("=== PRO KEY VERIFICATION FAILED ===");
+    console.log("❌ === PRO KEY VERIFICATION FAILED ===");
     return res.status(200).json({ ok: false, error: "Invalid key" });
   } catch (error) {
     console.error("❌ Pro key verification error:", error);
-    console.log("=== PRO KEY VERIFICATION ERROR ===");
+    console.log("❌ === PRO KEY VERIFICATION ERROR ===");
     return res.status(500).json({ ok: false, error: "Server error" });
   }
 });
 
 // Test endpoint for debugging
 app.get("/api/test", (req, res) => {
-  res.json({
+  console.log("🧪 Test endpoint called");
+  res.status(200).json({
     status: "ok",
     port: PORT,
     proKey: process.env.PRO_KEY ? "configured" : "missing",
@@ -296,9 +294,7 @@ app.get("/api/health", async (req, res) => {
     }
     clearTimeout(timeoutId);
     
-    clearTimeout(timeoutId);
-    
-    res.json({
+    res.status(200).json({
       status: "healthy",
       services: {
         node: "online",
@@ -453,9 +449,11 @@ app.post("/generate", generationLimiter, async (req, res) => {
   }
 });
 
-// -------- Static files (after API routes to prevent conflicts)
+// ======== STATIC FILES MIDDLEWARE (MUST BE AFTER ALL API ROUTES) ========
+console.log("📁 Setting up static file middleware...");
 app.use(express.static(path.join(__dirname, "public"), {
   setHeaders: (res, p) => {
+    console.log("📁 Static file request:", p);
     if (p.endsWith(".svg")) res.setHeader("Content-Type", "image/svg+xml");
 
     // Cache static assets for 1 hour
@@ -470,6 +468,8 @@ app.use(express.static(path.join(__dirname, "public"), {
   maxAge: '1h'
 }));
 
+console.log("✅ Static file middleware configured");
+
 // Global error handlers to prevent server crashes
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
@@ -483,10 +483,9 @@ process.on('uncaughtException', (error) => {
 
 // -------- Fallback route (must be last)
 app.get("*", (_, res) => {
+  console.log("🔄 Fallback route hit for:", _.url);
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
-
-const PORT = process.env.PORT || 5000;
 
 // Function to find available port if default is in use
 function startServer(port) {
