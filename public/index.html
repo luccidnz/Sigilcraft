@@ -46,7 +46,84 @@
 
             <!-- Energy Selection -->
             <section class="energy-section">
-                <h3 class="section-title">Choose Your Energy</h3>
+                <div id="energyContainer">
+                    <!-- Energy options will be rendered here by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Generate Button -->
+            <section class="generate-section">
+                <button id="generateBtn" class="generate-btn">
+                    ✨ Generate Sigil
+                </button>
+            </section>
+
+            <!-- Pro Unlock Section -->
+            <section id="unlockSection" class="unlock-section">
+                <div class="unlock-card">
+                    <h3>🔓 Unlock Pro Features</h3>
+                    <p>Access cosmic & crystal energies, unlimited generations, and more!</p>
+                    <button onclick="if(elements.proKeyModal) elements.proKeyModal.style.display='flex'" class="pro-btn">
+                        Enter Pro Key
+                    </button>
+                </div>
+            </section>
+
+            <!-- Loading Animation -->
+            <div id="loading" class="loading" style="display: none;">
+                <div class="cosmic-mandala">
+                    <div class="outer-ring"></div>
+                    <div class="middle-ring"></div>
+                    <div class="inner-ring"></div>
+                    <div class="sacred-eye">👁</div>
+                </div>
+                <div class="energy-waves">
+                    <div class="wave wave-1"></div>
+                    <div class="wave wave-2"></div>
+                    <div class="wave wave-3"></div>
+                </div>
+                <p>Channeling cosmic energies...</p>
+            </div>
+
+            <!-- Canvas Container -->
+            <div id="canvasContainer" class="canvas-container hidden">
+                <canvas id="sigilCanvas" width="512" height="512"></canvas>
+                <button id="downloadBtn" class="download-btn" style="display: none;">
+                    📥 Download Sigil
+                </button>
+            </div>
+
+            <!-- Gallery -->
+            <section class="gallery-section">
+                <div id="galleryContainer">
+                    <!-- Gallery will be rendered here -->
+                </div>
+            </section>
+        </main>
+
+        <!-- Modals -->
+        <div id="shareModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="this.parentElement.parentElement.style.display='none'">&times;</span>
+                <h3>Share Your Sigil</h3>
+                <div class="share-options">
+                    <button onclick="shareViaNative()" class="share-btn">📱 Native Share</button>
+                    <button onclick="copyShareLink()" class="share-btn">🔗 Copy Link</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="proKeyModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="this.parentElement.parentElement.style.display='none'">&times;</span>
+                <h3>Enter Pro Key</h3>
+                <input type="text" id="proKeyInput" placeholder="Enter your pro key" class="pro-key-input">
+                <button id="proKeySubmit" class="pro-btn">Unlock Pro Features</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
                 <div id="energyContainer" class="energy-container">
                     <!-- Energy options will be populated by JavaScript -->
                 </div>

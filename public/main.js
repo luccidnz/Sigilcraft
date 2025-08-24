@@ -256,17 +256,22 @@ async function generateSigil() {
       throw new Error(data.error || data.details || 'Generation failed - unknown error');
     }
   } catch (error) {
+    const duration = Date.now() - startTime;
     console.error('Generation error:', error);
     hideLoading();
 
     let errorMessage = 'Generation failed';
     if (error.name === 'AbortError') {
       errorMessage = 'Generation timed out - please try again';
-    } else if (error.message) {
+    } else if (error.message && error.message.trim()) {
       errorMessage = error.message;
+    } else if (typeof error === 'string' && error.trim()) {
+      errorMessage = error;
+    } else {
+      errorMessage = 'Unknown generation error occurred';
     }
 
-    showToast(errorMessage, 'error');
+    showToast(`❌ ${errorMessage}`, 'error');
   } finally {
     state.isGenerating = false;
     updateGenerateButton();

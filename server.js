@@ -38,14 +38,14 @@ app.get('/api/health', (req, res) => {
 
 // Pro status endpoint
 app.get('/api/pro-status', (req, res) => {
+  // Always set JSON headers first
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  
   try {
     const providedKey = req.headers['x-pro-key'] || req.query.key;
-    
-    // Ensure we always send JSON with proper headers
-    res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
     
     const response = {
       success: true,
@@ -55,11 +55,10 @@ app.get('/api/pro-status', (req, res) => {
     
     console.log(`Pro status check: ${providedKey ? 'Key provided' : 'No key'}, isPro: ${response.isPro}`);
     
-    res.status(200).json(response);
+    return res.status(200).json(response);
   } catch (error) {
     console.error('Pro status error:', error);
-    res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       isPro: false,
       error: 'Failed to check pro status',
