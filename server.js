@@ -119,7 +119,7 @@ app.post("/api/stripe-webhook",
 // After webhook, enable JSON for the rest
 app.use(express.json());
 
-// -------- Static with caching
+// -------- Static with caching (moved before API routes to prevent conflicts)
 app.use(express.static(path.join(__dirname, "public"), {
   setHeaders: (res, p) => {
     if (p.endsWith(".svg")) res.setHeader("Content-Type", "image/svg+xml");
@@ -197,18 +197,36 @@ app.post("/api/create-checkout-session", async (req, res) => {
 
 // -------- Pro check & verify
 app.get("/api/is-pro", (req, res) => {
-  const pro = req.cookies && req.cookies.sigil_pro === "1";
-  console.log("Pro status check:", pro, "Cookies:", req.cookies);
-  res.json({ pro });
+  try {
+    console.log("Pro status check request received");
+    console.log("All cookies:", req.cookies);
+    
+    const pro = req.cookies && req.cookies.sigil_pro === "1";
+    console.log("Pro status check result:", pro);
+    
+    res.json({ pro });
+  } catch (error) {
+    console.error("Pro status check error:", error);
+    res.json({ pro: false, error: "Server error" });
+  }
 });
 
 app.post("/api/verify-pro", (req, res) => {
   try {
+    console.log("Pro key verification request received");
+    console.log("Request body:", req.body);
+    
     const { key } = req.body;
+    if (!key) {
+      console.log("No key provided in request");
+      return res.json({ ok: false, error: "No key provided" });
+    }
+    
     console.log(`Pro key verification: received="${key}", expected="${process.env.PRO_KEY}"`);
     const ok =
       (key && process.env.PRO_KEY && key === process.env.PRO_KEY) ||
       (key && hasKey(key));
+    
     if (ok) {
       console.log("Pro key verified successfully");
       res.cookie("sigil_pro", "1", {
@@ -222,11 +240,12 @@ app.post("/api/verify-pro", (req, res) => {
       if (idx >= 0) { list[idx].used = true; saveKeys(list); }
       return res.json({ ok: true });
     }
+    
     console.log("Pro key verification failed");
-    return res.json({ ok: false });
+    return res.json({ ok: false, error: "Invalid key" });
   } catch (error) {
-    console.log("Pro key verification error:", error);
-    return res.json({ ok: false });
+    console.error("Pro key verification error:", error);
+    return res.json({ ok: false, error: "Server error" });
   }
 });
 
@@ -421,11 +440,6 @@ app.post("/generate", generationLimiter, async (req, res) => {
   }
 });
 
-// -------- Fallback
-app.get("*", (_, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
 // Global error handlers to prevent server crashes
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
@@ -435,6 +449,11 @@ process.on('unhandledRejection', (reason, promise) => {
 process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception:', error);
   // Don't exit the process - just log the error
+});
+
+// -------- Fallback route (must be last)
+app.get("*", (_, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 const PORT = process.env.PORT || 5000;
