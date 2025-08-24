@@ -119,6 +119,12 @@ app.post("/api/stripe-webhook",
 // After webhook, enable JSON for the rest
 app.use(express.json());
 
+// -------- Explicit API route protection (prevents static file interference)
+app.use('/api/*', (req, res, next) => {
+  // This ensures ALL API routes are processed before static files
+  next();
+});
+
 // -------- Simple key store (JSON file)
 const KEYS_FILE = path.join(__dirname, "keys.json");
 function loadKeys() {
@@ -160,6 +166,13 @@ async function tryEmailKey(to, key) {
   return false;
 }
 
+// -------- API Request Logging Middleware (MUST be before API routes)
+app.use('/api', (req, res, next) => {
+  console.log(`[API] ${req.method} ${req.url} from ${req.ip}`);
+  res.setHeader('Content-Type', 'application/json');
+  next();
+});
+
 // -------- Checkout session route (frontend calls this)
 app.post("/api/create-checkout-session", async (req, res) => {
   try {
@@ -178,47 +191,54 @@ app.post("/api/create-checkout-session", async (req, res) => {
   }
 });
 
-// -------- API Request Logging Middleware
-app.use('/api', (req, res, next) => {
-  console.log(`[API] ${req.method} ${req.url} from ${req.ip}`);
-  res.setHeader('Content-Type', 'application/json');
-  next();
-});
-
 // -------- Pro check & verify
 app.get("/api/is-pro", (req, res) => {
   try {
-    console.log("Pro status check request received");
+    console.log("=== PRO STATUS CHECK STARTED ===");
+    console.log("Request URL:", req.url);
     console.log("All cookies:", req.cookies);
+    
+    // Force JSON response
+    res.setHeader('Content-Type', 'application/json');
     
     const pro = req.cookies && req.cookies.sigil_pro === "1";
     console.log("Pro status check result:", pro);
+    console.log("=== PRO STATUS CHECK COMPLETE ===");
     
-    res.json({ pro });
+    res.status(200).json({ pro });
   } catch (error) {
-    console.error("Pro status check error:", error);
-    res.json({ pro: false, error: "Server error" });
+    console.error("❌ Pro status check error:", error);
+    console.log("=== PRO STATUS CHECK ERROR ===");
+    res.status(500).json({ pro: false, error: "Server error" });
   }
 });
 
 app.post("/api/verify-pro", (req, res) => {
   try {
-    console.log("Pro key verification request received");
+    console.log("=== PRO KEY VERIFICATION STARTED ===");
+    console.log("Request URL:", req.url);
+    console.log("Request method:", req.method);
+    console.log("Request headers:", req.headers);
     console.log("Request body:", req.body);
+    
+    // Force JSON response
+    res.setHeader('Content-Type', 'application/json');
     
     const { key } = req.body;
     if (!key) {
-      console.log("No key provided in request");
-      return res.json({ ok: false, error: "No key provided" });
+      console.log("❌ No key provided in request");
+      return res.status(400).json({ ok: false, error: "No key provided" });
     }
     
-    console.log(`Pro key verification: received="${key}", expected="${process.env.PRO_KEY}"`);
+    console.log(`🔑 Pro key verification: received="${key}"`);
+    console.log(`🔑 Expected PRO_KEY: "${process.env.PRO_KEY ? 'SET' : 'NOT SET'}"`);
+    
     const ok =
       (key && process.env.PRO_KEY && key === process.env.PRO_KEY) ||
       (key && hasKey(key));
     
     if (ok) {
-      console.log("Pro key verified successfully");
+      console.log("✅ Pro key verified successfully");
       res.cookie("sigil_pro", "1", {
         httpOnly: true,
         sameSite: "lax",
@@ -228,14 +248,17 @@ app.post("/api/verify-pro", (req, res) => {
       const list = loadKeys();
       const idx = list.findIndex(x => x.key === key);
       if (idx >= 0) { list[idx].used = true; saveKeys(list); }
-      return res.json({ ok: true });
+      console.log("=== PRO KEY VERIFICATION SUCCESS ===");
+      return res.status(200).json({ ok: true });
     }
     
-    console.log("Pro key verification failed");
-    return res.json({ ok: false, error: "Invalid key" });
+    console.log("❌ Pro key verification failed");
+    console.log("=== PRO KEY VERIFICATION FAILED ===");
+    return res.status(200).json({ ok: false, error: "Invalid key" });
   } catch (error) {
-    console.error("Pro key verification error:", error);
-    return res.json({ ok: false, error: "Server error" });
+    console.error("❌ Pro key verification error:", error);
+    console.log("=== PRO KEY VERIFICATION ERROR ===");
+    return res.status(500).json({ ok: false, error: "Server error" });
   }
 });
 
