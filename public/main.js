@@ -117,27 +117,6 @@ async function generateSigil() {
     state.isGenerating = true;
     updateUI();
     showSpiritualLoading();
-  }
-}
-
-function showSpiritualLoading() {
-  if (elements.loading) {
-    elements.loading.style.display = 'flex';
-    elements.loading.innerHTML = `
-      <div class="spiritual-loader">
-        <div class="sacred-circle">
-          <div class="inner-circle"></div>
-          <div class="outer-ring"></div>
-        </div>
-        <p class="loading-text">🌟 Channeling cosmic energies...</p>
-      </div>
-    `;
-  }
-}
-
-function hideSpiritualLoading() {
-  if (elements.loading) {
-    elements.loading.style.display = 'none';
 
     console.log(`🎨 Channeling cosmic energies...`);
     console.log(`📝 Manifesting: "${phrase}" with vibes: ${vibe}`);
@@ -173,6 +152,27 @@ function hideSpiritualLoading() {
     state.isGenerating = false;
     updateUI();
     hideSpiritualLoading();
+  }
+}
+
+function showSpiritualLoading() {
+  if (elements.loading) {
+    elements.loading.style.display = 'flex';
+    elements.loading.innerHTML = `
+      <div class="spiritual-loader">
+        <div class="sacred-circle">
+          <div class="inner-circle"></div>
+          <div class="outer-ring"></div>
+        </div>
+        <p class="loading-text">🌟 Channeling cosmic energies...</p>
+      </div>
+    `;
+  }
+}
+
+function hideSpiritualLoading() {
+  if (elements.loading) {
+    elements.loading.style.display = 'none';
   }
 }
 
@@ -598,7 +598,7 @@ async function checkProStatus() {
 
   } catch (error) {
     console.log('Pro status check failed, using local storage');
-    state.isPro = localStorage.getItem('sigil_pro') === '1';torage.getItem('sigil_pro') === '1';
+    state.isPro = localStorage.getItem('sigil_pro') === '1';
     updateUI();
   }
 }
