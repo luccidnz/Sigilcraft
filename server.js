@@ -41,18 +41,24 @@ app.get('/api/pro-status', (req, res) => {
   try {
     const providedKey = req.headers['x-pro-key'] || req.query.key;
     
+    // Ensure we always send JSON
     res.setHeader('Content-Type', 'application/json');
-    res.json({
+    res.setHeader('Cache-Control', 'no-cache');
+    
+    const response = {
       success: true,
       isPro: providedKey === PRO_KEY,
       timestamp: new Date().toISOString()
-    });
+    };
+    
+    res.json(response);
   } catch (error) {
     console.error('Pro status error:', error);
     res.setHeader('Content-Type', 'application/json');
     res.status(500).json({
       success: false,
-      error: 'Failed to check pro status'
+      error: 'Failed to check pro status',
+      details: error.message
     });
   }
 });

@@ -107,60 +107,87 @@ function toggleEnergy(energy) {
 
 // ===== CORE GENERATION SYSTEM =====
 async function generateSigil() {
-  if (state.isGenerating || state.cooldownActive) return;
+  if (state.isGenerating) return;
 
   const phrase = elements.intentInput?.value?.trim();
   if (!phrase) {
-    showToast('✨ Enter your sacred intention', 'warning');
+    showToast('Please enter your sacred intent', 'warning');
     return;
   }
 
-  if (phrase.length < 2 || phrase.length > 200) {
-    showToast('Intention must be 2-200 characters', 'warning');
-    return;
-  }
+  if (!validateInput(phrase)) return;
 
-  const vibe = state.selectedEnergies.join('+');
+  console.log('🎨 Channeling cosmic energies...');
+  console.log(`📝 Manifesting: "${phrase}" with vibes: ${state.selectedEnergies.join(' + ')}`);
+
+  state.isGenerating = true;
+  updateGenerateButton();
 
   try {
-    state.isGenerating = true;
-    updateUI();
-    showSpiritualLoading();
+    const energy = state.selectedEnergies.length === 1 ? state.selectedEnergies[0] : state.selectedEnergies.join('+');
 
-    console.log(`🎨 Channeling cosmic energies...`);
-    console.log(`📝 Manifesting: "${phrase}" with vibes: ${vibe}`);
+    console.log(`🌟 Sending request: phrase="${phrase}", vibe="${energy}"`);
 
-    const result = await makeGenerationRequest(phrase, vibe);
+    const response = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ phrase, vibe: energy }),
+      signal: AbortSignal.timeout(60000) // 60 second timeout
+    });
 
-    if (result?.success && result?.image) {
-      state.lastGeneratedImage = result.image;
-      state.currentSigilData = {
-        id: Date.now(),
-        phrase: phrase,
-        vibe: vibe,
-        image: result.image,
-        timestamp: new Date().toISOString(),
-        energy: state.selectedEnergies
-      };
+    console.log('✅ Generation response received');
 
-      await renderSigil(result.image);
-      addToGallery(state.currentSigilData);
-      showResult();
-      showToast('✨ Sigil manifested successfully!', 'success');
-
-      if (!state.isPro) startCooldown();
-    } else {
-      throw new Error(result?.error || 'Generation failed');
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Server error: ${response.status} - ${errorText}`);
     }
 
+    const data = await response.json();
+
+    if (data.success && data.image) {
+      state.lastGeneratedImage = data.image;
+      state.currentSigilData = {
+        phrase,
+        energy: state.selectedEnergies,
+        image: data.image,
+        timestamp: Date.now(),
+        id: Date.now().toString()
+      };
+
+      await renderSigil(data.image);
+      showResult();
+
+      // Add to gallery
+      state.sigilGallery.unshift(state.currentSigilData);
+      if (state.sigilGallery.length > 50) state.sigilGallery.pop();
+      localStorage.setItem('sigil_gallery', JSON.stringify(state.sigilGallery));
+      renderGallery();
+
+      showToast('✨ Sigil manifested successfully!', 'success');
+
+      if (!state.isPro) {
+        startCooldown();
+      }
+    } else {
+      throw new Error(data.error || data.details || 'Generation failed - unknown error');
+    }
   } catch (error) {
     console.error('Generation error:', error);
-    const errorMessage = error.message || error.toString() || 'Generation temporarily unavailable';
+    let errorMessage = 'Generation failed';
+
+    if (error.name === 'AbortError') {
+      errorMessage = 'Generation timed out - please try again';
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+
     showToast(errorMessage, 'error');
   } finally {
     state.isGenerating = false;
-    updateUI();
-    hideSpiritualLoading();
+    updateGenerateButton();
   }
 }
 
@@ -185,34 +212,15 @@ function hideSpiritualLoading() {
   }
 }
 
-async function makeGenerationRequest(phrase, vibe) {
-  console.log(`🌟 Sending request: phrase="${phrase}", vibe="${vibe}"`);
-
-  const response = await fetch('/api/generate', {
-    method: 'POST',
-    headers: { 
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    },
-    body: JSON.stringify({ phrase: phrase.trim(), vibe: vibe || 'mystical' }),
-    signal: AbortSignal.timeout(45000)
-  });
-
-  if (!response.ok) {
-    let errorText = `HTTP ${response.status}`;
-    try {
-      const errorData = await response.json();
-      errorText = errorData.error || errorText;
-    } catch (e) {
-      // Ignore if response is not JSON
-    }
-    throw new Error(errorText);
+// Helper function to validate input phrase length (assuming it exists elsewhere or is implicitly handled)
+function validateInput(phrase) {
+  if (phrase.length < 2 || phrase.length > 200) {
+    showToast('Intention must be 2-200 characters', 'warning');
+    return false;
   }
-
-  const data = await response.json();
-  console.log('✅ Generation response received');
-  return data;
+  return true;
 }
+
 
 // ===== ENHANCED UI MANAGEMENT =====
 function updateUI() {
@@ -243,9 +251,9 @@ function updateGenerateButton() {
 
 function updateCharCounter() {
   if (elements.charCount && elements.intentInput) {
-    const count = elements.intentInput.value.length;
-    elements.charCount.textContent = `${count}/200`;
-    elements.charCount.style.color = count > 180 ? '#ff6b9d' : count > 150 ? '#ffd700' : '#cbd5e1';
+    const length = elements.intentInput.value.length;
+    elements.charCount.textContent = `${length}/200`;
+    elements.charCount.style.color = length > 180 ? '#ff6b6b' : '#94a3b8';
   }
 }
 
@@ -742,37 +750,39 @@ function setupEvents() {
   });
 }
 
+// Update UI function seems duplicated, keeping the one that includes renderGallery()
 function updateUI() {
   updateGenerateButton();
-  renderEnergySelection();
+  renderEnergySelection(); // This might be redundant if renderEnergies() is used consistently
   updateProInterface();
   updateCharCounter();
   renderGallery();
 }
 
-function updateCharCounter() {
-  if (elements.charCount && elements.intentInput) {
-    const length = elements.intentInput.value.length;
-    elements.charCount.textContent = `${length}/200`;
-    elements.charCount.style.color = length > 180 ? '#ff6b6b' : '#94a3b8';
-  }
-}
 
 // ===== INITIALIZATION =====
-async function init() {
+document.addEventListener('DOMContentLoaded', async () => {
   console.log('🚀 Initializing Sigil Generator Pro...');
 
-  cacheElements();
-  setupEvents();
-  await checkProStatus();
-  updateUI();
-  renderGallery();
+  try {
+    // Assuming initElements() is a placeholder or a function that sets up initial DOM states if needed.
+    // If it's not defined elsewhere, it might be an error or meant to be empty.
+    // For safety, if initElements is not defined, this line would cause an error.
+    // If it's a common pattern, we'll assume it exists or is handled.
+    // If initElements is not defined, this line can be removed.
+    // initElements(); 
+    cacheElements();
+    setupEvents();
+    await checkProStatus();
+    updateUI();
+    renderGallery();
 
-  console.log('✅ App initialization complete!');
-}
-
-// Start the application
-document.addEventListener('DOMContentLoaded', init);
+    console.log('✅ App initialization complete!');
+  } catch (error) {
+    console.error('❌ Initialization failed:', error);
+    showToast('App initialization failed - please refresh', 'error');
+  }
+});
 
 // Global access for inline event handlers
 window.generateSigil = generateSigil;
