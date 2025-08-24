@@ -473,10 +473,9 @@ body::before {
 
 .energy-option {
   display: flex;
-  flex-direction: column;
   align-items: center;
   gap: 1rem;
-  padding: 2rem 1.5rem;
+  padding: 1.5rem;
   background: rgba(0, 0, 0, 0.3);
   border: 2px solid rgba(139, 43, 246, 0.3);
   border-radius: 15px;
@@ -484,6 +483,13 @@ body::before {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+}
+
+.energy-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
 }
 
 .energy-option::before {
@@ -691,6 +697,35 @@ body::before {
   font-style: italic;
   padding: 4rem 2rem;
   font-size: 1.2rem;
+}
+
+.unlock-section {
+  margin-top: 2rem;
+  text-align: center;
+  padding: 2rem;
+  background: rgba(255, 215, 0, 0.1);
+  border: 2px solid var(--accent-gold);
+  border-radius: 15px;
+}
+
+.unlock-text {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.gallery-empty {
+  text-align: center;
+  color: var(--text-tertiary);
+  font-style: italic;
+  padding: 3rem 2rem;
+}
+
+.sigilActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
 }
 
 /* ===== MODALS ===== */

@@ -64,6 +64,11 @@ class SigilcraftApp {
       proBadge: document.querySelector('.pro-badge'),
       textAnalysis: document.getElementById('textAnalysis')
     };
+
+    // Update character counter
+    if (this.domElements.phraseInput) {
+      this.updateCharCounter();
+    }
   }
 
   setupEventListeners() {
@@ -76,10 +81,12 @@ class SigilcraftApp {
     if (this.domElements.phraseInput) {
       this.domElements.phraseInput.addEventListener('input', (e) => {
         this.updateTextAnalysis(e.target.value);
+        this.updateCharCounter();
       });
 
       this.domElements.phraseInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
           this.generateSigil();
         }
       });
@@ -106,9 +113,11 @@ class SigilcraftApp {
 
     this.domElements.energyGrid.innerHTML = availableEnergies.map(energy => `
       <div class="energy-option" data-energy="${energy.id}">
-        <div class="energy-icon">${energy.icon}</div>
-        <div class="energy-name">${energy.name}</div>
-        <div class="energy-description">${energy.description}</div>
+        <i class="energy-icon">${energy.icon}</i>
+        <div class="energy-content">
+          <div class="energy-name">${energy.name}</div>
+          <div class="energy-desc">${energy.description}</div>
+        </div>
       </div>
     `).join('');
 
@@ -208,7 +217,7 @@ class SigilcraftApp {
       this.domElements.sigilInfo.innerHTML = `
         <h3>"${data.phrase}"</h3>
         <div class="sigil-vibe">${data.vibe} energy</div>
-        <div class="sigil-actions">
+        <div class="sigilActions">
           <button class="btn btn-primary" onclick="app.downloadSigil()">
             📥 Download
           </button>
@@ -292,11 +301,18 @@ class SigilcraftApp {
           <div class="gallery-item" data-id="${item.id}">
             <img src="data:image/png;base64,${item.image}" alt="Sigil: ${item.phrase}">
             <div class="gallery-overlay">
-              <div class="gallery-phrase">${item.phrase}</div>
-              <div class="gallery-vibe">${item.vibe}</div>
+              <div class="gallery-info">
+                <div class="gallery-phrase">${item.phrase}</div>
+                <div class="gallery-energy">${item.vibe} energy</div>
+                <div class="gallery-date">${new Date(item.timestamp).toLocaleDateString()}</div>
+              </div>
               <div class="gallery-actions">
-                <button class="gallery-btn" onclick="app.downloadGalleryItem(${item.id})">📥</button>
-                <button class="gallery-btn" onclick="app.deleteGalleryItem(${item.id})">🗑️</button>
+                <button class="gallery-btn" onclick="app.downloadGalleryItem(${item.id})" title="Download">
+                  <i class="fas fa-download"></i>
+                </button>
+                <button class="gallery-btn delete" onclick="app.deleteGalleryItem(${item.id})" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
               </div>
             </div>
           </div>
@@ -539,6 +555,22 @@ class SigilcraftApp {
     }
   }
 
+  updateCharCounter() {
+    const counter = document.querySelector('.char-counter');
+    if (counter && this.domElements.phraseInput) {
+      const length = this.domElements.phraseInput.value.length;
+      counter.textContent = `${length}/500`;
+      
+      if (length > 450) {
+        counter.style.color = 'var(--error)';
+      } else if (length > 400) {
+        counter.style.color = 'var(--warning)';
+      } else {
+        counter.style.color = 'var(--text-tertiary)';
+      }
+    }
+  }
+
   initializeParticles() {
     const particleContainer = document.createElement('div');
     particleContainer.className = 'particle-container';
@@ -564,7 +596,7 @@ class SigilcraftApp {
     `;
     document.head.appendChild(style);
 
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 30; i++) {
       const particle = document.createElement('div');
       particle.className = 'particle';
       particle.style.cssText = `

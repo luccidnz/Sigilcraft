@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,7 +12,7 @@
     <meta name="format-detection" content="telephone=no">
     <title>Sigilcraft - Revolutionary Text-Responsive Sigil Generator</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Philosopher:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="generated-icon.png">
     <link rel="apple-touch-icon" href="generated-icon.png">
@@ -19,82 +20,81 @@
 <body>
     <div class="container">
         <header class="header">
-            <h1 class="title">
+            <h1 class="logo">
                 <i class="fas fa-magic"></i>
                 Sigilcraft
-                <span class="subtitle">Revolutionary Text-Responsive Generator</span>
             </h1>
-            <div id="proBadge" class="pro-badge" style="display: none;">
-                <i class="fas fa-crown"></i> PRO
+            <p class="logo-subtitle">Revolutionary Text-Responsive Generator</p>
+            <div class="pro-badge" style="display: none;">
+                <i class="fas fa-crown"></i> PRO ACTIVATED
             </div>
         </header>
 
         <main class="main-content">
             <!-- Input Section -->
-            <section class="input-section">
-                <div class="input-container">
-                    <label for="intentInput" class="input-label">
-                        ✨ Enter your intention, desire, or sacred phrase
+            <section class="card">
+                <h2 class="card-title">✨ Manifest Your Intention</h2>
+                <div class="form-group">
+                    <label for="phraseInput" class="form-label">
+                        Enter your intention, desire, or sacred phrase
                     </label>
                     <textarea 
-                        id="intentInput" 
-                        class="intent-input" 
+                        id="phraseInput" 
+                        class="text-input" 
                         placeholder="Type your intention here... (e.g., 'love and prosperity', 'inner peace', 'creative inspiration')"
-                        maxlength="200"
-                        rows="3"
+                        maxlength="500"
+                        rows="4"
                     ></textarea>
-                    <div class="char-count">0/200</div>
+                    <div class="char-counter">0/500</div>
                 </div>
 
                 <!-- Text Analysis Section -->
                 <div id="textAnalysis" class="text-analysis">
-                    <h4>📊 Text Analysis</h4>
+                    <h4>📊 Advanced Text Analysis</h4>
                     <p class="analysis-prompt">Enter text above to see how it will influence your sigil</p>
                 </div>
             </section>
 
             <!-- Energy Selection -->
-            <section class="energy-section">
-                <div id="energyContainer" class="energy-container">
+            <section class="card">
+                <h2 class="card-title">🌟 Choose Your Energy</h2>
+                <div id="energyGrid" class="energy-grid">
                     <!-- Energy options will be populated by JavaScript -->
                 </div>
             </section>
 
             <!-- Generate Button -->
-            <section class="generate-section">
-                <button id="generateBtn" class="generate-btn">
-                    🚀 Generate Revolutionary Sigil
+            <section class="card">
+                <button id="generateBtn" class="btn btn-primary">
+                    🎨 Generate Sigil
                 </button>
 
-                <div id="unlockSection" class="unlock-section">
+                <div class="unlock-section">
                     <p class="unlock-text">
                         🔓 Unlock all vibes, unlimited generation, and advanced features
                     </p>
-                    <button class="pro-btn" onclick="document.getElementById('proKeyModal').style.display='flex'">
-                        Unlock Pro Features
+                    <button class="btn btn-secondary" onclick="openProModal()">
+                        <i class="fas fa-crown"></i> Unlock Pro Features
                     </button>
                 </div>
             </section>
 
-            <!-- Loading Indicator -->
-            <div id="loading" class="loading" style="display: none;">
-                <div class="loading-spinner"></div>
-                <p>Channeling revolutionary energies...</p>
-            </div>
-
-            <!-- Result Section -->
-            <section class="result-section">
-                <div id="canvasContainer" class="canvas-container hidden">
-                    <h3>Your Revolutionary Sigil</h3>
-                    <canvas id="sigilCanvas" width="600" height="600"></canvas>
-                    <button id="downloadBtn" class="download-btn" style="display: none;">
-                        <i class="fas fa-download"></i> Download Sigil
-                    </button>
+            <!-- Sigil Display -->
+            <section id="sigilContainer" class="card" style="display: none;">
+                <h2 class="card-title">Your Revolutionary Sigil</h2>
+                <div class="sigil-display">
+                    <div class="sigil-container">
+                        <img id="sigilImage" class="sigil-image" alt="Generated Sigil">
+                        <div id="sigilInfo" class="sigil-info">
+                            <!-- Sigil info will be populated by JavaScript -->
+                        </div>
+                    </div>
                 </div>
             </section>
 
             <!-- Gallery Section -->
-            <section class="gallery-section">
+            <section class="card">
+                <h2 class="card-title">🖼️ Your Sigil Gallery</h2>
                 <div id="galleryContainer" class="gallery-container">
                     <!-- Gallery will be populated by JavaScript -->
                 </div>
@@ -102,34 +102,24 @@
         </main>
 
         <!-- Pro Key Modal -->
-        <div id="proKeyModal" class="modal">
+        <div id="proModal" class="modal">
             <div class="modal-content">
-                <span class="close" onclick="this.parentElement.parentElement.style.display='none'">&times;</span>
+                <span class="close" onclick="closeProModal()">&times;</span>
                 <h3>🔑 Enter Pro Key</h3>
                 <p>Unlock unlimited generation, all vibes, and advanced features</p>
-                <input type="text" id="proKeyInput" class="pro-input" placeholder="Enter your pro key">
-                <button id="proKeySubmit" class="pro-btn">Activate Pro</button>
-            </div>
-        </div>
-
-        <!-- Share Modal -->
-        <div id="shareModal" class="modal">
-            <div class="modal-content">
-                <span class="close" onclick="this.parentElement.parentElement.style.display='none'">&times;</span>
-                <h3>📤 Share Your Sigil</h3>
-                <div class="share-options">
-                    <button onclick="copyShareLink()" class="share-btn">
-                        <i class="fas fa-link"></i> Copy Link
+                <input type="text" id="proKeyInput" class="text-input" placeholder="Enter your pro key">
+                <div class="modal-buttons">
+                    <button class="btn btn-primary" onclick="submitProKey()">
+                        <i class="fas fa-unlock"></i> Activate Pro
                     </button>
-                    <button onclick="shareViaNative()" class="share-btn">
-                        <i class="fas fa-share"></i> Share
+                    <button class="btn btn-secondary" onclick="closeProModal()">
+                        Cancel
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- JavaScript -->
-  <script src="main.js" defer></script>
+    <script src="main.js" defer></script>
 </body>
 </html>
