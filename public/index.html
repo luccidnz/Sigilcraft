@@ -1,0 +1,190 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔮 Sigilcraft - Sacred Sigil Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/generated-icon.png">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="app-title">
+                    <span class="title-icon">🔮</span>
+                    <span class="title-text">Sigilcraft</span>
+                    <span class="title-subtitle">Sacred Sigil Generator</span>
+                </h1>
+                
+                <div class="header-controls">
+                    <div id="proBadge" class="pro-badge hidden">
+                        <span class="pro-icon">✨</span>
+                        <span class="pro-text">Pro Activated</span>
+                    </div>
+                    
+                    <div id="moonPhase" class="moon-phase">
+                        <span class="moon-icon">🌙</span>
+                        <span class="moon-text">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Intent Input Section -->
+            <section class="intent-section">
+                <div class="intent-container">
+                    <label for="intentInput" class="intent-label">
+                        Sacred Intent
+                        <span class="intent-hint">What do you seek to manifest?</span>
+                    </label>
+                    
+                    <div class="intent-input-wrapper">
+                        <textarea 
+                            id="intentInput" 
+                            class="intent-input" 
+                            placeholder="Enter your sacred intention..."
+                            maxlength="200"
+                            rows="3"
+                        ></textarea>
+                        <div class="char-counter">
+                            <span id="charCounter">0/200</span>
+                        </div>
+                    </div>
+                    
+                    <div class="intent-strength">
+                        <div class="strength-label">Intent Strength: <span>Whisper</span></div>
+                        <div class="strength-bars">
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Energy Selection -->
+            <section class="energy-section">
+                <div class="energy-header">
+                    <h2 class="energy-title">Choose Your Sacred Energy</h2>
+                    <div id="proControls" class="pro-controls hidden">
+                        <label class="combo-toggle-label">
+                            <input type="checkbox" id="comboToggle" class="combo-toggle">
+                            <span class="combo-text">Combine Energies</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div id="energyList" class="energy-grid">
+                    <!-- Energy options will be populated by JavaScript -->
+                </div>
+                
+                <div class="combo-display-container">
+                    <div class="combo-label">Selected:</div>
+                    <div id="comboDisplay" class="combo-display">mystical</div>
+                </div>
+            </section>
+
+            <!-- Generation Controls -->
+            <section class="generation-section">
+                <div class="generation-controls">
+                    <button id="genBtn" class="generate-btn">
+                        <div class="btn-sacred-mandala">
+                            <span class="btn-icon">👁️</span>
+                        </div>
+                        <span class="generate-text">Manifest Sacred Sigil</span>
+                    </button>
+                    
+                    <div id="cooldown" class="cooldown hidden">
+                        Sacred energies recharging...
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sigil Display -->
+            <section class="sigil-section">
+                <div class="sigil-container">
+                    <div id="canvasPlaceholder" class="canvas-placeholder">
+                        <div class="placeholder-content">
+                            <div class="placeholder-icon">🔮</div>
+                            <div class="placeholder-text">Your sacred sigil will appear here</div>
+                            <div class="placeholder-hint">Enter your intent and select an energy to begin</div>
+                        </div>
+                    </div>
+                    
+                    <canvas id="sigilCanvas" class="sigil-canvas" width="1200" height="1200" style="display: none;"></canvas>
+                    
+                    <div class="sigil-controls">
+                        <button id="downloadBtn" class="download-btn" style="display: none;">
+                            <span class="btn-icon">💾</span>
+                            <span class="btn-text">Download Sigil</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pro Features Section -->
+            <section id="proUnlock" class="pro-section">
+                <div class="pro-upgrade">
+                    <h3 class="pro-title">🌟 Unlock Pro Features</h3>
+                    <div class="pro-features">
+                        <div class="feature">✨ All 6 Sacred Energies</div>
+                        <div class="feature">🔗 Energy Combinations</div>
+                        <div class="feature">📐 Higher Resolution (2048x2048)</div>
+                        <div class="feature">🎨 Enhanced Visual Effects</div>
+                        <div class="feature">💾 SVG Export</div>
+                        <div class="feature">🚫 No Watermarks</div>
+                    </div>
+                    
+                    <div id="proButtons" class="pro-buttons">
+                        <button id="enterKeyBtn" class="pro-key-btn">
+                            <span class="btn-icon">🔑</span>
+                            <span class="btn-text">Enter Pro Key</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Loading Overlay -->
+        <div id="loadingSpinner" class="loading-overlay hidden">
+            <div class="loading-content">
+                <div class="sacred-spinner">
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-core">🔮</div>
+                </div>
+                <div class="loading-text">Channeling quantum energies...</div>
+                <div class="progress-container">
+                    <div class="progress-bar"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pro Key Modal -->
+        <dialog id="keyModal" class="key-modal">
+            <div class="modal-content">
+                <h3 class="modal-title">🔑 Enter Pro Key</h3>
+                <div class="modal-body">
+                    <input type="text" id="proKeyInput2" class="pro-key-input" placeholder="Enter your Pro key..." maxlength="100">
+                    <div class="modal-buttons">
+                        <button id="unlockBtn" class="unlock-btn">Unlock Pro</button>
+                        <button onclick="document.getElementById('keyModal').close()" class="cancel-btn">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </dialog>
+
+        <!-- Toast Notification -->
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
