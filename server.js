@@ -41,6 +41,7 @@ app.get('/api/pro-status', (req, res) => {
   try {
     const providedKey = req.headers['x-pro-key'] || req.query.key;
     
+    res.setHeader('Content-Type', 'application/json');
     res.json({
       success: true,
       isPro: providedKey === PRO_KEY,
@@ -48,6 +49,7 @@ app.get('/api/pro-status', (req, res) => {
     });
   } catch (error) {
     console.error('Pro status error:', error);
+    res.setHeader('Content-Type', 'application/json');
     res.status(500).json({
       success: false,
       error: 'Failed to check pro status'
@@ -81,6 +83,8 @@ app.post('/api/generate', async (req, res) => {
       });
     }
 
+    console.log(`🎨 Generating sigil: "${phrase}" with vibe: ${vibe || 'mystical'}`);
+
     const response = await fetch(`${FLASK_URL}/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -89,13 +93,17 @@ app.post('/api/generate', async (req, res) => {
     });
 
     if (!response.ok) {
-      throw new Error(`Backend error: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`Backend error ${response.status}:`, errorText);
+      throw new Error(`Backend error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
     const duration = Date.now() - startTime;
     
     console.log(`✅ Generation completed in ${duration}ms`);
+    
+    res.setHeader('Content-Type', 'application/json');
     res.json(data);
 
   } catch (error) {
@@ -111,6 +119,7 @@ app.post('/api/generate', async (req, res) => {
       errorMessage = error.message;
     }
     
+    res.setHeader('Content-Type', 'application/json');
     res.status(500).json({
       success: false,
       error: errorMessage,

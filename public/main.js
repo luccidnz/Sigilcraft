@@ -5,7 +5,7 @@ const FREE_ENERGIES = ["mystical", "elemental", "light"];
 const ALL_ENERGIES = ["mystical", "cosmic", "elemental", "crystal", "shadow", "light"];
 const COOLDOWN_TIME = 10000; // 10 seconds
 
-// State Management
+// Global state
 let state = {
   selectedEnergies: [FREE_ENERGIES[0]],
   lastGeneratedImage: null,
@@ -16,9 +16,10 @@ let state = {
   currentSigilData: null
 };
 
-// DOM Elements Cache
+// DOM elements cache
 let elements = {};
 
+// Cache DOM elements
 function cacheElements() {
   elements = {
     intentInput: document.getElementById('intentInput'),
@@ -27,7 +28,16 @@ function cacheElements() {
     canvasContainer: document.getElementById('canvasContainer'),
     downloadBtn: document.getElementById('downloadBtn'),
     loading: document.getElementById('loading'),
-    energyContainer: document.getElementById('energyContainer')
+    energyContainer: document.getElementById('energyContainer'),
+    charCount: document.querySelector('.char-count'),
+    galleryContainer: document.getElementById('galleryContainer'),
+    shareModal: document.getElementById('shareModal'),
+    proBadge: document.getElementById('proBadge'),
+    proControls: document.getElementById('proControls'),
+    unlockSection: document.getElementById('unlockSection'),
+    proKeyInput: document.getElementById('proKeyInput'),
+    proKeySubmit: document.getElementById('proKeySubmit'),
+    proKeyModal: document.getElementById('proKeyModal')
   };
 }
 
@@ -70,31 +80,30 @@ function toggleEnergy(energy) {
   }
 
   if (state.selectedEnergies.includes(energy)) {
-    state.selectedEnergies = state.selectedEnergies.filter(e => e !== energy);
+    // If it's the only selected energy, don't deselect it
+    if (state.selectedEnergies.length > 1) {
+      state.selectedEnergies = state.selectedEnergies.filter(e => e !== energy);
+    }
   } else {
-    state.selectedEnergies = state.isPro ? [energy] : [energy];
+    // If Pro, allow selecting multiple up to 4
+    if (state.isPro) {
+      if (state.selectedEnergies.length < 4) {
+        state.selectedEnergies.push(energy);
+      } else {
+        showToast('Max 4 energies selected', 'warning');
+      }
+    } else {
+      // Free users can only select one energy
+      state.selectedEnergies = [energy];
+    }
   }
 
   if (state.selectedEnergies.length === 0) {
-    state.selectedEnergies = [FREE_ENERGIES[0]];
+    state.selectedEnergies = [FREE_ENERGIES[0]]; // Ensure at least one is selected
   }
 
   renderEnergySelection();
 }
-
-// DOM Elements Cache
-const elements = {
-  intentInput: document.getElementById('intentInput'),
-  generateBtn: document.getElementById('generateBtn'),
-  canvas: document.getElementById('sigilCanvas'),
-  energyContainer: document.getElementById('energyContainer'),
-  canvasContainer: document.getElementById('canvasContainer'),
-  downloadBtn: document.getElementById('downloadBtn'),
-  loading: document.getElementById('loading'),
-  charCount: document.querySelector('.char-count'),
-  galleryContainer: document.getElementById('galleryContainer'),
-  shareModal: document.getElementById('shareModal')
-};
 
 // ===== CORE GENERATION SYSTEM =====
 async function generateSigil() {
@@ -190,8 +199,14 @@ async function makeGenerationRequest(phrase, vibe) {
   });
 
   if (!response.ok) {
-    const errorText = await response.text().catch(() => `HTTP ${response.status}`);
-    throw new Error(`Server error: ${errorText}`);
+    let errorText = `HTTP ${response.status}`;
+    try {
+      const errorData = await response.json();
+      errorText = errorData.error || errorText;
+    } catch (e) {
+      // Ignore if response is not JSON
+    }
+    throw new Error(errorText);
   }
 
   const data = await response.json();
@@ -202,7 +217,7 @@ async function makeGenerationRequest(phrase, vibe) {
 // ===== ENHANCED UI MANAGEMENT =====
 function updateUI() {
   updateGenerateButton();
-  renderEnergies();
+  renderEnergySelection();
   updateProInterface();
   updateCharCounter();
   renderGallery();
@@ -359,7 +374,13 @@ function addToGallery(sigilData) {
 
 function renderGallery() {
   const galleryContainer = document.getElementById('galleryContainer');
-  if (!galleryContainer || state.sigilGallery.length === 0) return;
+  if (!galleryContainer) return;
+
+  if (state.sigilGallery.length === 0) {
+    galleryContainer.innerHTML = '<p class="empty-gallery">Your sigil gallery awaits...</p>';
+    galleryContainer.style.display = 'block';
+    return;
+  }
 
   galleryContainer.innerHTML = `
     <div class="gallery-header">
@@ -558,6 +579,10 @@ async function renderSigil(imageData) {
       ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
       resolve();
     };
+    img.onerror = () => {
+        console.error('Failed to load sigil image data.');
+        resolve(); // Resolve even on error to prevent blocking
+    };
     img.src = imageData;
   });
 }
@@ -581,7 +606,8 @@ async function checkProStatus() {
     if (proKey) {
       try {
         const response = await fetch('/api/pro-status', {
-          headers: { 'x-pro-key': proKey }
+          headers: { 'x-pro-key': proKey },
+          signal: AbortSignal.timeout(5000)
         });
 
         if (response.ok) {
@@ -589,7 +615,11 @@ async function checkProStatus() {
           if (contentType && contentType.includes('application/json')) {
             const data = await response.json();
             serverPro = data.isPro || false;
+          } else {
+            console.log('Pro status endpoint did not return JSON.');
           }
+        } else {
+          console.log(`Pro status check failed: ${response.statusText}`);
         }
       } catch (fetchError) {
         console.log('Pro status fetch failed:', fetchError.message);
@@ -600,20 +630,16 @@ async function checkProStatus() {
     updateUI();
 
   } catch (error) {
-    console.log('Pro status check failed, using local storage');
+    console.log('Pro status check failed, falling back to local storage');
     state.isPro = localStorage.getItem('sigil_pro') === '1';
     updateUI();
   }
 }
 
 function updateProInterface() {
-  const proBadge = document.getElementById('proBadge');
-  const proControls = document.getElementById('proControls');
-  const unlockSection = document.getElementById('unlockSection');
-
-  if (proBadge) proBadge.style.display = state.isPro ? 'flex' : 'none';
-  if (proControls) proControls.style.display = state.isPro ? 'block' : 'none';
-  if (unlockSection) unlockSection.style.display = state.isPro ? 'none' : 'block';
+  if (elements.proBadge) elements.proBadge.style.display = state.isPro ? 'flex' : 'none';
+  if (elements.proControls) elements.proControls.style.display = state.isPro ? 'block' : 'none';
+  if (elements.unlockSection) elements.unlockSection.style.display = state.isPro ? 'none' : 'block';
 }
 
 async function validateProKey(key) {
@@ -621,8 +647,13 @@ async function validateProKey(key) {
     const response = await fetch('/api/validate-key', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key })
+      body: JSON.stringify({ key }),
+      signal: AbortSignal.timeout(10000)
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
 
     const data = await response.json();
 
@@ -660,7 +691,11 @@ function showToast(message, type = 'info') {
 
   setTimeout(() => {
     toast.classList.remove('show');
-    setTimeout(() => document.body.removeChild(toast), 300);
+    setTimeout(() => {
+        if (document.body.contains(toast)) {
+            document.body.removeChild(toast);
+        }
+    }, 300);
   }, 4000);
 }
 
@@ -689,58 +724,37 @@ function setupEvents() {
 
   elements.downloadBtn?.addEventListener('click', downloadSigil);
 
-  const proKeyBtn = document.getElementById('proKeyBtn');
-  const proKeyModal = document.getElementById('proKeyModal');
-  const proKeySubmit = document.getElementById('proKeySubmit');
-  const proKeyInput = document.getElementById('proKeyInput');
+  elements.proKeyBtn?.addEventListener('click', () => elements.proKeyModal?.showModal());
 
-  proKeyBtn?.addEventListener('click', () => proKeyModal?.showModal());
-
-  proKeySubmit?.addEventListener('click', async () => {
-    const key = proKeyInput?.value?.trim();
+  elements.proKeySubmit?.addEventListener('click', async () => {
+    const key = elements.proKeyInput?.value?.trim();
     if (key && await validateProKey(key)) {
-      proKeyModal?.close();
-      if (proKeyInput) proKeyInput.value = '';
+      elements.proKeyModal?.close();
+      if (elements.proKeyInput) elements.proKeyInput.value = '';
     }
   });
 
   // Close modal on backdrop click
-  proKeyModal?.addEventListener('click', (e) => {
-    if (e.target === proKeyModal) {
-      proKeyModal.close();
+  elements.proKeyModal?.addEventListener('click', (e) => {
+    if (e.target === elements.proKeyModal) {
+      elements.proKeyModal.close();
     }
   });
 }
 
 function updateUI() {
-  // Update generate button state
-  if (elements.generateBtn) {
-    elements.generateBtn.disabled = state.isGenerating || state.cooldownActive;
-    if (state.cooldownActive) {
-      elements.generateBtn.innerHTML = '<span>Cooldown Active...</span>';
-    } else if (state.isGenerating) {
-      elements.generateBtn.innerHTML = '<span>Generating...</span>';
-    } else {
-      elements.generateBtn.innerHTML = '<span>Generate Sigil</span>';
-    }
-  }
-
-  // Render energy selection
+  updateGenerateButton();
   renderEnergySelection();
-
-  // Update pro status indicators
-  const proElements = document.querySelectorAll('.pro-indicator');
-  proElements.forEach(el => {
-    el.style.display = state.isPro ? 'none' : 'block';
-  });
+  updateProInterface();
+  updateCharCounter();
+  renderGallery();
 }
 
 function updateCharCounter() {
-  const counter = document.getElementById('charCounter');
-  if (counter && elements.intentInput) {
+  if (elements.charCount && elements.intentInput) {
     const length = elements.intentInput.value.length;
-    counter.textContent = `${length}/200`;
-    counter.style.color = length > 180 ? '#ff6b6b' : '#666';
+    elements.charCount.textContent = `${length}/200`;
+    elements.charCount.style.color = length > 180 ? '#ff6b6b' : '#94a3b8';
   }
 }
 
@@ -773,3 +787,118 @@ window.shareToFacebook = shareToFacebook;
 window.shareToInstagram = shareToInstagram;
 window.copyShareLink = copyShareLink;
 window.shareViaNative = shareViaNative;
+
+// Add CSS for toast animations and gallery styles
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+  }
+  .toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #3b82f6; /* Default blue for info */
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    animation: slideIn 0.3s ease-out forwards;
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  .toast.toast-success { background: #10b981; }
+  .toast.toast-error { background: #ef4444; }
+  .toast.toast-warning { background: #f59e0b; }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .empty-gallery {
+    text-align: center;
+    color: #94a3b8;
+    font-style: italic;
+    padding: 2rem;
+  }
+  .gallery-item {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.1);
+    transition: transform 0.2s ease;
+    cursor: pointer;
+  }
+  .gallery-item:hover {
+    transform: scale(1.02);
+  }
+  .gallery-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 50%);
+    color: white;
+    padding: 10px;
+    font-size: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 60%; /* Adjust as needed to show info */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .gallery-item:hover .gallery-overlay {
+    opacity: 1;
+  }
+  .gallery-info {
+    margin-top: auto; /* Pushes info to the bottom of the overlay */
+  }
+  .gallery-phrase {
+    font-weight: bold;
+    margin: 0 0 4px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .gallery-energy {
+    margin: 0 0 4px 0;
+    opacity: 0.8;
+  }
+  .gallery-date {
+    font-size: 0.7rem;
+    opacity: 0.7;
+  }
+  .gallery-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .gallery-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    border-radius: 4px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.2s;
+  }
+  .gallery-btn:hover {
+    background: rgba(255, 255, 255, 0.4);
+  }
+  .gallery-btn i {
+    margin-right: 0;
+  }
+
+  /* Ensure the modal styles are included if they were intended */
+  .share-modal-overlay { /* Add styles for modal overlay if used elsewhere */ }
+  .share-modal { /* Add styles for modal content if used elsewhere */ }
+`;
+document.head.appendChild(style);
