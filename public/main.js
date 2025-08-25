@@ -373,7 +373,7 @@ class SigilcraftApp {
       this.domElements.galleryContainer.innerHTML = `
         <div class="gallery-empty">
           <p>✨ Your ultra-unique sigil gallery awaits...</p>
-          <p>Generate your first revolutionary sigil to begin your mystical collection!</p>
+          <p>Generate your first revolutionary sigil to begin your mystical collection!</p></div>our mystical collection!</p>
         </div>
       `;
       return;
@@ -411,6 +411,56 @@ class SigilcraftApp {
   }
 
   downloadGalleryItem(id) {
+    const item = this.state.sigilGallery.find(sigil => sigil.id === id);
+    if (!item) return;
+
+    const link = document.createElement('a');
+    link.href = `data:image/png;base64,${item.image}`;
+    link.download = `sigil-${item.phrase.replace(/\s+/g, '-').toLowerCase()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    this.showToast('📥 Sigil downloaded!', 'success');
+  }
+
+  viewGalleryItem(id) {
+    const item = this.state.sigilGallery.find(sigil => sigil.id === id);
+    if (!item) return;
+
+    const modal = document.createElement('div');
+    modal.className = 'gallery-modal';
+    modal.innerHTML = `
+      <div class="gallery-modal-content">
+        <span class="gallery-modal-close">&times;</span>
+        <img src="data:image/png;base64,${item.image}" alt="Sigil: ${item.phrase}">
+        <div class="gallery-modal-info">
+          <h3>"${item.phrase}"</h3>
+          <p>${item.vibe} energy${item.advanced ? ' • Ultra' : ''}</p>
+          <p>Created: ${new Date(item.timestamp).toLocaleString()}</p>
+        </div>
+      </div>
+    `;
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal || e.target.className === 'gallery-modal-close') {
+        document.body.removeChild(modal);
+      }
+    });
+
+    document.body.appendChild(modal);
+  }
+
+  deleteGalleryItem(id) {
+    if (!confirm('Delete this sigil from your gallery?')) return;
+
+    this.state.sigilGallery = this.state.sigilGallery.filter(item => item.id !== id);
+    localStorage.setItem('sigilcraft_gallery', JSON.stringify(this.state.sigilGallery));
+    this.updateGallery();
+    this.showToast('🗑️ Sigil deleted', 'info');
+  }
+
+  // Missing method implementations
+  resetAfterError() {
     const item = this.state.sigilGallery.find(i => i.id === id);
     if (!item) return;
 
@@ -573,7 +623,7 @@ class SigilcraftApp {
           <span class="label">✨ Detected Archetypes:</span>
           <div class="archetype-tags">
             ${analysis.semanticMatches.map(match => 
-              `<span class="archetype-tag">${match}</span>`
+              `<span class="archetype-tag">${match}</span>`).join('')}g">${match}</span>`
             ).join('')}
           </div>
         </div>
@@ -826,6 +876,8 @@ window.closeProModal = function() {
 window.submitProKey = function() {
   if (window.app) {
     window.app.submitProKey();
+  }
+};.app.submitProKey();
   }
 };
 

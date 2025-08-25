@@ -135,6 +135,7 @@ app.post('/api/generate', generateLimiter, async (req, res) => {
     const selectedVibe = validVibes.includes(vibe) ? vibe : 'mystical';
 
     console.log(`🎨 [${requestId}] Generating sigil: "${cleanPhrase}" (${selectedVibe}) [Advanced: ${advanced}]`);
+    console.log(`🔗 [${requestId}] Backend URL: ${FLASK_URL}/api/generate`);
 
     // Create abort controller for timeout
     const controller = new AbortController();
@@ -159,8 +160,10 @@ app.post('/api/generate', generateLimiter, async (req, res) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`❌ [${requestId}] Backend error ${response.status}:`, errorText);
+      console.error(`❌ [${requestId}] Request was sent to: ${FLASK_URL}/api/generate`);
+      console.error(`❌ [${requestId}] Request body:`, JSON.stringify({ phrase: cleanPhrase, vibe: selectedVibe, advanced }));
 
-      throw new Error(`Backend service error: ${response.status}`);
+      throw new Error(`Backend service error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
