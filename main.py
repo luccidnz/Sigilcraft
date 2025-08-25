@@ -30,10 +30,12 @@ from flask_cors import CORS
 try:
     from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
     import numpy as np
+    NUMPY_AVAILABLE = True
 except ImportError as e:
     print(f"❌ Missing required packages: {e}")
     print("📦 Please install: pip install pillow numpy")
-    sys.exit(1)
+    NUMPY_AVAILABLE = False
+    # sys.exit(1) # Removed exit to allow partial functionality if numpy is missing but other parts are used
 
 # Configure logging
 logging.basicConfig(
@@ -177,7 +179,8 @@ class UltraRevolutionarySigilGenerator:
             # Generate ultra-unique seed with phrase specificity
             seed = self._generate_ultra_unique_seed(phrase, vibe)
             random.seed(seed)
-            np.random.seed(seed % (2**32 - 1))
+            if NUMPY_AVAILABLE:
+                np.random.seed(seed % (2**32 - 1))
 
             # Create sigil with multiple layers
             self._create_base_pattern(draw, phrase, style, canvas_size)
@@ -544,7 +547,7 @@ def internal_error(error):
 if __name__ == '__main__':
     print("🔮 Starting Ultra-Revolutionary Sigilcraft Python Backend...")
     print(f"📦 PIL/Pillow version: {Image.__version__}")
-    print(f"🔢 NumPy available: {'✅' if 'numpy' in sys.modules or 'np' in globals() else '❌'}")
+    print(f"🔢 NumPy available: {'✅' if NUMPY_AVAILABLE else '❌'}")
     print("🎨 Ultra-revolutionary text-responsive sigil generation ready!")
 
     # Get port from environment or default to 5001 (Flask backend)

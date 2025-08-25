@@ -141,19 +141,25 @@ app.post('/api/generate', generateLimiter, async (req, res) => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
-    const response = await fetch(`${FLASK_URL}/api/generate`, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'X-Request-ID': requestId
-      },
-      body: JSON.stringify({ 
-        phrase: cleanPhrase, 
-        vibe: selectedVibe,
-        advanced: advanced 
-      }),
-      signal: controller.signal
-    });
+    let response;
+    try {
+      response = await fetch(`${FLASK_URL}/api/generate`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Request-ID': requestId
+        },
+        body: JSON.stringify({ 
+          phrase: cleanPhrase, 
+          vibe: selectedVibe,
+          advanced: advanced 
+        }),
+        signal: controller.signal
+      });
+    } catch (fetchError) {
+      console.error(`❌ [${requestId}] Network error:`, fetchError.message);
+      throw new Error(`Network connection failed: ${fetchError.message}`);
+    }
 
     clearTimeout(timeoutId);
 
