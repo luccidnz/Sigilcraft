@@ -1,8 +1,8 @@
 
 #!/usr/bin/env python3
 """
-SIGILCRAFT: REVOLUTIONARY SIGIL GENERATOR
-Enhanced Python Flask Backend with Advanced Algorithms
+SIGILCRAFT: ULTRA-REVOLUTIONARY SIGIL GENERATOR V4.0
+Completely rewritten for maximum text-responsiveness and uniqueness
 """
 
 import os
@@ -17,6 +17,7 @@ from typing import Dict, List, Tuple, Optional
 import logging
 import string
 import re
+import json
 
 # Flask and web dependencies
 from flask import Flask, request, jsonify
@@ -49,113 +50,168 @@ CORS(app, resources={
     }
 })
 
-# ===== REVOLUTIONARY SIGIL GENERATOR CLASS =====
-class RevolutionarySigilGenerator:
-    """Revolutionary sigil generation with phrase-specific algorithms"""
+# ===== ULTRA-REVOLUTIONARY SIGIL GENERATOR CLASS =====
+class UltraRevolutionarySigilGenerator:
+    """Ultra-revolutionary sigil generation with extreme text-specific uniqueness"""
     
     def __init__(self):
         self.size = 1024
         self.center = (self.size // 2, self.size // 2)
         
-        # Enhanced vibe configurations
+        # Completely redesigned vibe configurations with extreme differentiation
         self.vibe_styles = {
             'mystical': {
-                'colors': [(138, 43, 226), (75, 0, 130), (148, 0, 211), (186, 85, 211), (123, 104, 238)],
-                'stroke_width': lambda: random.randint(2, 5),
+                'colors': [(138, 43, 226), (75, 0, 130), (148, 0, 211), (186, 85, 211), (123, 104, 238), (221, 160, 221)],
+                'base_patterns': ['pentagram', 'sacred_circle', 'ancient_rune', 'mystic_spiral'],
+                'stroke_multiplier': 1.0,
+                'complexity_bias': 'ancient',
+                'geometry_type': 'curved',
+                'energy_flow': 'inward_spiral',
+                'symbol_density': 'moderate',
                 'glow_intensity': 0.8,
-                'complexity': 'high',
-                'patterns': ['sacred_geometry', 'pentagram', 'spiral', 'mandala']
+                'pattern_scale': 1.2
             },
             'cosmic': {
-                'colors': [(0, 100, 200), (100, 0, 200), (200, 0, 100), (0, 255, 255), (255, 0, 255), (138, 43, 226)],
-                'stroke_width': lambda: random.randint(1, 4),
-                'glow_intensity': 1.0,
-                'complexity': 'extreme',
-                'patterns': ['constellation', 'galaxy', 'nebula', 'orbital']
+                'colors': [(0, 100, 200), (100, 0, 200), (200, 0, 100), (0, 255, 255), (255, 0, 255), (138, 43, 226), (64, 224, 208)],
+                'base_patterns': ['constellation', 'galaxy_spiral', 'nebula_cloud', 'star_burst'],
+                'stroke_multiplier': 0.8,
+                'complexity_bias': 'infinite',
+                'geometry_type': 'stellar',
+                'energy_flow': 'radial_burst',
+                'symbol_density': 'high',
+                'glow_intensity': 1.2,
+                'pattern_scale': 1.8
             },
             'elemental': {
-                'colors': [(34, 139, 34), (255, 140, 0), (30, 144, 255), (139, 69, 19), (255, 69, 0), (0, 128, 0)],
-                'stroke_width': lambda: random.randint(3, 6),
+                'colors': [(34, 139, 34), (255, 140, 0), (30, 144, 255), (139, 69, 19), (255, 69, 0), (0, 128, 0), (255, 215, 0)],
+                'base_patterns': ['nature_flow', 'elemental_cross', 'root_system', 'wave_pattern'],
+                'stroke_multiplier': 1.5,
+                'complexity_bias': 'organic',
+                'geometry_type': 'natural',
+                'energy_flow': 'flowing',
+                'symbol_density': 'organic',
                 'glow_intensity': 0.6,
-                'complexity': 'organic',
-                'patterns': ['flowing', 'crystalline', 'root_system', 'flame']
+                'pattern_scale': 1.1
             },
             'crystal': {
-                'colors': [(255, 20, 147), (0, 255, 255), (255, 215, 0), (255, 105, 180), (64, 224, 208), (255, 255, 255)],
-                'stroke_width': lambda: random.randint(1, 3),
-                'glow_intensity': 1.2,
-                'complexity': 'geometric',
-                'patterns': ['faceted', 'prismatic', 'lattice', 'refraction']
+                'colors': [(255, 20, 147), (0, 255, 255), (255, 215, 0), (255, 105, 180), (64, 224, 208), (255, 255, 255), (147, 0, 211)],
+                'base_patterns': ['crystal_lattice', 'prismatic', 'faceted_gem', 'refraction'],
+                'stroke_multiplier': 0.6,
+                'complexity_bias': 'geometric',
+                'geometry_type': 'angular',
+                'energy_flow': 'prismatic',
+                'symbol_density': 'precise',
+                'glow_intensity': 1.5,
+                'pattern_scale': 0.9
             },
             'shadow': {
-                'colors': [(64, 64, 64), (128, 0, 128), (105, 105, 105), (169, 169, 169), (0, 0, 0), (47, 79, 79)],
-                'stroke_width': lambda: random.randint(4, 8),
+                'colors': [(64, 64, 64), (128, 0, 128), (105, 105, 105), (169, 169, 169), (25, 25, 25), (47, 79, 79), (72, 61, 139)],
+                'base_patterns': ['void_portal', 'shadow_tendrils', 'dark_sigil', 'obscured_geometry'],
+                'stroke_multiplier': 2.0,
+                'complexity_bias': 'hidden',
+                'geometry_type': 'jagged',
+                'energy_flow': 'consuming',
+                'symbol_density': 'sparse',
                 'glow_intensity': 0.3,
-                'complexity': 'angular',
-                'patterns': ['jagged', 'void', 'shadow_cast', 'broken']
+                'pattern_scale': 1.4
             },
             'light': {
-                'colors': [(255, 255, 0), (255, 215, 0), (255, 255, 255), (255, 250, 205), (255, 255, 224), (250, 250, 210)],
-                'stroke_width': lambda: random.randint(1, 4),
-                'glow_intensity': 1.5,
-                'complexity': 'radiant',
-                'patterns': ['radial', 'burst', 'prism', 'halo']
+                'colors': [(255, 255, 0), (255, 215, 0), (255, 255, 255), (255, 250, 205), (255, 255, 224), (250, 250, 210), (255, 255, 240)],
+                'base_patterns': ['radiant_sun', 'light_rays', 'divine_mandala', 'brilliant_star'],
+                'stroke_multiplier': 0.7,
+                'complexity_bias': 'illuminating',
+                'geometry_type': 'radial',
+                'energy_flow': 'emanating',
+                'symbol_density': 'luminous',
+                'glow_intensity': 2.0,
+                'pattern_scale': 1.6
             },
             'storm': {
-                'colors': [(75, 0, 130), (255, 255, 0), (0, 0, 139), (220, 20, 60), (255, 20, 147), (138, 43, 226)],
-                'stroke_width': lambda: random.randint(2, 6),
-                'glow_intensity': 0.9,
-                'complexity': 'chaotic',
-                'patterns': ['lightning', 'turbulent', 'fractal', 'electric']
+                'colors': [(75, 0, 130), (255, 255, 0), (0, 0, 139), (220, 20, 60), (255, 20, 147), (138, 43, 226), (255, 69, 0)],
+                'base_patterns': ['lightning_tree', 'storm_vortex', 'electric_web', 'chaos_fractal'],
+                'stroke_multiplier': 1.3,
+                'complexity_bias': 'chaotic',
+                'geometry_type': 'electric',
+                'energy_flow': 'explosive',
+                'symbol_density': 'intense',
+                'glow_intensity': 1.1,
+                'pattern_scale': 1.7
             },
             'void': {
-                'colors': [(25, 25, 112), (0, 0, 0), (72, 61, 139), (106, 90, 205), (75, 0, 130), (25, 25, 25)],
-                'stroke_width': lambda: random.randint(3, 7),
+                'colors': [(25, 25, 112), (0, 0, 0), (72, 61, 139), (106, 90, 205), (75, 0, 130), (25, 25, 25), (47, 79, 79)],
+                'base_patterns': ['infinite_spiral', 'dimensional_portal', 'void_geometry', 'recursive_depth'],
+                'stroke_multiplier': 1.8,
+                'complexity_bias': 'infinite',
+                'geometry_type': 'impossible',
+                'energy_flow': 'recursive',
+                'symbol_density': 'deep',
                 'glow_intensity': 0.4,
-                'complexity': 'infinite',
-                'patterns': ['spiral_void', 'recursive', 'portal', 'dimensional']
+                'pattern_scale': 2.0
             }
         }
         
-        # Letter-to-energy mapping for deeper text analysis
-        self.letter_energies = {
-            'a': 'light', 'b': 'elemental', 'c': 'crystal', 'd': 'shadow', 'e': 'light',
-            'f': 'storm', 'g': 'elemental', 'h': 'mystical', 'i': 'light', 'j': 'storm',
-            'k': 'shadow', 'l': 'light', 'm': 'mystical', 'n': 'void', 'o': 'cosmic',
-            'p': 'mystical', 'q': 'void', 'r': 'storm', 's': 'shadow', 't': 'crystal',
-            'u': 'cosmic', 'v': 'void', 'w': 'storm', 'x': 'shadow', 'y': 'light', 'z': 'void'
+        # Ultra-advanced text DNA analysis
+        self.word_archetypes = {
+            'love': {'energy': 'heart', 'geometry': 'flowing', 'density': 'warm', 'pattern': 'embrace'},
+            'power': {'energy': 'force', 'geometry': 'angular', 'density': 'intense', 'pattern': 'domination'},
+            'peace': {'energy': 'calm', 'geometry': 'circular', 'density': 'gentle', 'pattern': 'harmony'},
+            'money': {'energy': 'magnetic', 'geometry': 'crystalline', 'density': 'abundant', 'pattern': 'attraction'},
+            'health': {'energy': 'vital', 'geometry': 'organic', 'density': 'flowing', 'pattern': 'renewal'},
+            'protection': {'energy': 'shield', 'geometry': 'barrier', 'density': 'strong', 'pattern': 'defensive'},
+            'wisdom': {'energy': 'ancient', 'geometry': 'spiral', 'density': 'deep', 'pattern': 'knowing'},
+            'success': {'energy': 'ascending', 'geometry': 'upward', 'density': 'expanding', 'pattern': 'achievement'},
+            'abundance': {'energy': 'overflowing', 'geometry': 'radiating', 'density': 'rich', 'pattern': 'prosperity'},
+            'light': {'energy': 'radiant', 'geometry': 'burst', 'density': 'bright', 'pattern': 'illumination'},
+            'shadow': {'energy': 'hidden', 'geometry': 'veiled', 'density': 'mysterious', 'pattern': 'concealment'},
+            'dream': {'energy': 'ethereal', 'geometry': 'fluid', 'density': 'soft', 'pattern': 'vision'},
+            'magic': {'energy': 'mystical', 'geometry': 'arcane', 'density': 'enchanted', 'pattern': 'manifestation'},
+            'fire': {'energy': 'passionate', 'geometry': 'dancing', 'density': 'fierce', 'pattern': 'transformation'},
+            'water': {'energy': 'flowing', 'geometry': 'wave', 'density': 'fluid', 'pattern': 'emotion'},
+            'earth': {'energy': 'grounded', 'geometry': 'stable', 'density': 'solid', 'pattern': 'foundation'},
+            'air': {'energy': 'free', 'geometry': 'swirling', 'density': 'light', 'pattern': 'thought'},
+            'consciousness': {'energy': 'aware', 'geometry': 'infinite', 'density': 'expansive', 'pattern': 'awakening'},
+            'manifestation': {'energy': 'creative', 'geometry': 'forming', 'density': 'materializing', 'pattern': 'creation'}
         }
         
-        # Word semantic categories for pattern selection
-        self.semantic_patterns = {
-            'love': ['heart', 'flowing', 'embrace'],
-            'power': ['lightning', 'angular', 'dominant'],
-            'peace': ['circular', 'balanced', 'gentle'],
-            'money': ['crystalline', 'abundant', 'magnetic'],
-            'health': ['organic', 'flowing', 'vital'],
-            'protection': ['shield', 'barrier', 'defensive'],
-            'wisdom': ['spiral', 'ancient', 'deep'],
-            'success': ['ascending', 'radial', 'expanding'],
-            'abundance': ['flowing', 'multiplying', 'rich'],
-            'light': ['radial', 'burst', 'illuminating'],
-            'shadow': ['angular', 'hidden', 'mysterious'],
-            'dream': ['ethereal', 'floating', 'surreal'],
-            'magic': ['spiral', 'mystical', 'enchanted'],
-            'fire': ['flame', 'dancing', 'passionate'],
-            'water': ['flowing', 'wave', 'fluid'],
-            'earth': ['grounded', 'crystalline', 'stable'],
-            'air': ['swirling', 'light', 'free']
+        # Character energy mappings with expanded meanings
+        self.char_energies = {
+            'a': {'flow': 'open', 'intensity': 'gentle', 'direction': 'expanding'},
+            'b': {'flow': 'blocked', 'intensity': 'strong', 'direction': 'contained'},
+            'c': {'flow': 'curved', 'intensity': 'moderate', 'direction': 'enclosing'},
+            'd': {'flow': 'decisive', 'intensity': 'firm', 'direction': 'forward'},
+            'e': {'flow': 'ethereal', 'intensity': 'light', 'direction': 'upward'},
+            'f': {'flow': 'fierce', 'intensity': 'intense', 'direction': 'cutting'},
+            'g': {'flow': 'grounded', 'intensity': 'stable', 'direction': 'downward'},
+            'h': {'flow': 'hidden', 'intensity': 'mysterious', 'direction': 'inward'},
+            'i': {'flow': 'intense', 'intensity': 'focused', 'direction': 'piercing'},
+            'j': {'flow': 'joyful', 'intensity': 'vibrant', 'direction': 'dancing'},
+            'k': {'flow': 'kinetic', 'intensity': 'sharp', 'direction': 'striking'},
+            'l': {'flow': 'flowing', 'intensity': 'smooth', 'direction': 'liquid'},
+            'm': {'flow': 'mothering', 'intensity': 'nurturing', 'direction': 'embracing'},
+            'n': {'flow': 'neutral', 'intensity': 'balanced', 'direction': 'centering'},
+            'o': {'flow': 'open', 'intensity': 'complete', 'direction': 'circular'},
+            'p': {'flow': 'powerful', 'intensity': 'strong', 'direction': 'projecting'},
+            'q': {'flow': 'questioning', 'intensity': 'seeking', 'direction': 'spiraling'},
+            'r': {'flow': 'rough', 'intensity': 'turbulent', 'direction': 'rolling'},
+            's': {'flow': 'serpentine', 'intensity': 'sinuous', 'direction': 'winding'},
+            't': {'flow': 'tall', 'intensity': 'structured', 'direction': 'vertical'},
+            'u': {'flow': 'unified', 'intensity': 'harmonious', 'direction': 'joining'},
+            'v': {'flow': 'victorious', 'intensity': 'triumphant', 'direction': 'ascending'},
+            'w': {'flow': 'wavy', 'intensity': 'undulating', 'direction': 'oscillating'},
+            'x': {'flow': 'crossing', 'intensity': 'intersecting', 'direction': 'multiplying'},
+            'y': {'flow': 'yearning', 'intensity': 'reaching', 'direction': 'striving'},
+            'z': {'flow': 'zigzag', 'intensity': 'electric', 'direction': 'energetic'}
         }
     
     def generate_sigil(self, phrase: str, vibe: str = 'mystical', advanced: bool = False) -> str:
-        """Generate a revolutionary sigil that's deeply responsive to text content"""
+        """Generate ultra-unique sigils with extreme text responsiveness"""
         try:
-            logger.info(f"🎨 Generating revolutionary sigil: '{phrase}' with vibe: {vibe}")
+            logger.info(f"🎨 Generating ultra-revolutionary sigil: '{phrase}' with vibe: {vibe}")
             
-            # Deep text analysis for unique generation
-            text_dna = self._analyze_text_dna(phrase)
+            # Ultra-deep text DNA analysis
+            text_dna = self._ultra_analyze_text_dna(phrase)
             
-            # Get enhanced style configuration
+            # Get style configuration
             style = self.vibe_styles.get(vibe, self.vibe_styles['mystical'])
             
             # Create ultra high-resolution canvas
@@ -163,368 +219,1050 @@ class RevolutionarySigilGenerator:
             img = Image.new('RGBA', (canvas_size, canvas_size), (0, 0, 0, 0))
             draw = ImageDraw.Draw(img)
             
-            # Generate unique seed from phrase for reproducibility but with uniqueness
-            seed = self._generate_complex_seed(phrase, vibe)
+            # Generate ultra-unique seed with phrase specificity
+            seed = self._generate_ultra_unique_seed(phrase, vibe, text_dna)
             random.seed(seed)
             np.random.seed(seed % (2**32 - 1))
             
-            # Revolutionary multi-layer generation
-            self._create_base_energy_field(draw, text_dna, style, canvas_size)
-            self._create_semantic_structure(draw, phrase, text_dna, style, canvas_size)
-            self._create_letter_manifestation(draw, phrase, text_dna, style, canvas_size)
-            self._create_phrase_resonance(draw, phrase, text_dna, style, canvas_size)
-            self._add_vibe_specific_patterns(draw, phrase, vibe, style, canvas_size)
+            # Multi-layer revolutionary generation
+            self._create_text_essence_field(draw, text_dna, style, canvas_size, phrase)
+            self._create_phrase_geometry(draw, phrase, text_dna, style, canvas_size)
+            self._create_word_manifestations(draw, phrase, text_dna, style, canvas_size)
+            self._create_character_symphony(draw, phrase, text_dna, style, canvas_size)
+            self._create_vibe_resonance(draw, phrase, vibe, style, canvas_size, text_dna)
+            self._create_unique_signature(draw, phrase, vibe, style, canvas_size, text_dna)
             
             # Apply revolutionary effects
             if advanced:
-                img = self._apply_revolutionary_effects(img, style, text_dna)
+                img = self._apply_ultra_effects(img, style, text_dna, phrase)
             else:
-                img = self._apply_enhanced_effects(img, style, text_dna)
+                img = self._apply_enhanced_effects(img, style, text_dna, phrase)
             
             # Convert to base64
             return self._image_to_base64(img)
             
         except Exception as e:
-            logger.error(f"❌ Revolutionary sigil generation failed: {e}")
+            logger.error(f"❌ Ultra-revolutionary sigil generation failed: {e}")
             raise
     
-    def _analyze_text_dna(self, phrase: str) -> Dict:
-        """Revolutionary text analysis that creates a unique DNA signature"""
+    def _ultra_analyze_text_dna(self, phrase: str) -> Dict:
+        """Ultra-advanced text analysis creating unique DNA signatures"""
         clean_phrase = ''.join(c.lower() for c in phrase if c.isalnum() or c.isspace())
         words = clean_phrase.split()
         all_chars = ''.join(clean_phrase.split())
         
-        # Character frequency analysis
-        char_freq = {}
-        for char in all_chars:
-            char_freq[char] = char_freq.get(char, 0) + 1
+        # Character frequency with position weighting
+        char_freq_weighted = {}
+        for i, char in enumerate(all_chars):
+            weight = 1 + (i / len(all_chars))  # Position importance
+            char_freq_weighted[char] = char_freq_weighted.get(char, 0) + weight
         
-        # Vowel/consonant patterns
+        # Phonetic analysis
         vowels = 'aeiou'
-        vowel_pattern = [1 if c in vowels else 0 for c in all_chars if c.isalpha()]
-        consonant_pattern = [1 if c not in vowels else 0 for c in all_chars if c.isalpha()]
+        consonants = 'bcdfghjklmnpqrstvwxyz'
+        vowel_positions = [i for i, c in enumerate(all_chars) if c in vowels]
+        consonant_positions = [i for i, c in enumerate(all_chars) if c in consonants]
         
-        # Word length distribution
-        word_lengths = [len(word) for word in words]
+        # Word relationship analysis
+        word_relationships = []
+        for i, word1 in enumerate(words):
+            for j, word2 in enumerate(words[i+1:], i+1):
+                similarity = len(set(word1) & set(word2)) / len(set(word1) | set(word2)) if set(word1) | set(word2) else 0
+                word_relationships.append((i, j, similarity))
         
-        # Semantic analysis
-        semantic_matches = []
+        # Semantic depth analysis
+        semantic_layers = []
         for word in words:
-            for key, patterns in self.semantic_patterns.items():
-                if key in word.lower() or word.lower() in key:
-                    semantic_matches.extend(patterns)
+            for archetype, properties in self.word_archetypes.items():
+                if archetype in word.lower() or any(part in archetype for part in word.lower().split()):
+                    semantic_layers.append({
+                        'word': word,
+                        'archetype': archetype,
+                        'properties': properties
+                    })
         
-        # Energy distribution from letters
-        energy_distribution = {}
+        # Character energy flow analysis
+        energy_flow_pattern = []
         for char in all_chars:
-            if char in self.letter_energies:
-                energy = self.letter_energies[char]
-                energy_distribution[energy] = energy_distribution.get(energy, 0) + 1
+            if char in self.char_energies:
+                energy_flow_pattern.append(self.char_energies[char])
         
-        # Mathematical signatures
-        phrase_sum = sum(ord(c) for c in all_chars)
-        phrase_product = 1
-        for c in all_chars:
-            phrase_product = (phrase_product * ord(c)) % 999999
+        # Mathematical signatures with advanced calculations
+        phrase_hash_md5 = hashlib.md5(phrase.encode()).hexdigest()
+        phrase_hash_sha1 = hashlib.sha1(phrase.encode()).hexdigest()
+        phrase_hash_sha256 = hashlib.sha256(phrase.encode()).hexdigest()
         
-        # Rhythm analysis
-        syllable_count = self._estimate_syllables(phrase)
-        rhythm_pattern = [len(word) % 5 for word in words]
+        # Complexity and uniqueness scores
+        uniqueness_score = len(set(all_chars)) / len(all_chars) if all_chars else 0
+        complexity_score = (len(words) * len(set(all_chars)) * len(semantic_layers)) / max(1, len(all_chars))
         
         return {
-            'char_freq': char_freq,
-            'vowel_pattern': vowel_pattern,
-            'consonant_pattern': consonant_pattern,
-            'word_lengths': word_lengths,
-            'semantic_matches': semantic_matches,
-            'energy_distribution': energy_distribution,
-            'phrase_sum': phrase_sum,
-            'phrase_product': phrase_product,
-            'syllable_count': syllable_count,
-            'rhythm_pattern': rhythm_pattern,
-            'unique_chars': len(set(all_chars)),
-            'total_chars': len(all_chars),
+            'char_freq_weighted': char_freq_weighted,
+            'vowel_positions': vowel_positions,
+            'consonant_positions': consonant_positions,
+            'word_relationships': word_relationships,
+            'semantic_layers': semantic_layers,
+            'energy_flow_pattern': energy_flow_pattern,
+            'phrase_hash_md5': phrase_hash_md5,
+            'phrase_hash_sha1': phrase_hash_sha1,
+            'phrase_hash_sha256': phrase_hash_sha256,
+            'uniqueness_score': uniqueness_score,
+            'complexity_score': complexity_score,
             'word_count': len(words),
-            'complexity_score': self._calculate_complexity_score(phrase)
+            'char_count': len(all_chars),
+            'unique_chars': len(set(all_chars)),
+            'phrase_length': len(phrase)
         }
     
-    def _estimate_syllables(self, phrase: str) -> int:
-        """Estimate syllable count for rhythm analysis"""
-        vowels = 'aeiouAEIOU'
-        syllables = 0
-        prev_was_vowel = False
+    def _generate_ultra_unique_seed(self, phrase: str, vibe: str, text_dna: Dict) -> int:
+        """Generate ultra-unique seed incorporating all text characteristics"""
+        # Multiple hash layers with text-specific data
+        base_data = f"{phrase}|{vibe}|{text_dna['uniqueness_score']:.6f}|{text_dna['complexity_score']:.6f}"
         
-        for char in phrase:
-            is_vowel = char in vowels
-            if is_vowel and not prev_was_vowel:
-                syllables += 1
-            prev_was_vowel = is_vowel
+        # Add semantic layer data
+        semantic_signature = ''.join([layer['archetype'] for layer in text_dna['semantic_layers']])
         
-        return max(1, syllables)
-    
-    def _calculate_complexity_score(self, phrase: str) -> float:
-        """Calculate a complexity score for the phrase"""
-        words = phrase.split()
-        unique_chars = len(set(phrase.lower()))
-        total_chars = len(phrase.replace(' ', ''))
-        word_variety = len(set(words))
+        # Add energy flow signature
+        energy_signature = ''.join([str(hash(str(e))) for e in text_dna['energy_flow_pattern']])
         
-        complexity = (unique_chars / max(1, total_chars)) * word_variety * len(words)
-        return min(10.0, complexity)
-    
-    def _generate_complex_seed(self, phrase: str, vibe: str) -> int:
-        """Generate a complex seed that incorporates phrase semantics"""
-        # Multiple hash layers for uniqueness
-        phrase_hash = hashlib.sha256(phrase.encode()).hexdigest()
-        vibe_hash = hashlib.md5(vibe.encode()).hexdigest()
-        combined = phrase + vibe + phrase_hash[:8] + vibe_hash[:8]
+        # Combine all data
+        combined_data = f"{base_data}|{semantic_signature}|{energy_signature}|{text_dna['phrase_hash_sha256']}"
         
-        final_hash = hashlib.sha512(combined.encode()).hexdigest()
+        # Generate final unique hash
+        final_hash = hashlib.sha512(combined_data.encode()).hexdigest()
         return int(final_hash[:16], 16) % (2**31)
     
-    def _create_base_energy_field(self, draw: ImageDraw, text_dna: Dict, style: Dict, size: int):
-        """Create the base energy field based on text DNA"""
+    def _create_text_essence_field(self, draw: ImageDraw, text_dna: Dict, style: Dict, size: int, phrase: str):
+        """Create the foundational energy field based on text essence"""
         center = (size // 2, size // 2)
         
-        # Energy rings based on character frequency
-        for i, (char, freq) in enumerate(text_dna['char_freq'].items()):
-            if i >= 8:  # Limit for performance
+        # Create unique field based on text characteristics
+        for i, (char, weight) in enumerate(text_dna['char_freq_weighted'].items()):
+            if i >= 12:  # Limit for performance
                 break
                 
-            radius = (size // 6) + (freq * size // 40)
-            angle_offset = ord(char) * 17
+            char_energy = self.char_energies.get(char, {'flow': 'neutral', 'intensity': 'moderate', 'direction': 'centered'})
             
-            # Multiple concentric patterns
-            for ring in range(freq):
-                ring_radius = radius + (ring * size // 80)
-                segments = max(6, freq * 3)
+            # Position based on character energy and phrase position
+            angle_base = (ord(char) * 23 + hash(phrase) % 360) % 360
+            radius_base = (size // 8) + (weight * size // 60)
+            
+            # Create energy rings with character-specific properties
+            ring_count = max(1, int(weight))
+            for ring in range(ring_count):
+                radius = radius_base + (ring * size // 100)
+                segments = max(6, int(weight * 4) + ring)
+                
+                # Direction-based angle modification
+                direction_modifier = {'inward': -15, 'outward': 15, 'circular': 0}.get(char_energy['direction'][:7], 0)
                 
                 for segment in range(segments):
-                    angle = (360 / segments) * segment + angle_offset
-                    start_angle = angle - 10
-                    end_angle = angle + 10
+                    angle = angle_base + (360 / segments) * segment + direction_modifier
                     
-                    color = style['colors'][i % len(style['colors'])]
-                    width = style['stroke_width']() if callable(style['stroke_width']) else style['stroke_width']
+                    # Intensity affects stroke width and color
+                    intensity_factor = {'gentle': 0.5, 'moderate': 1.0, 'strong': 1.5, 'intense': 2.0}.get(char_energy['intensity'], 1.0)
+                    stroke_width = max(1, int(style['stroke_multiplier'] * intensity_factor * 3))
                     
-                    bbox = [center[0] - ring_radius, center[1] - ring_radius,
-                           center[0] + ring_radius, center[1] + ring_radius]
+                    # Color selection based on character and position
+                    color_index = (ord(char) + ring + segment) % len(style['colors'])
+                    base_color = style['colors'][color_index]
                     
-                    try:
-                        draw.arc(bbox, start_angle, end_angle, fill=color, width=width)
-                    except:
-                        continue
+                    # Flow affects the drawing pattern
+                    if char_energy['flow'] == 'curved':
+                        self._draw_curved_arc(draw, center, radius, angle, stroke_width, base_color, size)
+                    elif char_energy['flow'] == 'angular':
+                        self._draw_angular_pattern(draw, center, radius, angle, stroke_width, base_color, size)
+                    else:
+                        self._draw_flowing_line(draw, center, radius, angle, stroke_width, base_color, size)
     
-    def _create_semantic_structure(self, draw: ImageDraw, phrase: str, text_dna: Dict, style: Dict, size: int):
-        """Create structure based on semantic meaning"""
+    def _create_phrase_geometry(self, draw: ImageDraw, phrase: str, text_dna: Dict, style: Dict, size: int):
+        """Create geometric patterns based on phrase structure"""
         center = (size // 2, size // 2)
         words = phrase.lower().split()
         
-        for i, word in enumerate(words):
-            if i >= 6:  # Limit complexity
-                break
-                
-            # Position based on word characteristics
-            word_value = sum(ord(c) for c in word)
-            angle = (word_value * 47) % 360
-            distance = (len(word) * size // 20) + (size // 8)
+        # Create unique geometry for each word based on its semantic properties
+        for i, word in enumerate(words[:8]):  # Limit for performance
+            word_semantic = None
+            for layer in text_dna['semantic_layers']:
+                if layer['word'].lower() == word:
+                    word_semantic = layer['properties']
+                    break
+            
+            if not word_semantic:
+                # Default properties for non-semantic words
+                word_semantic = {
+                    'energy': 'neutral',
+                    'geometry': 'circular',
+                    'density': 'moderate',
+                    'pattern': 'simple'
+                }
+            
+            # Position based on word characteristics and phrase position
+            word_hash = hash(word + phrase)
+            angle = (word_hash * 47 + i * 45) % 360
+            distance = (len(word) * size // 25) + (size // 6) + (i * size // 40)
             
             x = center[0] + distance * math.cos(math.radians(angle))
             y = center[1] + distance * math.sin(math.radians(angle))
             
-            # Create word-specific pattern
-            if any(semantic in word for semantic in ['love', 'heart']):
-                self._draw_heart_pattern(draw, (x, y), style, size // 40)
-            elif any(semantic in word for semantic in ['power', 'strength']):
-                self._draw_power_pattern(draw, (x, y), style, size // 40)
-            elif any(semantic in word for semantic in ['peace', 'calm']):
-                self._draw_peace_pattern(draw, (x, y), style, size // 40)
-            elif any(semantic in word for semantic in ['money', 'wealth', 'abundance']):
-                self._draw_abundance_pattern(draw, (x, y), style, size // 40)
+            # Create word-specific geometric pattern
+            pattern_size = max(size // 60, len(word) * size // 120)
+            color = style['colors'][(word_hash + i) % len(style['colors'])]
+            
+            if word_semantic['geometry'] == 'flowing':
+                self._draw_flowing_mandala(draw, (x, y), pattern_size, word, color, style)
+            elif word_semantic['geometry'] == 'angular':
+                self._draw_angular_crystal(draw, (x, y), pattern_size, word, color, style)
+            elif word_semantic['geometry'] == 'spiral':
+                self._draw_semantic_spiral(draw, (x, y), pattern_size, word, color, style)
+            elif word_semantic['geometry'] == 'radiating':
+                self._draw_radiant_burst(draw, (x, y), pattern_size, word, color, style)
             else:
-                self._draw_generic_semantic_pattern(draw, (x, y), word, style, size // 40)
+                self._draw_unique_symbol(draw, (x, y), pattern_size, word, color, style, word_semantic)
     
-    def _create_letter_manifestation(self, draw: ImageDraw, phrase: str, text_dna: Dict, style: Dict, size: int):
-        """Create visual manifestation of individual letters"""
+    def _create_word_manifestations(self, draw: ImageDraw, phrase: str, text_dna: Dict, style: Dict, size: int):
+        """Create specific manifestations for each word"""
         center = (size // 2, size // 2)
-        unique_chars = list(set(c.lower() for c in phrase if c.isalpha()))
+        words = phrase.split()
         
-        for i, char in enumerate(unique_chars[:12]):  # Limit to 12 for performance
-            char_value = ord(char)
+        for i, word in enumerate(words[:6]):
+            # Find semantic properties
+            semantic_props = None
+            for layer in text_dna['semantic_layers']:
+                if layer['word'].lower() == word.lower():
+                    semantic_props = layer
+                    break
             
-            # Position based on character properties
-            angle = (char_value * 23 + i * 30) % 360
-            radius = (size // 6) + ((char_value % 50) * size // 200)
-            
-            x = center[0] + radius * math.cos(math.radians(angle))
-            y = center[1] + radius * math.sin(math.radians(angle))
-            
-            # Create character-specific symbol
-            symbol_size = max(10, size // 80)
-            color = style['colors'][char_value % len(style['colors'])]
-            
-            # Different shapes for different characters
-            if char in 'aeiou':
-                # Vowels get circles
-                draw.ellipse([x-symbol_size, y-symbol_size, x+symbol_size, y+symbol_size], 
-                           outline=color, width=2)
-            elif char in 'bcdfghjklmnpqrstvwxyz':
-                # Consonants get various shapes
-                if char_value % 4 == 0:
-                    # Square
-                    draw.rectangle([x-symbol_size, y-symbol_size, x+symbol_size, y+symbol_size], 
-                                 outline=color, width=2)
-                elif char_value % 4 == 1:
-                    # Triangle
-                    points = [(x, y-symbol_size), (x-symbol_size, y+symbol_size), (x+symbol_size, y+symbol_size)]
-                    draw.polygon(points, outline=color, width=2)
-                elif char_value % 4 == 2:
-                    # Diamond
-                    points = [(x, y-symbol_size), (x+symbol_size, y), (x, y+symbol_size), (x-symbol_size, y)]
-                    draw.polygon(points, outline=color, width=2)
-                else:
-                    # Star
-                    self._draw_star(draw, (x, y), symbol_size, color, 2)
-    
-    def _create_phrase_resonance(self, draw: ImageDraw, phrase: str, text_dna: Dict, style: Dict, size: int):
-        """Create resonance patterns based on the entire phrase"""
-        center = (size // 2, size // 2)
-        
-        # Phrase rhythm visualization
-        rhythm = text_dna['rhythm_pattern']
-        syllables = text_dna['syllable_count']
-        
-        # Create spiral based on phrase rhythm
-        angle_step = 360 / max(1, syllables * 3)
-        radius_start = size // 12
-        radius_growth = size // (syllables * 4) if syllables > 0 else size // 20
-        
-        for i in range(syllables * 6):
-            angle = i * angle_step + (text_dna['phrase_sum'] % 360)
-            radius = radius_start + (i * radius_growth)
-            
-            x = center[0] + radius * math.cos(math.radians(angle))
-            y = center[1] + radius * math.sin(math.radians(angle))
-            
-            # Size varies with complexity
-            point_size = max(2, (text_dna['complexity_score'] * 3) // (i % 5 + 1))
-            color_index = (text_dna['phrase_product'] + i) % len(style['colors'])
-            color = style['colors'][color_index]
-            
-            draw.ellipse([x-point_size, y-point_size, x+point_size, y+point_size], 
-                        fill=color)
-            
-            # Connect to create flow
-            if i > 0:
-                prev_angle = (i-1) * angle_step + (text_dna['phrase_sum'] % 360)
-                prev_radius = radius_start + ((i-1) * radius_growth)
-                prev_x = center[0] + prev_radius * math.cos(math.radians(prev_angle))
-                prev_y = center[1] + prev_radius * math.sin(math.radians(prev_angle))
+            if semantic_props:
+                # Create archetype-specific manifestation
+                archetype = semantic_props['archetype']
+                properties = semantic_props['properties']
                 
-                width = max(1, style['stroke_width']() if callable(style['stroke_width']) else style['stroke_width'] // 2)
-                draw.line([(prev_x, prev_y), (x, y)], fill=color, width=width)
+                # Position based on word energy
+                word_energy = sum(ord(c) for c in word.lower())
+                angle = (word_energy * 31 + i * 60) % 360
+                radius = (size // 4) + ((word_energy % 100) * size // 300)
+                
+                x = center[0] + radius * math.cos(math.radians(angle))
+                y = center[1] + radius * math.sin(math.radians(angle))
+                
+                # Draw archetype-specific pattern
+                if archetype == 'love':
+                    self._draw_love_manifestation(draw, (x, y), size // 50, style, word)
+                elif archetype == 'power':
+                    self._draw_power_manifestation(draw, (x, y), size // 50, style, word)
+                elif archetype == 'abundance':
+                    self._draw_abundance_manifestation(draw, (x, y), size // 50, style, word)
+                elif archetype == 'consciousness':
+                    self._draw_consciousness_manifestation(draw, (x, y), size // 50, style, word)
+                else:
+                    self._draw_generic_manifestation(draw, (x, y), size // 50, style, word, archetype)
     
-    def _add_vibe_specific_patterns(self, draw: ImageDraw, phrase: str, vibe: str, style: Dict, size: int):
-        """Add vibe-specific patterns that interact with text DNA"""
+    def _create_character_symphony(self, draw: ImageDraw, phrase: str, text_dna: Dict, style: Dict, size: int):
+        """Create a symphony of individual character energies"""
         center = (size // 2, size // 2)
-        patterns = style.get('patterns', ['generic'])
+        all_chars = ''.join(c.lower() for c in phrase if c.isalpha())
         
-        for pattern in patterns:
-            if pattern == 'sacred_geometry':
-                self._add_sacred_geometry_enhanced(draw, center, style, size, phrase)
-            elif pattern == 'constellation':
-                self._add_constellation_enhanced(draw, center, style, size, phrase)
-            elif pattern == 'flowing':
-                self._add_flowing_enhanced(draw, center, style, size, phrase)
-            elif pattern == 'crystalline':
-                self._add_crystalline_enhanced(draw, center, style, size, phrase)
-            elif pattern == 'lightning':
-                self._add_lightning_enhanced(draw, center, style, size, phrase)
-            elif pattern == 'spiral_void':
-                self._add_spiral_void_enhanced(draw, center, style, size, phrase)
+        # Create character-specific energy patterns
+        for i, char in enumerate(all_chars[:20]):  # Limit for performance
+            char_energy = self.char_energies.get(char, {'flow': 'neutral', 'intensity': 'moderate', 'direction': 'centered'})
+            
+            # Position in expanding spiral based on character position in phrase
+            spiral_angle = i * 23  # Golden angle for natural spiral
+            spiral_radius = (size // 12) + (i * size // 80)
+            
+            # Modify based on character energy
+            if char_energy['direction'] == 'upward':
+                spiral_radius *= 0.8
+                spiral_angle -= 30
+            elif char_energy['direction'] == 'downward':
+                spiral_radius *= 1.2
+                spiral_angle += 30
+            elif char_energy['direction'] == 'inward':
+                spiral_radius *= 0.6
+            elif char_energy['direction'] == 'outward':
+                spiral_radius *= 1.4
+            
+            x = center[0] + spiral_radius * math.cos(math.radians(spiral_angle))
+            y = center[1] + spiral_radius * math.sin(math.radians(spiral_angle))
+            
+            # Draw character-specific symbol
+            symbol_size = max(3, size // 120)
+            color = style['colors'][(ord(char) + i) % len(style['colors'])]
+            
+            # Symbol shape based on character properties
+            if char_energy['flow'] == 'flowing':
+                self._draw_flowing_symbol(draw, (x, y), symbol_size, color, char)
+            elif char_energy['flow'] == 'angular':
+                self._draw_angular_symbol(draw, (x, y), symbol_size, color, char)
+            elif char_energy['flow'] == 'curved':
+                self._draw_curved_symbol(draw, (x, y), symbol_size, color, char)
+            else:
+                self._draw_basic_symbol(draw, (x, y), symbol_size, color, char, char_energy)
     
-    def _draw_heart_pattern(self, draw: ImageDraw, pos: Tuple[int, int], style: Dict, size: int):
-        """Draw a heart pattern for love-related words"""
-        x, y = pos
-        color = random.choice(style['colors'])
+    def _create_vibe_resonance(self, draw: ImageDraw, phrase: str, vibe: str, style: Dict, size: int, text_dna: Dict):
+        """Create vibe-specific resonance patterns that interact with text"""
+        center = (size // 2, size // 2)
         
-        # Simple heart shape using arcs and lines
-        draw.arc([x-size, y-size//2, x, y+size//2], 0, 180, fill=color, width=2)
-        draw.arc([x, y-size//2, x+size, y+size//2], 0, 180, fill=color, width=2)
-        draw.line([(x-size, y), (x, y+size)], fill=color, width=2)
-        draw.line([(x+size, y), (x, y+size)], fill=color, width=2)
+        # Get vibe-specific parameters
+        geometry_type = style['geometry_type']
+        energy_flow = style['energy_flow']
+        pattern_scale = style['pattern_scale']
+        
+        # Create base resonance pattern
+        if geometry_type == 'stellar':
+            self._create_stellar_resonance(draw, center, style, size, phrase, text_dna)
+        elif geometry_type == 'natural':
+            self._create_natural_resonance(draw, center, style, size, phrase, text_dna)
+        elif geometry_type == 'angular':
+            self._create_crystal_resonance(draw, center, style, size, phrase, text_dna)
+        elif geometry_type == 'curved':
+            self._create_mystic_resonance(draw, center, style, size, phrase, text_dna)
+        elif geometry_type == 'radial':
+            self._create_radial_resonance(draw, center, style, size, phrase, text_dna)
+        elif geometry_type == 'electric':
+            self._create_electric_resonance(draw, center, style, size, phrase, text_dna)
+        elif geometry_type == 'jagged':
+            self._create_shadow_resonance(draw, center, style, size, phrase, text_dna)
+        elif geometry_type == 'impossible':
+            self._create_void_resonance(draw, center, style, size, phrase, text_dna)
     
-    def _draw_power_pattern(self, draw: ImageDraw, pos: Tuple[int, int], style: Dict, size: int):
-        """Draw a power pattern for strength-related words"""
-        x, y = pos
-        color = random.choice(style['colors'])
+    def _create_unique_signature(self, draw: ImageDraw, phrase: str, vibe: str, style: Dict, size: int, text_dna: Dict):
+        """Create a unique signature that makes each sigil completely distinct"""
+        center = (size // 2, size // 2)
         
-        # Lightning bolt pattern
-        points = [
-            (x, y-size), (x+size//2, y), (x-size//2, y),
-            (x, y+size), (x-size//2, y), (x+size//2, y)
-        ]
-        for i in range(len(points)-1):
-            draw.line([points[i], points[i+1]], fill=color, width=3)
+        # Create phrase-specific signature pattern
+        signature_hash = hashlib.sha256((phrase + vibe).encode()).hexdigest()
+        signature_data = [int(signature_hash[i:i+2], 16) for i in range(0, min(20, len(signature_hash)), 2)]
+        
+        # Draw signature pattern in center
+        signature_radius = size // 20
+        for i, data_byte in enumerate(signature_data):
+            angle = (i * 36) + (data_byte % 360)  # 10 points max
+            radius = signature_radius + (data_byte % 30)
+            
+            x = center[0] + radius * math.cos(math.radians(angle))
+            y = center[1] + radius * math.sin(math.radians(angle))
+            
+            # Connect to center with unique pattern
+            color = style['colors'][data_byte % len(style['colors'])]
+            width = max(1, (data_byte % 5) + 1)
+            
+            # Create signature connection
+            if data_byte % 3 == 0:
+                draw.line([center, (x, y)], fill=color, width=width)
+            elif data_byte % 3 == 1:
+                # Curved connection
+                mid_x = center[0] + (x - center[0]) // 2 + ((data_byte % 40) - 20)
+                mid_y = center[1] + (y - center[1]) // 2 + ((data_byte % 40) - 20)
+                draw.line([center, (mid_x, mid_y)], fill=color, width=width)
+                draw.line([(mid_x, mid_y), (x, y)], fill=color, width=width)
+            else:
+                # Dot pattern
+                dot_size = max(2, data_byte % 8)
+                draw.ellipse([x-dot_size, y-dot_size, x+dot_size, y+dot_size], fill=color)
     
-    def _draw_peace_pattern(self, draw: ImageDraw, pos: Tuple[int, int], style: Dict, size: int):
-        """Draw a peace pattern for calm-related words"""
-        x, y = pos
-        color = random.choice(style['colors'])
-        
-        # Concentric circles for peace
-        for i in range(3):
-            radius = size // (i + 1)
-            draw.ellipse([x-radius, y-radius, x+radius, y+radius], 
-                        outline=color, width=1)
+    # Helper drawing methods for specific patterns
+    def _draw_curved_arc(self, draw: ImageDraw, center: Tuple[int, int], radius: int, angle: float, width: int, color: Tuple[int, int, int], size: int):
+        """Draw curved arc pattern"""
+        start_angle = angle - 15
+        end_angle = angle + 15
+        bbox = [center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius]
+        try:
+            draw.arc(bbox, start_angle, end_angle, fill=color, width=width)
+        except:
+            pass
     
-    def _draw_abundance_pattern(self, draw: ImageDraw, pos: Tuple[int, int], style: Dict, size: int):
-        """Draw an abundance pattern for wealth-related words"""
-        x, y = pos
-        color = random.choice(style['colors'])
+    def _draw_angular_pattern(self, draw: ImageDraw, center: Tuple[int, int], radius: int, angle: float, width: int, color: Tuple[int, int, int], size: int):
+        """Draw angular pattern"""
+        points = []
+        for i in range(3):  # Triangle
+            point_angle = angle + (i * 120)
+            x = center[0] + radius * math.cos(math.radians(point_angle))
+            y = center[1] + radius * math.sin(math.radians(point_angle))
+            points.append((x, y))
         
-        # Expanding rays for abundance
-        for angle in range(0, 360, 45):
+        if len(points) >= 3:
+            try:
+                for i in range(len(points)):
+                    next_i = (i + 1) % len(points)
+                    draw.line([points[i], points[next_i]], fill=color, width=width)
+            except:
+                pass
+    
+    def _draw_flowing_line(self, draw: ImageDraw, center: Tuple[int, int], radius: int, angle: float, width: int, color: Tuple[int, int, int], size: int):
+        """Draw flowing line pattern"""
+        start_x = center[0] + (radius * 0.7) * math.cos(math.radians(angle))
+        start_y = center[1] + (radius * 0.7) * math.sin(math.radians(angle))
+        end_x = center[0] + radius * math.cos(math.radians(angle))
+        end_y = center[1] + radius * math.sin(math.radians(angle))
+        
+        try:
+            draw.line([(start_x, start_y), (end_x, end_y)], fill=color, width=width)
+        except:
+            pass
+    
+    def _draw_flowing_mandala(self, draw: ImageDraw, pos: Tuple[int, int], size: int, word: str, color: Tuple[int, int, int], style: Dict):
+        """Draw flowing mandala pattern"""
+        x, y = pos
+        petals = max(6, len(word))
+        
+        for i in range(petals):
+            angle = (360 / petals) * i
+            petal_x = x + size * math.cos(math.radians(angle))
+            petal_y = y + size * math.sin(math.radians(angle))
+            
+            try:
+                draw.ellipse([petal_x-size//3, petal_y-size//3, petal_x+size//3, petal_y+size//3], 
+                           outline=color, width=2)
+            except:
+                pass
+    
+    def _draw_angular_crystal(self, draw: ImageDraw, pos: Tuple[int, int], size: int, word: str, color: Tuple[int, int, int], style: Dict):
+        """Draw angular crystal pattern"""
+        x, y = pos
+        sides = max(3, min(8, len(word)))
+        
+        points = []
+        for i in range(sides):
+            angle = (360 / sides) * i
+            px = x + size * math.cos(math.radians(angle))
+            py = y + size * math.sin(math.radians(angle))
+            points.append((px, py))
+        
+        if len(points) >= 3:
+            try:
+                draw.polygon(points, outline=color, width=2)
+                # Connect center to all points
+                for point in points:
+                    draw.line([(x, y), point], fill=color, width=1)
+            except:
+                pass
+    
+    def _draw_semantic_spiral(self, draw: ImageDraw, pos: Tuple[int, int], size: int, word: str, color: Tuple[int, int, int], style: Dict):
+        """Draw semantic spiral pattern"""
+        x, y = pos
+        
+        points = []
+        for i in range(20):
+            angle = i * 18  # 18 degrees per step
+            radius = (size // 4) + (i * size // 40)
+            px = x + radius * math.cos(math.radians(angle))
+            py = y + radius * math.sin(math.radians(angle))
+            points.append((px, py))
+        
+        # Connect points to form spiral
+        for i in range(len(points) - 1):
+            try:
+                draw.line([points[i], points[i + 1]], fill=color, width=2)
+            except:
+                pass
+    
+    def _draw_radiant_burst(self, draw: ImageDraw, pos: Tuple[int, int], size: int, word: str, color: Tuple[int, int, int], style: Dict):
+        """Draw radiant burst pattern"""
+        x, y = pos
+        rays = max(8, len(word) * 2)
+        
+        for i in range(rays):
+            angle = (360 / rays) * i
             end_x = x + size * math.cos(math.radians(angle))
             end_y = y + size * math.sin(math.radians(angle))
-            draw.line([(x, y), (end_x, end_y)], fill=color, width=2)
+            
+            try:
+                draw.line([(x, y), (end_x, end_y)], fill=color, width=2)
+            except:
+                pass
     
-    def _draw_generic_semantic_pattern(self, draw: ImageDraw, pos: Tuple[int, int], word: str, style: Dict, size: int):
-        """Draw a pattern based on word characteristics"""
+    def _draw_unique_symbol(self, draw: ImageDraw, pos: Tuple[int, int], size: int, word: str, color: Tuple[int, int, int], style: Dict, semantic: Dict):
+        """Draw unique symbol based on semantic properties"""
+        x, y = pos
+        
+        # Create symbol based on semantic properties
+        if semantic['pattern'] == 'embrace':
+            # Heart-like pattern
+            try:
+                draw.arc([x-size, y-size//2, x, y+size//2], 0, 180, fill=color, width=2)
+                draw.arc([x, y-size//2, x+size, y+size//2], 0, 180, fill=color, width=2)
+                draw.line([(x-size, y), (x, y+size)], fill=color, width=2)
+                draw.line([(x+size, y), (x, y+size)], fill=color, width=2)
+            except:
+                pass
+        elif semantic['pattern'] == 'domination':
+            # Lightning bolt
+            points = [(x, y-size), (x+size//2, y), (x-size//2, y), (x, y+size)]
+            for i in range(len(points)-1):
+                try:
+                    draw.line([points[i], points[i+1]], fill=color, width=3)
+                except:
+                    pass
+        else:
+            # Default unique pattern
+            try:
+                draw.ellipse([x-size, y-size, x+size, y+size], outline=color, width=2)
+                draw.line([(x-size, y), (x+size, y)], fill=color, width=2)
+                draw.line([(x, y-size), (x, y+size)], fill=color, width=2)
+            except:
+                pass
+    
+    # Manifestation drawing methods
+    def _draw_love_manifestation(self, draw: ImageDraw, pos: Tuple[int, int], size: int, style: Dict, word: str):
+        """Draw love-specific manifestation"""
         x, y = pos
         color = random.choice(style['colors'])
-        word_sum = sum(ord(c) for c in word)
         
-        # Pattern varies by word characteristics
-        if word_sum % 4 == 0:
-            # Spiral
+        # Multiple heart patterns
+        for offset in range(3):
+            heart_size = size + (offset * size // 4)
+            alpha_offset = offset * 50
+            
+            try:
+                # Heart shape using arcs and lines
+                draw.arc([x-heart_size, y-heart_size//2, x, y+heart_size//2], 0, 180, fill=color, width=2)
+                draw.arc([x, y-heart_size//2, x+heart_size, y+heart_size//2], 0, 180, fill=color, width=2)
+                draw.line([(x-heart_size, y), (x, y+heart_size)], fill=color, width=2)
+                draw.line([(x+heart_size, y), (x, y+heart_size)], fill=color, width=2)
+            except:
+                pass
+    
+    def _draw_power_manifestation(self, draw: ImageDraw, pos: Tuple[int, int], size: int, style: Dict, word: str):
+        """Draw power-specific manifestation"""
+        x, y = pos
+        color = random.choice(style['colors'])
+        
+        # Power symbol with radiating lines
+        for i in range(8):
+            angle = i * 45
+            end_x = x + size * 2 * math.cos(math.radians(angle))
+            end_y = y + size * 2 * math.sin(math.radians(angle))
+            
+            try:
+                draw.line([(x, y), (end_x, end_y)], fill=color, width=3)
+            except:
+                pass
+        
+        # Central power core
+        try:
+            draw.ellipse([x-size//2, y-size//2, x+size//2, y+size//2], fill=color)
+        except:
+            pass
+    
+    def _draw_abundance_manifestation(self, draw: ImageDraw, pos: Tuple[int, int], size: int, style: Dict, word: str):
+        """Draw abundance-specific manifestation"""
+        x, y = pos
+        color = random.choice(style['colors'])
+        
+        # Expanding circles representing abundance
+        for i in range(5):
+            radius = size * (i + 1) // 2
+            try:
+                draw.ellipse([x-radius, y-radius, x+radius, y+radius], outline=color, width=2)
+            except:
+                pass
+        
+        # Radiating abundance lines
+        for i in range(12):
+            angle = i * 30
+            end_x = x + size * 1.5 * math.cos(math.radians(angle))
+            end_y = y + size * 1.5 * math.sin(math.radians(angle))
+            
+            try:
+                draw.line([(x, y), (end_x, end_y)], fill=color, width=1)
+            except:
+                pass
+    
+    def _draw_consciousness_manifestation(self, draw: ImageDraw, pos: Tuple[int, int], size: int, style: Dict, word: str):
+        """Draw consciousness-specific manifestation"""
+        x, y = pos
+        color = random.choice(style['colors'])
+        
+        # Consciousness eye symbol
+        try:
+            # Outer eye shape
+            draw.ellipse([x-size*2, y-size, x+size*2, y+size], outline=color, width=3)
+            # Inner iris
+            draw.ellipse([x-size, y-size, x+size, y+size], outline=color, width=2)
+            # Pupil
+            draw.ellipse([x-size//2, y-size//2, x+size//2, y+size//2], fill=color)
+            
+            # Third eye rays
+            for i in range(6):
+                angle = -90 + (i * 30) - 75  # Above the eye
+                ray_length = size * 3
+                end_x = x + ray_length * math.cos(math.radians(angle))
+                end_y = y + ray_length * math.sin(math.radians(angle))
+                draw.line([(x, y-size), (end_x, end_y)], fill=color, width=2)
+        except:
+            pass
+    
+    def _draw_generic_manifestation(self, draw: ImageDraw, pos: Tuple[int, int], size: int, style: Dict, word: str, archetype: str):
+        """Draw generic manifestation for other archetypes"""
+        x, y = pos
+        color = random.choice(style['colors'])
+        
+        # Create unique pattern based on archetype hash
+        archetype_hash = hash(archetype + word)
+        pattern_type = archetype_hash % 4
+        
+        if pattern_type == 0:
+            # Spiral pattern
+            points = []
+            for i in range(15):
+                angle = i * 24
+                radius = (size // 4) + (i * size // 30)
+                px = x + radius * math.cos(math.radians(angle))
+                py = y + radius * math.sin(math.radians(angle))
+                points.append((px, py))
+            
+            for i in range(len(points) - 1):
+                try:
+                    draw.line([points[i], points[i + 1]], fill=color, width=2)
+                except:
+                    pass
+                
+        elif pattern_type == 1:
+            # Star pattern
+            points = []
+            for i in range(10):
+                angle = i * 36
+                radius = size * 2 if i % 2 == 0 else size
+                px = x + radius * math.cos(math.radians(angle))
+                py = y + radius * math.sin(math.radians(angle))
+                points.append((px, py))
+            
+            if len(points) >= 3:
+                try:
+                    draw.polygon(points, outline=color, width=2)
+                except:
+                    pass
+                    
+        elif pattern_type == 2:
+            # Grid pattern
+            grid_size = size // 2
+            for i in range(-2, 3):
+                for j in range(-2, 3):
+                    if abs(i) + abs(j) <= 2:  # Diamond shape
+                        px = x + i * grid_size
+                        py = y + j * grid_size
+                        try:
+                            draw.ellipse([px-grid_size//4, py-grid_size//4, 
+                                        px+grid_size//4, py+grid_size//4], 
+                                       fill=color)
+                        except:
+                            pass
+        else:
+            # Cross pattern with variations
+            try:
+                draw.line([(x-size*2, y), (x+size*2, y)], fill=color, width=3)
+                draw.line([(x, y-size*2), (x, y+size*2)], fill=color, width=3)
+                # Add diagonals for uniqueness
+                draw.line([(x-size, y-size), (x+size, y+size)], fill=color, width=2)
+                draw.line([(x-size, y+size), (x+size, y-size)], fill=color, width=2)
+            except:
+                pass
+    
+    # Symbol drawing methods for character symphony
+    def _draw_flowing_symbol(self, draw: ImageDraw, pos: Tuple[int, int], size: int, color: Tuple[int, int, int], char: str):
+        """Draw flowing symbol for character"""
+        x, y = pos
+        try:
+            # Flowing wave pattern
+            points = []
             for i in range(8):
                 angle = i * 45
-                radius = size * (i / 8)
-                end_x = x + radius * math.cos(math.radians(angle))
-                end_y = y + radius * math.sin(math.radians(angle))
-                draw.line([(x, y), (end_x, end_y)], fill=color, width=1)
-        elif word_sum % 4 == 1:
-            # Cross
-            draw.line([(x-size, y), (x+size, y)], fill=color, width=2)
-            draw.line([(x, y-size), (x, y+size)], fill=color, width=2)
-        elif word_sum % 4 == 2:
-            # Hexagon
-            points = []
-            for i in range(6):
-                angle = i * 60
-                px = x + size * math.cos(math.radians(angle))
-                py = y + size * math.sin(math.radians(angle))
+                radius = size + (i % 2) * size // 2
+                px = x + radius * math.cos(math.radians(angle))
+                py = y + radius * math.sin(math.radians(angle))
                 points.append((px, py))
-            draw.polygon(points, outline=color, width=2)
-        else:
-            # Star
-            self._draw_star(draw, (x, y), size, color, 2)
+            
+            for i in range(len(points) - 1):
+                draw.line([points[i], points[i + 1]], fill=color, width=1)
+        except:
+            pass
+    
+    def _draw_angular_symbol(self, draw: ImageDraw, pos: Tuple[int, int], size: int, color: Tuple[int, int, int], char: str):
+        """Draw angular symbol for character"""
+        x, y = pos
+        try:
+            # Angular diamond
+            points = [(x, y-size), (x+size, y), (x, y+size), (x-size, y)]
+            draw.polygon(points, outline=color, width=1)
+        except:
+            pass
+    
+    def _draw_curved_symbol(self, draw: ImageDraw, pos: Tuple[int, int], size: int, color: Tuple[int, int, int], char: str):
+        """Draw curved symbol for character"""
+        x, y = pos
+        try:
+            # Curved arc pattern
+            draw.arc([x-size, y-size, x+size, y+size], 0, 180, fill=color, width=2)
+            draw.arc([x-size, y-size, x+size, y+size], 180, 360, fill=color, width=1)
+        except:
+            pass
+    
+    def _draw_basic_symbol(self, draw: ImageDraw, pos: Tuple[int, int], size: int, color: Tuple[int, int, int], char: str, energy: Dict):
+        """Draw basic symbol based on character energy"""
+        x, y = pos
+        try:
+            if energy['intensity'] == 'gentle':
+                draw.ellipse([x-size, y-size, x+size, y+size], outline=color, width=1)
+            elif energy['intensity'] == 'strong':
+                draw.rectangle([x-size, y-size, x+size, y+size], outline=color, width=2)
+            else:
+                # Triangle
+                points = [(x, y-size), (x-size, y+size), (x+size, y+size)]
+                draw.polygon(points, outline=color, width=1)
+        except:
+            pass
+    
+    # Vibe-specific resonance methods
+    def _create_stellar_resonance(self, draw: ImageDraw, center: Tuple[int, int], style: Dict, size: int, phrase: str, text_dna: Dict):
+        """Create stellar/cosmic resonance pattern"""
+        # Create constellation based on phrase
+        stars = min(15, len(phrase.split()) * 3)
+        
+        for i in range(stars):
+            angle = (i * 23.5) % 360  # Golden angle variation
+            radius = (size // 6) + ((i * size // 50) % (size // 3))
+            
+            x = center[0] + radius * math.cos(math.radians(angle))
+            y = center[1] + radius * math.sin(math.radians(angle))
+            
+            # Star brightness based on text characteristics
+            brightness = max(3, (text_dna['complexity_score'] * (i + 1)) % 12)
+            color = style['colors'][i % len(style['colors'])]
+            
+            try:
+                # Draw star
+                self._draw_star(draw, (x, y), brightness, color, 2)
+                
+                # Connect to nearby stars
+                for j in range(max(0, i-2), min(stars, i+3)):
+                    if j != i and abs(j - i) <= 2:
+                        other_angle = (j * 23.5) % 360
+                        other_radius = (size // 6) + ((j * size // 50) % (size // 3))
+                        other_x = center[0] + other_radius * math.cos(math.radians(other_angle))
+                        other_y = center[1] + other_radius * math.sin(math.radians(other_angle))
+                        
+                        # Connect with faint line
+                        draw.line([(x, y), (other_x, other_y)], fill=color, width=1)
+            except:
+                pass
+    
+    def _create_natural_resonance(self, draw: ImageDraw, center: Tuple[int, int], style: Dict, size: int, phrase: str, text_dna: Dict):
+        """Create natural/elemental resonance pattern"""
+        # Create organic flowing patterns
+        branches = max(4, len(phrase.split()) * 2)
+        
+        for branch in range(branches):
+            # Start from center and grow organically
+            current_x, current_y = center
+            branch_angle = (branch * 360 / branches) + (hash(phrase) % 90)
+            
+            # Create branching path
+            path_points = [(current_x, current_y)]
+            
+            for step in range(8):
+                # Natural growth with some randomness
+                step_length = size // 20 + (step * size // 60)
+                angle_variation = (hash(phrase + str(branch + step)) % 60) - 30
+                current_angle = branch_angle + angle_variation
+                
+                current_x += step_length * math.cos(math.radians(current_angle))
+                current_y += step_length * math.sin(math.radians(current_angle))
+                path_points.append((current_x, current_y))
+                
+                # Occasionally branch
+                if step % 3 == 0 and step > 0:
+                    # Create sub-branch
+                    sub_angle = current_angle + (45 if step % 2 else -45)
+                    sub_length = step_length // 2
+                    sub_x = current_x + sub_length * math.cos(math.radians(sub_angle))
+                    sub_y = current_y + sub_length * math.sin(math.radians(sub_angle))
+                    
+                    color = style['colors'][(branch + step) % len(style['colors'])]
+                    try:
+                        draw.line([(current_x, current_y), (sub_x, sub_y)], fill=color, width=2)
+                    except:
+                        pass
+            
+            # Draw main branch
+            color = style['colors'][branch % len(style['colors'])]
+            for i in range(len(path_points) - 1):
+                try:
+                    width = max(1, 4 - (i // 3))  # Taper the branch
+                    draw.line([path_points[i], path_points[i + 1]], fill=color, width=width)
+                except:
+                    pass
+    
+    def _create_crystal_resonance(self, draw: ImageDraw, center: Tuple[int, int], style: Dict, size: int, phrase: str, text_dna: Dict):
+        """Create crystal/angular resonance pattern"""
+        # Create crystalline structure
+        facets = max(6, len(phrase) // 3)
+        
+        for layer in range(3):
+            layer_radius = (size // 8) + (layer * size // 12)
+            layer_facets = facets + (layer * 2)
+            
+            # Create faceted ring
+            points = []
+            for i in range(layer_facets):
+                angle = (360 / layer_facets) * i + (layer * 15)
+                x = center[0] + layer_radius * math.cos(math.radians(angle))
+                y = center[1] + layer_radius * math.sin(math.radians(angle))
+                points.append((x, y))
+            
+            # Connect facets
+            color = style['colors'][layer % len(style['colors'])]
+            if len(points) >= 3:
+                try:
+                    # Draw faceted outline
+                    draw.polygon(points, outline=color, width=2)
+                    
+                    # Connect to center
+                    for point in points[::2]:  # Every other point
+                        draw.line([center, point], fill=color, width=1)
+                except:
+                    pass
+    
+    def _create_mystic_resonance(self, draw: ImageDraw, center: Tuple[int, int], style: Dict, size: int, phrase: str, text_dna: Dict):
+        """Create mystical/curved resonance pattern"""
+        # Create sacred geometry patterns
+        rings = max(3, len(phrase.split()))
+        
+        for ring in range(rings):
+            ring_radius = (size // 10) + (ring * size // 15)
+            petals = 6 + (ring * 2)
+            
+            # Create petal pattern
+            for petal in range(petals):
+                angle = (360 / petals) * petal + (ring * 7.5)
+                
+                # Petal center
+                petal_x = center[0] + ring_radius * math.cos(math.radians(angle))
+                petal_y = center[1] + ring_radius * math.sin(math.radians(angle))
+                
+                # Petal size
+                petal_radius = max(size // 40, ring_radius // 6)
+                
+                color = style['colors'][(ring + petal) % len(style['colors'])]
+                
+                try:
+                    # Draw petal as circle
+                    draw.ellipse([petal_x - petal_radius, petal_y - petal_radius,
+                                petal_x + petal_radius, petal_y + petal_radius],
+                               outline=color, width=2)
+                    
+                    # Connect to center with curved line (approximate with segments)
+                    segments = 5
+                    for seg in range(segments):
+                        t = seg / segments
+                        # Bezier curve approximation
+                        curve_x = center[0] * (1-t) + petal_x * t + (ring * 10 * math.sin(t * math.pi))
+                        curve_y = center[1] * (1-t) + petal_y * t
+                        
+                        if seg > 0:
+                            draw.line([(prev_curve_x, prev_curve_y), (curve_x, curve_y)], 
+                                    fill=color, width=1)
+                        prev_curve_x, prev_curve_y = curve_x, curve_y
+                except:
+                    pass
+    
+    def _create_radial_resonance(self, draw: ImageDraw, center: Tuple[int, int], style: Dict, size: int, phrase: str, text_dna: Dict):
+        """Create radial/light resonance pattern"""
+        # Create radiating light pattern
+        rays = max(12, len(phrase) * 2)
+        
+        for ray in range(rays):
+            angle = (360 / rays) * ray + (hash(phrase) % 45)
+            
+            # Multiple ray segments for light effect
+            for segment in range(4):
+                start_radius = (segment * size // 12) + (size // 20)
+                end_radius = start_radius + (size // 15)
+                
+                start_x = center[0] + start_radius * math.cos(math.radians(angle))
+                start_y = center[1] + start_radius * math.sin(math.radians(angle))
+                end_x = center[0] + end_radius * math.cos(math.radians(angle))
+                end_y = center[1] + end_radius * math.sin(math.radians(angle))
+                
+                # Brightness fades with distance
+                color_index = (ray + segment) % len(style['colors'])
+                color = style['colors'][color_index]
+                width = max(1, 4 - segment)
+                
+                try:
+                    draw.line([(start_x, start_y), (end_x, end_y)], fill=color, width=width)
+                except:
+                    pass
+            
+            # Add ray sparkles
+            for sparkle in range(3):
+                sparkle_radius = (size // 8) + (sparkle * size // 12)
+                sparkle_x = center[0] + sparkle_radius * math.cos(math.radians(angle))
+                sparkle_y = center[1] + sparkle_radius * math.sin(math.radians(angle))
+                sparkle_size = max(2, 6 - sparkle * 2)
+                
+                color = style['colors'][sparkle % len(style['colors'])]
+                
+                try:
+                    # Draw sparkle as small star
+                    self._draw_star(draw, (sparkle_x, sparkle_y), sparkle_size, color, 1)
+                except:
+                    pass
+    
+    def _create_electric_resonance(self, draw: ImageDraw, center: Tuple[int, int], style: Dict, size: int, phrase: str, text_dna: Dict):
+        """Create electric/storm resonance pattern"""
+        # Create lightning-like patterns
+        bolts = max(6, len(phrase.split()) * 2)
+        
+        for bolt in range(bolts):
+            # Start point around center
+            start_angle = (bolt * 360 / bolts) + (hash(phrase + str(bolt)) % 60)
+            start_radius = size // 20
+            start_x = center[0] + start_radius * math.cos(math.radians(start_angle))
+            start_y = center[1] + start_radius * math.sin(math.radians(start_angle))
+            
+            # Create jagged lightning path
+            current_x, current_y = start_x, start_y
+            current_angle = start_angle
+            
+            lightning_points = [(current_x, current_y)]
+            
+            for step in range(8):
+                step_length = size // 25 + (step * size // 60)
+                
+                # Random direction change for jagged effect
+                angle_change = ((hash(phrase + str(bolt) + str(step)) % 90) - 45)
+                current_angle += angle_change
+                
+                current_x += step_length * math.cos(math.radians(current_angle))
+                current_y += step_length * math.sin(math.radians(current_angle))
+                lightning_points.append((current_x, current_y))
+            
+            # Draw lightning bolt
+            color = style['colors'][bolt % len(style['colors'])]
+            for i in range(len(lightning_points) - 1):
+                try:
+                    width = max(2, 5 - (i // 3))  # Taper the bolt
+                    draw.line([lightning_points[i], lightning_points[i + 1]], fill=color, width=width)
+                except:
+                    pass
+            
+            # Add electric nodes
+            for i in range(0, len(lightning_points), 2):
+                node_x, node_y = lightning_points[i]
+                node_size = max(2, 6 - (i // 3))
+                
+                try:
+                    draw.ellipse([node_x - node_size, node_y - node_size,
+                                node_x + node_size, node_y + node_size], fill=color)
+                except:
+                    pass
+    
+    def _create_shadow_resonance(self, draw: ImageDraw, center: Tuple[int, int], style: Dict, size: int, phrase: str, text_dna: Dict):
+        """Create shadow/jagged resonance pattern"""
+        # Create shadow tendrils
+        tendrils = max(5, len(phrase.split()) * 2)
+        
+        for tendril in range(tendrils):
+            # Shadow tendrils grow outward in jagged patterns
+            start_angle = (tendril * 360 / tendrils) + (hash(phrase) % 72)
+            
+            current_x, current_y = center
+            current_angle = start_angle
+            shadow_points = [center]
+            
+            for step in range(6):
+                step_length = (size // 12) + (step * size // 30)
+                
+                # Jagged shadow growth
+                angle_variation = ((hash(phrase + str(tendril) + str(step)) % 120) - 60)
+                current_angle += angle_variation
+                
+                current_x += step_length * math.cos(math.radians(current_angle))
+                current_y += step_length * math.sin(math.radians(current_angle))
+                shadow_points.append((current_x, current_y))
+                
+                # Shadow branches
+                if step % 2 == 1:
+                    branch_angle = current_angle + (90 if step % 4 == 1 else -90)
+                    branch_length = step_length // 2
+                    branch_x = current_x + branch_length * math.cos(math.radians(branch_angle))
+                    branch_y = current_y + branch_length * math.sin(math.radians(branch_angle))
+                    
+                    color = style['colors'][(tendril + step) % len(style['colors'])]
+                    try:
+                        draw.line([(current_x, current_y), (branch_x, branch_y)], fill=color, width=3)
+                    except:
+                        pass
+            
+            # Draw main tendril
+            color = style['colors'][tendril % len(style['colors'])]
+            for i in range(len(shadow_points) - 1):
+                try:
+                    width = max(2, 5 - (i // 2))
+                    draw.line([shadow_points[i], shadow_points[i + 1]], fill=color, width=width)
+                except:
+                    pass
+    
+    def _create_void_resonance(self, draw: ImageDraw, center: Tuple[int, int], style: Dict, size: int, phrase: str, text_dna: Dict):
+        """Create void/impossible resonance pattern"""
+        # Create recursive spiral patterns
+        spirals = max(3, len(phrase.split()))
+        
+        for spiral_index in range(spirals):
+            spiral_offset = spiral_index * 120 + (hash(phrase) % 90)
+            
+            # Create impossible geometry - spirals that fold in on themselves
+            spiral_points = []
+            
+            for i in range(30):
+                # Multi-dimensional spiral calculation
+                base_angle = (i * 12) + spiral_offset
+                base_radius = (size // 15) + (i * size // 100)
+                
+                # Add void distortion
+                distortion = math.sin(i / 5) * (size // 30)
+                final_radius = base_radius + distortion
+                
+                # Recursive angle modification
+                recursive_angle = base_angle + (math.sin(i / 3) * 45)
+                
+                x = center[0] + final_radius * math.cos(math.radians(recursive_angle))
+                y = center[1] + final_radius * math.sin(math.radians(recursive_angle))
+                spiral_points.append((x, y))
+            
+            # Draw void spiral
+            color = style['colors'][spiral_index % len(style['colors'])]
+            
+            for i in range(len(spiral_points) - 1):
+                try:
+                    # Fading line width for depth effect
+                    width = max(1, 4 - (i // 10))
+                    draw.line([spiral_points[i], spiral_points[i + 1]], fill=color, width=width)
+                except:
+                    pass
+            
+            # Add dimensional portals
+            for portal in range(5):
+                portal_pos = spiral_points[portal * 6] if portal * 6 < len(spiral_points) else spiral_points[-1]
+                portal_size = max(3, 8 - portal)
+                
+                try:
+                    # Portal as concentric circles
+                    for ring in range(3):
+                        ring_radius = portal_size + (ring * portal_size // 2)
+                        draw.ellipse([portal_pos[0] - ring_radius, portal_pos[1] - ring_radius,
+                                    portal_pos[0] + ring_radius, portal_pos[1] + ring_radius],
+                                   outline=color, width=1)
+                except:
+                    pass
     
     def _draw_star(self, draw: ImageDraw, pos: Tuple[int, int], size: int, color: Tuple[int, int, int], width: int):
         """Draw a star pattern"""
         x, y = pos
         points = []
+        
         for i in range(10):
             angle = i * 36
             radius = size if i % 2 == 0 else size // 2
@@ -532,192 +1270,27 @@ class RevolutionarySigilGenerator:
             py = y + radius * math.sin(math.radians(angle))
             points.append((px, py))
         
-        if len(points) > 2:
-            draw.polygon(points, outline=color, width=width)
+        if len(points) >= 3:
+            try:
+                for i in range(len(points)):
+                    next_i = (i + 1) % len(points)
+                    draw.line([points[i], points[next_i]], fill=color, width=width)
+            except:
+                pass
     
-    def _add_sacred_geometry_enhanced(self, draw: ImageDraw, center: Tuple[int, int], style: Dict, size: int, phrase: str):
-        """Enhanced sacred geometry based on phrase characteristics"""
-        phrase_sum = sum(ord(c) for c in phrase)
-        
-        # Flower of Life variation based on phrase
-        petals = max(6, (phrase_sum % 12) + 6)
-        radius = size // 8
-        
-        for i in range(petals):
-            angle = (360 / petals) * i + (phrase_sum % 360)
-            x = center[0] + radius * math.cos(math.radians(angle)) // 2
-            y = center[1] + radius * math.sin(math.radians(angle)) // 2
-            
-            color = style['colors'][(phrase_sum + i) % len(style['colors'])]
-            petal_radius = radius // 3 + (phrase_sum % 20)
-            
-            draw.ellipse([x-petal_radius, y-petal_radius, x+petal_radius, y+petal_radius], 
-                        outline=color, width=2)
-    
-    def _add_constellation_enhanced(self, draw: ImageDraw, center: Tuple[int, int], style: Dict, size: int, phrase: str):
-        """Enhanced constellation pattern based on phrase"""
-        words = phrase.split()
-        
-        # Create constellation based on word count and characteristics
-        for i, word in enumerate(words[:8]):
-            word_value = sum(ord(c) for c in word)
-            angle = (word_value * 47) % 360
-            radius = size // 4 + (len(word) * size // 60)
-            
-            x = center[0] + radius * math.cos(math.radians(angle))
-            y = center[1] + radius * math.sin(math.radians(angle))
-            
-            # Star size based on word importance
-            star_size = max(size // 100, len(word) * size // 200)
-            color = style['colors'][word_value % len(style['colors'])]
-            
-            self._draw_star(draw, (x, y), star_size, color, 2)
-            
-            # Connect stars based on word relationships
-            if i > 0:
-                prev_word = words[i-1]
-                prev_word_value = sum(ord(c) for c in prev_word)
-                prev_angle = (prev_word_value * 47) % 360
-                prev_radius = size // 4 + (len(prev_word) * size // 60)
-                
-                prev_x = center[0] + prev_radius * math.cos(math.radians(prev_angle))
-                prev_y = center[1] + prev_radius * math.sin(math.radians(prev_angle))
-                
-                # Connect if words have similar characteristics
-                if abs(len(word) - len(prev_word)) <= 2:
-                    draw.line([(prev_x, prev_y), (x, y)], fill=color, width=1)
-    
-    def _add_flowing_enhanced(self, draw: ImageDraw, center: Tuple[int, int], style: Dict, size: int, phrase: str):
-        """Enhanced flowing pattern based on phrase rhythm"""
-        phrase_chars = [c for c in phrase.lower() if c.isalpha()]
-        
-        if not phrase_chars:
-            return
-        
-        # Create flowing lines based on character sequence
-        points = []
-        for i, char in enumerate(phrase_chars[:20]):  # Limit for performance
-            char_value = ord(char)
-            angle = (char_value * 23 + i * 15) % 360
-            radius = (size // 8) + (i * size // 100) + ((char_value % 30) - 15)
-            
-            x = center[0] + radius * math.cos(math.radians(angle))
-            y = center[1] + radius * math.sin(math.radians(angle))
-            points.append((x, y))
-        
-        # Draw flowing lines connecting the points
-        if len(points) > 1:
-            for i in range(len(points) - 1):
-                color = style['colors'][i % len(style['colors'])]
-                width = max(1, style['stroke_width']() if callable(style['stroke_width']) else style['stroke_width'])
-                draw.line([points[i], points[i + 1]], fill=color, width=width)
-                
-                # Add curved variations
-                if i % 3 == 0 and i < len(points) - 2:
-                    mid_x = (points[i][0] + points[i + 1][0]) // 2 + random.randint(-20, 20)
-                    mid_y = (points[i][1] + points[i + 1][1]) // 2 + random.randint(-20, 20)
-                    draw.line([points[i], (mid_x, mid_y)], fill=color, width=width//2)
-                    draw.line([(mid_x, mid_y), points[i + 1]], fill=color, width=width//2)
-    
-    def _add_crystalline_enhanced(self, draw: ImageDraw, center: Tuple[int, int], style: Dict, size: int, phrase: str):
-        """Enhanced crystalline pattern based on phrase structure"""
-        words = phrase.split()
-        
-        # Create crystal facets based on word structure
-        for i, word in enumerate(words[:6]):
-            word_value = sum(ord(c) for c in word)
-            sides = max(3, len(word) % 8 + 3)
-            
-            angle_offset = word_value % 360
-            radius = size // 6 + (len(word) * size // 40)
-            
-            # Create polygon for crystal facet
-            points = []
-            for j in range(sides):
-                angle = (360 / sides) * j + angle_offset
-                x = center[0] + radius * math.cos(math.radians(angle))
-                y = center[1] + radius * math.sin(math.radians(angle))
-                points.append((x, y))
-            
-            if len(points) > 2:
-                color = style['colors'][word_value % len(style['colors'])]
-                draw.polygon(points, outline=color, width=2)
-                
-                # Add internal structure
-                for point in points:
-                    draw.line([center, point], fill=color, width=1)
-    
-    def _add_lightning_enhanced(self, draw: ImageDraw, center: Tuple[int, int], style: Dict, size: int, phrase: str):
-        """Enhanced lightning pattern based on phrase energy"""
-        words = phrase.split()
-        
-        for i, word in enumerate(words[:5]):
-            word_value = sum(ord(c) for c in word)
-            start_angle = (word_value * 37) % 360
-            
-            # Create jagged lightning path
-            current_x, current_y = center
-            current_angle = start_angle
-            distance_per_step = size // 20
-            
-            points = [(current_x, current_y)]
-            
-            for step in range(len(word)):
-                # Random direction change
-                angle_change = random.randint(-45, 45)
-                current_angle += angle_change
-                
-                current_x += distance_per_step * math.cos(math.radians(current_angle))
-                current_y += distance_per_step * math.sin(math.radians(current_angle))
-                points.append((current_x, current_y))
-            
-            # Draw lightning bolt
-            color = style['colors'][word_value % len(style['colors'])]
-            for j in range(len(points) - 1):
-                width = max(2, style['stroke_width']() if callable(style['stroke_width']) else style['stroke_width'])
-                draw.line([points[j], points[j + 1]], fill=color, width=width)
-    
-    def _add_spiral_void_enhanced(self, draw: ImageDraw, center: Tuple[int, int], style: Dict, size: int, phrase: str):
-        """Enhanced spiral void pattern based on phrase depth"""
-        phrase_sum = sum(ord(c) for c in phrase)
-        
-        # Create multiple spirals based on phrase characteristics
-        spirals = max(2, len(phrase.split()) // 2)
-        
-        for spiral_i in range(spirals):
-            spiral_offset = (phrase_sum * (spiral_i + 1)) % 360
-            
-            points = []
-            for i in range(50):
-                angle = i * 7.2 + spiral_offset  # 7.2 degrees per step
-                radius = (size // 20) + (i * size // 200)
-                
-                x = center[0] + radius * math.cos(math.radians(angle))
-                y = center[1] + radius * math.sin(math.radians(angle))
-                points.append((x, y))
-            
-            # Draw spiral
-            if len(points) > 1:
-                color = style['colors'][(phrase_sum + spiral_i) % len(style['colors'])]
-                for j in range(len(points) - 1):
-                    alpha = max(50, 255 - (j * 4))  # Fade as spiral goes out
-                    fade_color = (*color, alpha) if len(color) == 3 else color
-                    width = max(1, 4 - (j // 15))
-                    draw.line([points[j], points[j + 1]], fill=color, width=width)
-    
-    def _apply_enhanced_effects(self, img: Image.Image, style: Dict, text_dna: Dict) -> Image.Image:
+    def _apply_enhanced_effects(self, img: Image.Image, style: Dict, text_dna: Dict, phrase: str) -> Image.Image:
         """Apply enhanced visual effects based on text characteristics"""
         if style.get('glow_intensity', 0) > 0:
-            # Multi-layer glow based on complexity
-            layers = min(5, int(text_dna['complexity_score']))
+            # Multi-layer glow based on phrase characteristics
+            glow_layers = min(6, max(3, int(text_dna['complexity_score'])))
             
             result = img.copy()
-            for layer in range(layers):
+            for layer in range(glow_layers):
                 blur_radius = (layer + 1) * 2
                 glow = img.filter(ImageFilter.GaussianBlur(radius=blur_radius))
                 
                 enhancer = ImageEnhance.Brightness(glow)
-                intensity = style['glow_intensity'] * (0.8 ** layer)
+                intensity = style['glow_intensity'] * (0.7 ** layer)
                 glow = enhancer.enhance(intensity)
                 
                 result = Image.alpha_composite(result, glow)
@@ -726,37 +1299,43 @@ class RevolutionarySigilGenerator:
         
         return img
     
-    def _apply_revolutionary_effects(self, img: Image.Image, style: Dict, text_dna: Dict) -> Image.Image:
-        """Apply revolutionary visual effects for advanced generation"""
+    def _apply_ultra_effects(self, img: Image.Image, style: Dict, text_dna: Dict, phrase: str) -> Image.Image:
+        """Apply ultra-revolutionary visual effects for advanced generation"""
         base_img = img.copy()
         
-        # Multiple effect layers
-        effects = ['glow', 'contrast', 'saturation', 'sharpness']
+        # Advanced multi-effect processing
+        effects = ['glow', 'contrast', 'saturation', 'sharpness', 'brightness']
         
         for effect in effects:
             if effect == 'glow' and style.get('glow_intensity', 0) > 0:
-                # Sophisticated multi-radius glow
-                for radius in [2, 4, 8, 12]:
+                # Ultra-sophisticated multi-radius glow
+                glow_radii = [1, 2, 4, 6, 10, 15]
+                for radius in glow_radii:
                     glow = base_img.filter(ImageFilter.GaussianBlur(radius=radius))
                     enhancer = ImageEnhance.Brightness(glow)
-                    intensity = style['glow_intensity'] * (0.6 ** (radius / 4))
+                    intensity = style['glow_intensity'] * (0.5 ** (radius / 5))
                     glow = enhancer.enhance(intensity)
                     base_img = Image.alpha_composite(base_img, glow)
             
             elif effect == 'contrast':
                 enhancer = ImageEnhance.Contrast(base_img)
-                contrast_factor = 1.0 + (text_dna['complexity_score'] / 20)
+                contrast_factor = 1.0 + (text_dna['complexity_score'] / 15)
                 base_img = enhancer.enhance(contrast_factor)
             
             elif effect == 'saturation':
                 enhancer = ImageEnhance.Color(base_img)
-                saturation_factor = 1.0 + (text_dna['unique_chars'] / 50)
+                saturation_factor = 1.0 + (text_dna['uniqueness_score'] * 0.5)
                 base_img = enhancer.enhance(saturation_factor)
             
             elif effect == 'sharpness':
                 enhancer = ImageEnhance.Sharpness(base_img)
-                sharpness_factor = 1.0 + (len(text_dna['semantic_matches']) / 20)
+                sharpness_factor = 1.0 + (len(text_dna['semantic_layers']) / 10)
                 base_img = enhancer.enhance(sharpness_factor)
+                
+            elif effect == 'brightness':
+                enhancer = ImageEnhance.Brightness(base_img)
+                brightness_factor = 1.0 + (len(phrase.split()) / 50)
+                base_img = enhancer.enhance(brightness_factor)
         
         return base_img
     
@@ -776,29 +1355,30 @@ class RevolutionarySigilGenerator:
 
 # ===== FLASK ROUTES =====
 
-# Initialize revolutionary generator
-generator = RevolutionarySigilGenerator()
+# Initialize ultra-revolutionary generator
+generator = UltraRevolutionarySigilGenerator()
 
 @app.route('/health', methods=['GET'])
 def health():
     """Health check endpoint"""
     return jsonify({
         'status': 'healthy',
-        'service': 'sigilcraft-revolutionary-backend',
-        'version': '3.0.0',
+        'service': 'sigilcraft-ultra-revolutionary-backend',
+        'version': '4.0.0',
         'timestamp': datetime.now().isoformat(),
         'features': {
-            'revolutionary_generation': True,
-            'text_dna_analysis': True,
-            'semantic_patterns': True,
-            'ultra_unique_output': True,
-            'phrase_responsive': True
+            'ultra_revolutionary_generation': True,
+            'extreme_text_responsiveness': True,
+            'ultra_unique_signatures': True,
+            'vibe_specific_resonance': True,
+            'semantic_manifestation': True,
+            'character_symphony': True
         }
     })
 
 @app.route('/generate', methods=['POST'])
 def generate_sigil():
-    """Revolutionary sigil generation endpoint"""
+    """Ultra-revolutionary sigil generation endpoint"""
     start_time = datetime.now()
     
     try:
@@ -832,13 +1412,13 @@ def generate_sigil():
                 'error': 'Phrase is too long (max 500 characters)'
             }), 400
         
-        # Generate revolutionary sigil
-        logger.info(f"🎨 Generating revolutionary sigil: '{phrase}' ({vibe}) [Advanced: {advanced}]")
+        # Generate ultra-revolutionary sigil
+        logger.info(f"🎨 Generating ultra-revolutionary sigil: '{phrase}' ({vibe}) [Advanced: {advanced}]")
         
         sigil_image = generator.generate_sigil(phrase, vibe, advanced)
         
         duration = (datetime.now() - start_time).total_seconds()
-        logger.info(f"✅ Revolutionary sigil generated in {duration:.2f}s")
+        logger.info(f"✅ Ultra-revolutionary sigil generated in {duration:.2f}s")
         
         return jsonify({
             'success': True,
@@ -849,15 +1429,15 @@ def generate_sigil():
             'metadata': {
                 'generation_time': duration,
                 'timestamp': datetime.now().isoformat(),
-                'version': '3.0.0',
-                'revolutionary': True
+                'version': '4.0.0',
+                'ultra_revolutionary': True
             },
-            'message': f'Revolutionary text-responsive sigil manifested for: "{phrase}"'
+            'message': f'Ultra-unique text-responsive sigil manifested for: "{phrase}"'
         })
         
     except Exception as e:
         duration = (datetime.now() - start_time).total_seconds()
-        logger.error(f"❌ Revolutionary generation failed after {duration:.2f}s: {e}")
+        logger.error(f"❌ Ultra-revolutionary generation failed after {duration:.2f}s: {e}")
         
         return jsonify({
             'success': False,
@@ -876,20 +1456,21 @@ def get_available_vibes():
         'vibes': vibes,
         'count': len(vibes),
         'descriptions': {
-            'mystical': 'Ancient wisdom & sacred geometry',
-            'cosmic': 'Universal connection & stellar patterns',
-            'elemental': 'Natural forces & organic flow',
-            'crystal': 'Clarity, healing & prismatic light',
-            'shadow': 'Hidden power & angular mystery',
-            'light': 'Pure radiance & illuminating energy',
-            'storm': 'Raw electric chaos & lightning',
-            'void': 'Infinite potential & spiral depth'
+            'mystical': 'Ancient wisdom & sacred geometry with curved flowing energy',
+            'cosmic': 'Universal stellar connection with radiant burst patterns',
+            'elemental': 'Natural organic forces with flowing growth patterns',
+            'crystal': 'Prismatic clarity with angular geometric precision',
+            'shadow': 'Hidden mysterious power with jagged consuming energy',
+            'light': 'Pure divine radiance with emanating luminous patterns',
+            'storm': 'Raw electric chaos with explosive lightning energy',
+            'void': 'Infinite recursive potential with impossible geometry'
         },
         'features': {
-            'text_responsive': True,
-            'semantic_analysis': True,
-            'unique_per_phrase': True,
-            'revolutionary_algorithms': True
+            'ultra_text_responsive': True,
+            'extreme_semantic_analysis': True,
+            'character_symphony_generation': True,
+            'vibe_specific_resonance': True,
+            'unique_signature_creation': True
         }
     })
 
@@ -912,11 +1493,11 @@ def internal_error(error):
 
 # ===== MAIN EXECUTION =====
 if __name__ == '__main__':
-    print("🔮 Starting Revolutionary Sigilcraft Python Backend...")
+    print("🔮 Starting Ultra-Revolutionary Sigilcraft Python Backend...")
     print(f"📦 PIL/Pillow version: {Image.__version__}")
     print(f"🔢 NumPy available: {'✅' if 'numpy' in sys.modules or 'np' in globals() else '❌'}")
-    print("🎨 Revolutionary text-responsive sigil generation ready!")
-    print("✨ Features: Deep text analysis, semantic patterns, unique algorithms")
+    print("🎨 Ultra-revolutionary text-responsive sigil generation ready!")
+    print("✨ Features: Extreme text analysis, character symphony, vibe resonance")
     
     # Get port from environment or default to 5001
     port = int(os.getenv('PORT', 5001))
