@@ -548,7 +548,7 @@ if __name__ == '__main__':
     print("🎨 Ultra-revolutionary text-responsive sigil generation ready!")
 
     # Get port from environment or default to 5001 (Flask backend)
-    port = int(os.getenv('FLASK_PORT', 5001))
+    port = int(os.getenv('FLASK_PORT', '5001'))
     debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
 
     print(f"🚀 Starting server on port {port}")

@@ -217,7 +217,7 @@ app.post('/api/generate', generateLimiter, async (req, res) => {
 // Available vibes endpoint
 app.get('/api/vibes', async (req, res) => {
   try {
-    const response = await fetch(`${FLASK_URL}/vibes`);
+    const response = await fetch(`${FLASK_URL}/api/vibes`);
 
     if (!response.ok) {
       throw new Error(`Backend error: ${response.status}`);

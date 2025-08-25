@@ -474,7 +474,7 @@ class SigilcraftApp {
   }
 
   viewGalleryItem(id) {
-    const item = this.state.sigilGallery.find(i => i.id === id);
+    const item = this.state.sigilGallery.find(sigil => sigil.id === id);
     if (!item) return;
 
     // Set as current image for display
@@ -623,8 +623,7 @@ class SigilcraftApp {
           <span class="label">✨ Detected Archetypes:</span>
           <div class="archetype-tags">
             ${analysis.semanticMatches.map(match => 
-              `<span class="archetype-tag">${match}</span>`).join('')}g">${match}</span>`
-            ).join('')}
+              `<span class="archetype-tag">${match}</span>`).join('')}
           </div>
         </div>
         ` : ''}
@@ -876,8 +875,6 @@ window.closeProModal = function() {
 window.submitProKey = function() {
   if (window.app) {
     window.app.submitProKey();
-  }
-};.app.submitProKey();
   }
 };
 
