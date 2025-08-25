@@ -1417,7 +1417,7 @@ def health():
         }
     })
 
-@app.route('/generate', methods=['POST'])
+@app.route('/api/generate', methods=['POST'])
 def generate_sigil():
     """Ultra-revolutionary sigil generation endpoint"""
     start_time = datetime.now()
@@ -1487,7 +1487,7 @@ def generate_sigil():
             'timestamp': datetime.now().isoformat()
         }), 500
 
-@app.route('/vibes', methods=['GET'])
+@app.route('/api/vibes', methods=['GET'])
 def get_available_vibes():
     """Get list of available energy vibes with enhanced descriptions"""
     vibes = list(generator.vibe_styles.keys())
