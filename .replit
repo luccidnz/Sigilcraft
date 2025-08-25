@@ -16,7 +16,7 @@ run = ["sh", "-c", "python main.py & sleep 3 && node server.js"]
 deploymentTarget = "cloudrun"
 
 [workflows]
-runButton = "Ultra Sigilcraft Revolutionary"
+runButton = "Sigilcraft Revolutionary Engine"
 
 [[workflows.workflow]]
 name = "Run"
@@ -145,6 +145,43 @@ args = "python main.py &"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "sleep 3"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node server.js"
+
+[[workflows.workflow]]
+name = "Sigilcraft Revolutionary Engine"
+author = 45492115
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pkill -f \"python main.py\" 2>/dev/null || true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pkill -f \"node server.js\" 2>/dev/null || true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "sleep 2"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🔮 Starting Ultra-Revolutionary Sigilcraft Backend...\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python main.py &"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "sleep 4"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🚀 Starting Enhanced Frontend Server...\""
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"

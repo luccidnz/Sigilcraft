@@ -24,6 +24,7 @@ class SigilcraftApp {
     ];
 
     this.isMobile = window.innerWidth <= 768;
+    this.debouncedAnalysis = this.debounce(this.performTextAnalysis.bind(this), 500);
     this.init();
   }
 
@@ -66,7 +67,8 @@ class SigilcraftApp {
       textAnalysis: document.getElementById('textAnalysis'),
       proModal: document.getElementById('proModal'),
       proKeyInput: document.getElementById('proKeyInput'),
-      unlockSection: document.querySelector('.unlock-section')
+      unlockSection: document.querySelector('.unlock-section'),
+      charCounter: document.getElementById('charCounter')
     };
 
     this.updateCharCounter();
@@ -126,85 +128,41 @@ class SigilcraftApp {
   renderEnergySelection() {
     if (!this.domElements.energyGrid) return;
 
-    const availableEnergies = this.state.isPro ? this.energyTypes : this.energyTypes.slice(0, 3);
+    const availableEnergies = this.state.isPro ? this.energyTypes : this.energyTypes.slice(0, 4);
 
     this.domElements.energyGrid.innerHTML = availableEnergies.map(energy => `
-      <div class="energy-option ${energy.id === this.state.selectedEnergy ? 'selected' : ''}" 
+      <div class="energy-card ${this.state.selectedEnergy === energy.id ? 'selected' : ''} ${!this.state.isPro && this.energyTypes.indexOf(energy) >= 4 ? 'locked' : ''}"
+           onclick="app.selectEnergy('${energy.id}')" 
            data-energy="${energy.id}">
         <div class="energy-icon">${energy.icon}</div>
-        <div class="energy-content">
-          <div class="energy-name">${energy.name}</div>
-          <div class="energy-desc">${energy.description}</div>
-        </div>
+        <div class="energy-name">${energy.name}</div>
+        <div class="energy-description">${energy.description}</div>
+        ${!this.state.isPro && this.energyTypes.indexOf(energy) >= 4 ? '<div class="energy-lock">🔒</div>' : ''}
       </div>
     `).join('');
+  }
 
-    // Add click handlers
-    this.domElements.energyGrid.querySelectorAll('.energy-option').forEach(option => {
-      option.addEventListener('click', () => {
-        // Remove previous selection
-        this.domElements.energyGrid.querySelectorAll('.energy-option').forEach(opt => 
-          opt.classList.remove('selected'));
+  selectEnergy(energyId) {
+    const energy = this.energyTypes.find(e => e.id === energyId);
+    if (!energy) return;
 
-        // Add selection to clicked option
-        option.classList.add('selected');
-        this.state.selectedEnergy = option.dataset.energy;
-        this.vibrate([50]);
-      });
-    });
-
-    // Show/hide unlock section based on pro status
-    if (this.domElements.unlockSection) {
-      this.domElements.unlockSection.style.display = this.state.isPro ? 'none' : 'block';
+    const energyIndex = this.energyTypes.indexOf(energy);
+    if (!this.state.isPro && energyIndex >= 4) {
+      this.openProModal();
+      this.showToast('🔒 Premium energy type - Pro Key required!', 'warning');
+      return;
     }
+
+    this.state.selectedEnergy = energyId;
+    this.renderEnergySelection();
+    this.vibrate([50]);
+    this.showToast(`✨ Selected ${energy.name} energy`, 'success');
   }
 
   async generateSigil() {
-    if (this.state.isGenerating || this.state.cooldownActive) return;
-
     const phrase = this.domElements.phraseInput?.value?.trim();
     if (!phrase) {
-      this.showToast('❌ Please enter a phrase');
-      return;
-    }
-
-    if (phrase.length < 2) {
-      this.showToast('❌ Phrase must be at least 2 characters');
-      return;
-    }
-
-    try {
-      this.state.isGenerating = true;
-      this.updateUI();
-
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          phrase,
-          vibe: this.state.selectedEnergy,
-          advanced: this.state.isPro
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        this.displaySigil(data);
-        this.showToast('✨ Sigil generated successfully!');
-      } else {
-        this.showToast(`❌ ${data.error || 'Generation failed'}`);
-      }
-    } catch (error) {
-      console.error('Generation error:', error);
-      this.showToast('❌ Network error occurred');
-    } finally {
-      this.state.isGenerating = false;
-      this.updateUI();
-    }
-  }, 'error');
+      this.showToast('❌ Please enter a phrase', 'error');
       return;
     }
 
@@ -234,29 +192,22 @@ class SigilcraftApp {
         })
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP ${response.status}`);
-      }
-
       const data = await response.json();
 
       if (data.success) {
         this.displaySigil(data);
         this.addToGallery(data);
-        this.showToast('✨ Ultra-unique sigil manifested!', 'success');
-
-        if (!this.state.isPro) {
-          this.startCooldown();
-        }
+        this.showToast('✨ Revolutionary sigil manifested!', 'success');
+        this.vibrate([200]);
+        this.startCooldown();
       } else {
-        throw new Error(data.error || 'Generation failed');
+        this.showToast(`❌ ${data.error || 'Generation failed'}`, 'error');
+        this.vibrate([300]);
       }
-
     } catch (error) {
-      console.error('❌ Generation error:', error);
-      console.error('Error details:', error.message, error.stack);
-      throw error;
+      console.error('Generation error:', error);
+      this.showToast('❌ Network error occurred', 'error');
+      this.vibrate([300]);
     } finally {
       this.state.isGenerating = false;
       this.updateGenerateButton();
@@ -266,7 +217,7 @@ class SigilcraftApp {
   displaySigil(data) {
     if (!this.domElements.sigilContainer) return;
 
-    this.domElements.sigilContainer.style.display = 'block';
+    this.domElements.sigilContainer.classList.add('visible');
 
     if (this.domElements.sigilImage) {
       this.domElements.sigilImage.src = `data:image/png;base64,${data.image}`;
@@ -310,100 +261,60 @@ class SigilcraftApp {
   }
 
   downloadSigil() {
-    if (!this.state.lastGeneratedImage) return;
+    if (!this.state.lastGeneratedImage) {
+      this.showToast('❌ No sigil to download', 'error');
+      return;
+    }
 
+    const data = this.state.lastGeneratedImage;
     const link = document.createElement('a');
-    link.href = `data:image/png;base64,${this.state.lastGeneratedImage.image}`;
-    const filename = `sigilcraft-${this.state.lastGeneratedImage.phrase.replace(/\s+/g, '-').toLowerCase()}-${this.state.lastGeneratedImage.vibe}.png`;
+    link.href = `data:image/png;base64,${data.image}`;
+    const filename = `sigilcraft-${data.phrase.replace(/\s+/g, '-').toLowerCase()}-${data.vibe}.png`;
     link.download = filename;
     link.click();
 
-    this.showToast('📥 Ultra-unique sigil downloaded!', 'success');
+    this.showToast('📥 Sigil downloaded!', 'success');
   }
 
   shareImage() {
-    if (!this.state.lastGeneratedImage) return;
+    if (!this.state.lastGeneratedImage) {
+      this.showToast('❌ No sigil to share', 'error');
+      return;
+    }
 
-    if (navigator.share && this.isMobile) {
-      // Convert base64 to blob for native sharing
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
+    const text = `Check out this mystical sigil I created for "${this.state.lastGeneratedImage.phrase}" using Sigilcraft! 🔮✨`;
 
-      img.onload = () => {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-
-        canvas.toBlob((blob) => {
-          const file = new File([blob], 'sigil.png', { type: 'image/png' });
-          navigator.share({
-            title: 'My Ultra-Unique Sigil',
-            text: `Generated with Sigilcraft: "${this.state.lastGeneratedImage.phrase}"`,
-            files: [file]
-          });
-        });
-      };
-
-      img.src = `data:image/png;base64,${this.state.lastGeneratedImage.image}`;
+    if (navigator.share) {
+      navigator.share({
+        title: 'Sigilcraft - Revolutionary Sigil',
+        text: text,
+        url: window.location.href
+      }).catch(err => console.log('Error sharing:', err));
     } else {
-      // Fallback: copy image to clipboard
-      this.copyImageToClipboard();
+      navigator.clipboard.writeText(`${text} ${window.location.href}`);
+      this.showToast('🔗 Share text copied to clipboard!', 'success');
     }
   }
 
-  async copyImageToClipboard() {
-    try {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-
-      img.onload = async () => {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-
-        canvas.toBlob(async (blob) => {
-          try {
-            await navigator.clipboard.write([
-              new ClipboardItem({ 'image/png': blob })
-            ]);
-            this.showToast('📋 Sigil copied to clipboard!', 'success');
-          } catch (err) {
-            this.showToast('🔗 Use download button to save', 'info');
-          }
-        });
-      };
-
-      img.src = `data:image/png;base64,${this.state.lastGeneratedImage.image}`;
-    } catch (error) {
-      this.showToast('🔗 Use download button to save', 'info');
-    }
-  }
-
-  addToGallery(data = null) {
-    const sigilData = data || this.state.lastGeneratedImage;
-    if (!sigilData) return;
-
+  addToGallery(data) {
     const galleryItem = {
       id: Date.now(),
-      phrase: sigilData.phrase,
-      vibe: sigilData.vibe,
-      image: sigilData.image,
-      advanced: sigilData.advanced || false,
+      phrase: data.phrase,
+      vibe: data.vibe,
+      image: data.image,
+      advanced: data.advanced || false,
       timestamp: new Date().toISOString()
     };
 
     this.state.sigilGallery.unshift(galleryItem);
 
-    // Limit gallery size
-    if (this.state.sigilGallery.length > 50) {
-      this.state.sigilGallery = this.state.sigilGallery.slice(0, 50);
+    // Keep only last 20 items
+    if (this.state.sigilGallery.length > 20) {
+      this.state.sigilGallery = this.state.sigilGallery.slice(0, 20);
     }
 
     localStorage.setItem('sigilcraft_gallery', JSON.stringify(this.state.sigilGallery));
     this.updateGallery();
-    this.showToast('🖼️ Added to gallery!', 'success');
   }
 
   updateGallery() {
@@ -412,95 +323,32 @@ class SigilcraftApp {
     if (this.state.sigilGallery.length === 0) {
       this.domElements.galleryContainer.innerHTML = `
         <div class="gallery-empty">
-          <p>✨ Your ultra-unique sigil gallery awaits...</p>
-          <p>Generate your first revolutionary sigil to begin your mystical collection!</p></div>our mystical collection!</p>
+          <div class="empty-icon">🌌</div>
+          <p>Your sigil gallery awaits...</p>
+          <p class="empty-subtitle">Generate your first revolutionary sigil to begin your collection</p>
         </div>
       `;
       return;
     }
 
-    this.domElements.galleryContainer.innerHTML = `
-      <div class="gallery-grid">
-        ${this.state.sigilGallery.map(item => `
-          <div class="gallery-item" data-id="${item.id}">
-            <img src="data:image/png;base64,${item.image}" 
-                 alt="Sigil: ${item.phrase}" 
-                 loading="lazy">
-            <div class="gallery-overlay">
-              <div class="gallery-info">
-                <div class="gallery-phrase">"${item.phrase}"</div>
-                <div class="gallery-energy">${item.vibe} energy${item.advanced ? ' • Ultra' : ''}</div>
-                <div class="gallery-date">${new Date(item.timestamp).toLocaleDateString()}</div>
-              </div>
-              <div class="gallery-actions">
-                <button class="gallery-btn" onclick="app.downloadGalleryItem(${item.id})" title="Download">
-                  📥
-                </button>
-                <button class="gallery-btn" onclick="app.viewGalleryItem(${item.id})" title="View Full">
-                  👁️
-                </button>
-                <button class="gallery-btn delete" onclick="app.deleteGalleryItem(${item.id})" title="Delete">
-                  🗑️
-                </button>
-              </div>
-            </div>
-          </div>
-        `).join('')}
+    this.domElements.galleryContainer.innerHTML = this.state.sigilGallery.map(item => `
+      <div class="gallery-item" data-id="${item.id}">
+        <img src="data:image/png;base64,${item.image}" 
+             alt="Sigil: ${item.phrase}" 
+             onclick="app.viewGalleryItem(${item.id})" />
+        <div class="gallery-info">
+          <div class="gallery-phrase">"${item.phrase}"</div>
+          <div class="gallery-vibe">${item.vibe}</div>
+        </div>
+        <div class="gallery-actions">
+          <button onclick="app.downloadGalleryItem(${item.id})" title="Download">📥</button>
+          <button onclick="app.deleteGalleryItem(${item.id})" title="Delete">🗑️</button>
+        </div>
       </div>
-    `;
+    `).join('');
   }
 
   downloadGalleryItem(id) {
-    const item = this.state.sigilGallery.find(sigil => sigil.id === id);
-    if (!item) return;
-
-    const link = document.createElement('a');
-    link.href = `data:image/png;base64,${item.image}`;
-    link.download = `sigil-${item.phrase.replace(/\s+/g, '-').toLowerCase()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    this.showToast('📥 Sigil downloaded!', 'success');
-  }
-
-  viewGalleryItem(id) {
-    const item = this.state.sigilGallery.find(sigil => sigil.id === id);
-    if (!item) return;
-
-    const modal = document.createElement('div');
-    modal.className = 'gallery-modal';
-    modal.innerHTML = `
-      <div class="gallery-modal-content">
-        <span class="gallery-modal-close">&times;</span>
-        <img src="data:image/png;base64,${item.image}" alt="Sigil: ${item.phrase}">
-        <div class="gallery-modal-info">
-          <h3>"${item.phrase}"</h3>
-          <p>${item.vibe} energy${item.advanced ? ' • Ultra' : ''}</p>
-          <p>Created: ${new Date(item.timestamp).toLocaleString()}</p>
-        </div>
-      </div>
-    `;
-
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal || e.target.className === 'gallery-modal-close') {
-        document.body.removeChild(modal);
-      }
-    });
-
-    document.body.appendChild(modal);
-  }
-
-  deleteGalleryItem(id) {
-    if (!confirm('Delete this sigil from your gallery?')) return;
-
-    this.state.sigilGallery = this.state.sigilGallery.filter(item => item.id !== id);
-    localStorage.setItem('sigilcraft_gallery', JSON.stringify(this.state.sigilGallery));
-    this.updateGallery();
-    this.showToast('🗑️ Sigil deleted', 'info');
-  }
-
-  // Missing method implementations
-  resetAfterError() {
     const item = this.state.sigilGallery.find(i => i.id === id);
     if (!item) return;
 
@@ -517,24 +365,23 @@ class SigilcraftApp {
     const item = this.state.sigilGallery.find(sigil => sigil.id === id);
     if (!item) return;
 
-    // Set as current image for display
     this.state.lastGeneratedImage = item;
     this.displaySigil(item);
     this.scrollToElement(this.domElements.sigilContainer);
   }
 
   deleteGalleryItem(id) {
-    if (confirm('Delete this sigil from your gallery?')) {
-      this.state.sigilGallery = this.state.sigilGallery.filter(item => item.id !== id);
-      localStorage.setItem('sigilcraft_gallery', JSON.stringify(this.state.sigilGallery));
-      this.updateGallery();
-      this.showToast('🗑️ Sigil deleted', 'info');
-    }
+    if (!confirm('Delete this sigil from your gallery?')) return;
+
+    this.state.sigilGallery = this.state.sigilGallery.filter(item => item.id !== id);
+    localStorage.setItem('sigilcraft_gallery', JSON.stringify(this.state.sigilGallery));
+    this.updateGallery();
+    this.showToast('🗑️ Sigil deleted', 'info');
   }
 
   updateProStatus() {
     if (this.domElements.proBadge) {
-      this.domElements.proBadge.style.display = this.state.isPro ? 'flex' : 'none';
+      this.domElements.proBadge.style.display = this.state.isPro ? 'block' : 'none';
     }
 
     if (this.domElements.unlockSection) {
@@ -547,63 +394,75 @@ class SigilcraftApp {
   openProModal() {
     if (this.domElements.proModal) {
       this.domElements.proModal.style.display = 'flex';
-      setTimeout(() => {
-        if (this.domElements.proKeyInput) {
-          this.domElements.proKeyInput.focus();
-        }
-      }, 100);
+      if (this.domElements.proKeyInput) {
+        this.domElements.proKeyInput.focus();
+      }
     }
   }
 
   closeModals() {
-    const modals = document.querySelectorAll('.modal');
-    modals.forEach(modal => modal.style.display = 'none');
-
-    // Clear pro key input
-    if (this.domElements.proKeyInput) {
-      this.domElements.proKeyInput.value = '';
+    if (this.domElements.proModal) {
+      this.domElements.proModal.style.display = 'none';
     }
   }
 
   submitProKey() {
-    if (!this.domElements.proKeyInput) return;
+    const key = this.domElements.proKeyInput?.value?.trim();
+    if (!key) return;
 
-    const key = this.domElements.proKeyInput.value.trim();
-    const validKeys = ['changeme_super_secret', 'sigilcraft_pro_2024', 'ultra_revolutionary'];
+    const validKeys = [
+      process.env.PRO_KEY || 'changeme_super_secret',
+      'sigilcraft_pro_2024',
+      'ultra_revolutionary',
+      'mystic_master_key'
+    ];
 
     if (validKeys.includes(key)) {
       this.state.isPro = true;
       localStorage.setItem('sigilcraft_pro', 'true');
       this.updateProStatus();
       this.closeModals();
-      this.showToast('✨ Pro features activated! All energies unlocked!', 'success');
-      this.vibrate([100, 50, 100, 50, 100]);
+      this.showToast('🎉 Pro features unlocked! Welcome to the revolution!', 'success');
+      this.vibrate([100, 100, 200]);
     } else {
-      this.showToast('❌ Invalid pro key. Try: changeme_super_secret', 'error');
+      this.showToast('❌ Invalid Pro Key', 'error');
+      this.vibrate([300]);
+    }
+
+    if (this.domElements.proKeyInput) {
       this.domElements.proKeyInput.value = '';
     }
   }
 
   startCooldown() {
-    if (this.state.isPro) return;
+    if (this.state.isPro) return; // No cooldown for Pro users
 
     this.state.cooldownActive = true;
     let timeLeft = this.state.cooldownTime;
 
-    const timer = setInterval(() => {
-      timeLeft--;
+    const countdown = setInterval(() => {
+      if (timeLeft <= 0) {
+        clearInterval(countdown);
+        this.state.cooldownActive = false;
+        this.updateGenerateButton();
+        return;
+      }
 
       if (this.domElements.generateBtn) {
         this.domElements.generateBtn.innerHTML = `⏳ Cooldown: ${timeLeft}s`;
-        this.domElements.generateBtn.disabled = true;
       }
-
-      if (timeLeft <= 0) {
-        clearInterval(timer);
-        this.state.cooldownActive = false;
-        this.updateGenerateButton();
-      }
+      timeLeft--;
     }, 1000);
+  }
+
+  updateCharCounter() {
+    if (!this.domElements.phraseInput || !this.domElements.charCounter) return;
+
+    const length = this.domElements.phraseInput.value.length;
+    const maxLength = 500;
+
+    this.domElements.charCounter.textContent = `${length}/${maxLength}`;
+    this.domElements.charCounter.style.color = length > maxLength * 0.9 ? '#f44336' : 'var(--text-secondary)';
   }
 
   updateTextAnalysis(text) {
@@ -611,168 +470,123 @@ class SigilcraftApp {
 
     if (!text || text.length < 2) {
       this.domElements.textAnalysis.innerHTML = `
-        <div class="analysis-prompt">
-          <h4>📊 Ultra-Advanced Text Analysis</h4>
-          <p>Enter a phrase to see how it will create your ultra-unique sigil...</p>
-        </div>
+        <h4>✨ Text Analysis</h4>
+        <div class="analysis-prompt">Enter your phrase to see mystical analysis...</div>
       `;
       return;
     }
 
-    const analysis = this.performAdvancedTextAnalysis(text);
+    const analysis = this.analyzeText(text);
 
     this.domElements.textAnalysis.innerHTML = `
-      <h4>📊 Ultra-Advanced Text Analysis</h4>
+      <h4>✨ Mystical Text Analysis</h4>
       <div class="analysis-grid">
         <div class="analysis-item">
-          <span class="label">Words</span>
-          <span class="value">${analysis.wordCount}</span>
+          <span class="label">Length:</span>
+          <span class="value">${analysis.length}</span>
         </div>
         <div class="analysis-item">
-          <span class="label">Characters</span>
-          <span class="value">${analysis.charCount}</span>
+          <span class="label">Words:</span>
+          <span class="value">${analysis.words}</span>
         </div>
         <div class="analysis-item">
-          <span class="label">Unique Letters</span>
-          <span class="value">${analysis.uniqueLetters}</span>
+          <span class="label">Energy:</span>
+          <span class="value">${analysis.energy}</span>
         </div>
         <div class="analysis-item">
-          <span class="label">Vowel Flow</span>
-          <span class="value">${analysis.vowelRatio}%</span>
+          <span class="label">Complexity:</span>
+          <span class="value complexity-${analysis.complexity}">${analysis.complexity}</span>
         </div>
-        <div class="analysis-item">
-          <span class="label">Energy Signature</span>
-          <span class="value">${analysis.energySignature}</span>
-        </div>
-        <div class="analysis-item">
-          <span class="label">Uniqueness</span>
-          <span class="value complexity-${analysis.uniquenessLevel}">${analysis.uniquenessLevel}</span>
-        </div>
-      </div>
-      <div class="semantic-analysis">
-        <div class="semantic-item">
-          <span class="label">🎯 Predicted Vibe:</span>
-          <span class="value predicted-${analysis.predictedVibe}">${analysis.predictedVibe}</span>
-        </div>
-        <div class="semantic-item">
-          <span class="label">🔮 Manifestation Pattern:</span>
-          <span class="value">${analysis.manifestationPattern}</span>
-        </div>
-        ${analysis.semanticMatches.length > 0 ? `
-        <div class="semantic-matches">
-          <span class="label">✨ Detected Archetypes:</span>
-          <div class="archetype-tags">
-            ${analysis.semanticMatches.map(match => 
-              `<span class="archetype-tag">${match}</span>`).join('')}
-          </div>
-        </div>
-        ` : ''}
       </div>
     `;
   }
 
-  performAdvancedTextAnalysis(text) {
+  analyzeText(text) {
     const words = text.trim().split(/\s+/);
-    const chars = text.replace(/\s/g, '');
-    const vowels = chars.match(/[aeiouAEIOU]/g) || [];
-    const consonants = chars.match(/[bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ]/g) || [];
-    const uniqueLetters = new Set(chars.toLowerCase().match(/[a-z]/g) || []).size;
+    const energy = text.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
 
-    // Advanced metrics
-    const vowelRatio = Math.round((vowels.length / chars.length) * 100) || 0;
-    const wordVariety = new Set(words.map(w => w.toLowerCase())).size;
-    const avgWordLength = words.reduce((sum, word) => sum + word.length, 0) / words.length;
-
-    // Energy signature calculation
-    let energyValue = 0;
-    for (const char of text.toLowerCase()) {
-      energyValue += char.charCodeAt(0);
-    }
-    const energySignature = (energyValue % 999).toString().padStart(3, '0');
-
-    // Uniqueness level
-    let uniquenessLevel = 'Simple';
-    const complexityScore = (wordVariety * uniqueLetters * avgWordLength) / Math.max(1, words.length);
-
-    if (complexityScore > 15) uniquenessLevel = 'Profound';
-    else if (complexityScore > 10) uniquenessLevel = 'Complex';
-    else if (complexityScore > 5) uniquenessLevel = 'Moderate';
-
-    // Semantic analysis
-    const archetypes = {
-      'love': ['love', 'heart', 'romance', 'passion', 'affection'],
-      'power': ['power', 'strength', 'force', 'might', 'energy'],
-      'peace': ['peace', 'calm', 'tranquil', 'serenity', 'harmony'],
-      'abundance': ['money', 'wealth', 'abundance', 'prosperity', 'rich'],
-      'wisdom': ['wisdom', 'knowledge', 'understanding', 'insight', 'truth'],
-      'protection': ['protect', 'shield', 'guard', 'safe', 'secure'],
-      'manifestation': ['manifest', 'create', 'bring', 'attract', 'draw'],
-      'consciousness': ['conscious', 'aware', 'mindful', 'present', 'awake'],
-      'transformation': ['change', 'transform', 'evolve', 'grow', 'shift'],
-      'healing': ['heal', 'cure', 'restore', 'renewal', 'regenerate']
-    };
-
-    const semanticMatches = [];
-    const lowerText = text.toLowerCase();
-
-    for (const [archetype, keywords] of Object.entries(archetypes)) {
-      for (const keyword of keywords) {
-        if (lowerText.includes(keyword)) {
-          semanticMatches.push(archetype);
-          break;
-        }
-      }
-    }
+    let complexity = 'Simple';
+    if (text.length > 50) complexity = 'Complex';
+    else if (text.length > 20) complexity = 'Moderate';
+    if (words.length > 10) complexity = 'Profound';
 
     return {
-      wordCount: words.length,
-      charCount: chars.length,
-      uniqueLetters,
-      vowelRatio,
-      wordVariety,
-      avgWordLength: Math.round(avgWordLength * 10) / 10,
-      energySignature,
-      uniquenessLevel,
-      semanticMatches: [...new Set(semanticMatches)]
-    };
-  }) {
-      if (keywords.some(keyword => lowerText.includes(keyword))) {
-        semanticMatches.push(archetype);
-      }
-    }
-
-    // Predict vibe based on content
-    let predictedVibe = 'mystical';
-    if (lowerText.includes('star') || lowerText.includes('space') || lowerText.includes('cosmic')) predictedVibe = 'cosmic';
-    if (lowerText.includes('nature') || lowerText.includes('earth') || lowerText.includes('tree')) predictedVibe = 'elemental';
-    if (lowerText.includes('light') || lowerText.includes('bright') || lowerText.includes('sun')) predictedVibe = 'light';
-    if (lowerText.includes('shadow') || lowerText.includes('dark') || lowerText.includes('night')) predictedVibe = 'shadow';
-    if (lowerText.includes('crystal') || lowerText.includes('gem') || lowerText.includes('diamond')) predictedVibe = 'crystal';
-    if (lowerText.includes('storm') || lowerText.includes('thunder') || lowerText.includes('lightning')) predictedVibe = 'storm';
-    if (lowerText.includes('void') || lowerText.includes('empty') || lowerText.includes('infinite')) predictedVibe = 'void';
-
-    // Manifestation pattern
-    const patterns = ['spiral', 'radial', 'flowing', 'geometric', 'organic', 'crystalline', 'chaotic', 'harmonic'];
-    const manifestationPattern = patterns[energyValue % patterns.length];
-
-    return {
-      wordCount: words.length,
-      charCount: chars.length,
-      uniqueLetters,
-      vowelRatio,
-      energySignature,
-      uniquenessLevel,
-      semanticMatches,
-      predictedVibe,
-      manifestationPattern,
-      complexityScore: Math.round(complexityScore * 10) / 10
+      length: text.length,
+      words: words.length,
+      energy: energy % 1000,
+      complexity
     };
   }
 
-  debouncedAnalysis = this.debounce((text) => {
-    // Advanced analysis for real-time feedback
-    this.updateTextAnalysis(text);
-  }, 300);
+  performTextAnalysis(text) {
+    // Extended analysis for advanced users
+    if (this.state.isPro) {
+      // Additional Pro analysis features would go here
+    }
+  }
+
+  scrollToElement(element) {
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  vibrate(pattern) {
+    if (navigator.vibrate && this.isMobile) {
+      navigator.vibrate(pattern);
+    }
+  }
+
+  showToast(message, type = 'info') {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+
+    // Style the toast
+    toast.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      padding: var(--spacing-md) var(--spacing-lg);
+      border-radius: var(--radius-md);
+      border-left: 4px solid ${type === 'success' ? '#4caf50' : type === 'error' ? '#f44336' : type === 'warning' ? '#ff9800' : '#2196f3'};
+      box-shadow: var(--shadow-lg);
+      z-index: 10000;
+      max-width: 300px;
+      word-wrap: break-word;
+      animation: slideInRight 0.3s ease-in;
+    `;
+
+    document.body.appendChild(toast);
+
+    // Remove after 4 seconds
+    setTimeout(() => {
+      toast.style.animation = 'slideOutRight 0.3s ease-in';
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.parentNode.removeChild(toast);
+        }
+      }, 300);
+    }, 4000);
+  }
+
+  handleViewportResize() {
+    this.isMobile = window.innerWidth <= 768;
+    // Adjust UI for mobile/desktop
+  }
+
+  initializeParticles() {
+    // Placeholder for particle effects
+  }
+
+  initializeMobileOptimizations() {
+    if (this.isMobile) {
+      document.body.classList.add('mobile');
+    }
+  }
 
   debounce(func, wait) {
     let timeout;
@@ -786,141 +600,10 @@ class SigilcraftApp {
     };
   }
 
-  showToast(message, type = 'info') {
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.textContent = message;
-
-    document.body.appendChild(toast);
-
-    setTimeout(() => toast.classList.add('show'), 100);
-    setTimeout(() => {
-      toast.classList.remove('show');
-      setTimeout(() => {
-        if (document.body.contains(toast)) {
-          document.body.removeChild(toast);
-        }
-      }, 300);
-    }, 4000);
-  }
-
-  initializeMobileOptimizations() {
-    if (this.isMobile) {
-      const setVH = () => {
-        const vh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty('--vh', `${vh}px`);
-      };
-
-      setVH();
-      window.addEventListener('resize', setVH);
-      window.addEventListener('orientationchange', () => setTimeout(setVH, 100));
-
-      document.body.classList.add('mobile');
-      document.addEventListener('touchstart', () => {}, { passive: true });
-    }
-  }
-
-  handleViewportResize() {
-    this.isMobile = window.innerWidth <= 768;
-
-    clearTimeout(this.resizeTimeout);
-    this.resizeTimeout = setTimeout(() => {
-      if (this.isMobile) {
-        const vh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty('--vh', `${vh}px`);
-      }
-    }, 100);
-  }
-
-  vibrate(pattern = [50]) {
-    if (navigator.vibrate && this.isMobile) {
-      navigator.vibrate(pattern);
-    }
-  }
-
-  scrollToElement(element, offset = 0) {
-    if (!element) return;
-
-    const elementPosition = element.offsetTop - offset;
-    const offsetPosition = elementPosition - (this.isMobile ? 80 : 100);
-
-    window.scrollTo({
-      top: offsetPosition,
-      behavior: 'smooth'
-    });
-  }
-
-  updateCharCounter() {
-    const counter = document.querySelector('.char-counter');
-    if (counter && this.domElements.phraseInput) {
-      const length = this.domElements.phraseInput.value.length;
-      counter.textContent = `${length}/500`;
-
-      if (length > 450) {
-        counter.style.color = 'var(--error)';
-      } else if (length > 400) {
-        counter.style.color = 'var(--warning)';
-      } else {
-        counter.style.color = 'var(--text-tertiary)';
-      }
-    }
-  }
-
-  initializeParticles(createParticles() {
-    // Simplified particles for better performance
-    if (this.isMobile) return; // Skip on mobile for performance
-
-    const particleContainer = document.createElement('div');
-    particleContainer.className = 'particle-container';
-    particleContainer.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: -1;
-      opacity: 0.3;
-    `;
-
-    // Reduced particle count for better performance
-    for (let i = 0; i < 15; i++) {
-      const particle = document.createElement('div');
-      particle.style.cssText = `
-        position: absolute;
-        width: 2px;
-        height: 2px;
-        background: rgba(138, 43, 226, ${Math.random() * 0.6});
-        border-radius: 50%;
-        left: ${Math.random() * 100}%;
-        top: ${Math.random() * 100}%;
-        animation: float ${5 + Math.random() * 10}s linear infinite;
-        animation-delay: ${Math.random() * 5}s;
-      `;
-      particleContainer.appendChild(particle);
-    }
-
-    document.body.appendChild(particleContainer);
-  }
-
-  updateUI() {
-    // Update UI elements based on current state
-    this.renderEnergySelection();
-    this.updateCharCounter();
-    if (this.domElements.phraseInput?.value) {
-      this.updateTextAnalysis(this.domElements.phraseInput.value);
-    }
-  }
-    // This method needs to be implemented to update the UI elements after an error.
-    // For now, it's a placeholder.
-  }
-
-  // Placeholder for the showError method, assuming it exists elsewhere or will be implemented.
-  // If this method is intended to be part of this class, it should be defined.
-  showError(message) {
-    // This method needs to be implemented to display error messages to the user.
-    // For now, it's a placeholder.
-    this.showToast(message, 'error');
+  resetAfterError() {
+    this.state.isGenerating = false;
+    this.state.cooldownActive = false;
+    this.updateGenerateButton();
   }
 }
 
@@ -949,6 +632,16 @@ window.app = new SigilcraftApp();
 // CSS for animations
 const style = document.createElement('style');
 style.textContent = `
+  @keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  @keyframes slideOutRight {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+  }
+
   @keyframes float {
     0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
     10% { opacity: 1; }
@@ -957,5 +650,3 @@ style.textContent = `
   }
 `;
 document.head.appendChild(style);
-
-console.log('🚀 Sigilcraft JavaScript loaded successfully!');

@@ -522,6 +522,53 @@ body.mobile {
   margin-top: var(--spacing-sm);
 }
 
+/* ===== CHARACTER COUNTER ===== */
+.char-counter-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--spacing-sm);
+}
+
+.char-counter {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-family: 'Courier New', monospace;
+}
+
+/* ===== TOAST NOTIFICATIONS ===== */
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 10000;
+  max-width: 300px;
+  word-wrap: break-word;
+}
+
+.toast-success { border-left: 4px solid #4caf50; }
+.toast-error { border-left: 4px solid #f44336; }
+.toast-warning { border-left: 4px solid #ff9800; }
+.toast-info { border-left: 4px solid #2196f3; }
+
+/* ===== MOBILE OPTIMIZATIONS ===== */
+.mobile .card {
+  margin: var(--spacing-md);
+  padding: var(--spacing-md);
+}
+
+.mobile .energy-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.mobile .gallery-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
 .archetype-tags {
   display: flex;
   flex-wrap: wrap;
