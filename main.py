@@ -44,7 +44,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # ===== FLASK APP SETUP =====
-app = Flask(__name__)
+app = Flask(__name__, static_folder='public', static_url_path='')
 CORS(app, resources={
     r"/*": {
         "origins": "*",
@@ -1362,7 +1362,34 @@ class UltraRevolutionarySigilGenerator:
 # Initialize ultra-revolutionary generator
 generator = UltraRevolutionarySigilGenerator()
 
-@app.route('/health', methods=['GET'])
+@app.route('/')
+def serve_index():
+    """Serve the main application"""
+    try:
+        return app.send_static_file('index.html')
+    except:
+        return jsonify({
+            'success': False,
+            'error': 'Frontend not found',
+            'message': 'Please ensure static files are properly served'
+        }), 404
+
+@app.route('/<path:path>')
+def serve_static(path):
+    """Serve static files"""
+    try:
+        return app.send_static_file(path)
+    except:
+        # Fallback to index.html for client-side routing
+        try:
+            return app.send_static_file('index.html')
+        except:
+            return jsonify({
+                'success': False,
+                'error': f'File not found: {path}'
+            }), 404
+
+@app.route('/api/health', methods=['GET'])
 def health():
     """Health check endpoint"""
     return jsonify({
@@ -1380,7 +1407,7 @@ def health():
         }
     })
 
-@app.route('/generate', methods=['POST'])
+@app.route('/api/generate', methods=['POST'])
 def generate_sigil():
     """Ultra-revolutionary sigil generation endpoint"""
     start_time = datetime.now()
@@ -1450,7 +1477,7 @@ def generate_sigil():
             'timestamp': datetime.now().isoformat()
         }), 500
 
-@app.route('/vibes', methods=['GET'])
+@app.route('/api/vibes', methods=['GET'])
 def get_available_vibes():
     """Get list of available energy vibes with enhanced descriptions"""
     vibes = list(generator.vibe_styles.keys())
@@ -1503,7 +1530,7 @@ if __name__ == '__main__':
     print("🎨 Ultra-revolutionary text-responsive sigil generation ready!")
     print("✨ Features: Extreme text analysis, character symphony, vibe resonance")
     
-    # Get port from environment or default to 5001
+    # Get port from environment or default to 5001 (Flask backend)
     port = int(os.getenv('FLASK_PORT', 5001))
     debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
     
