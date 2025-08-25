@@ -24,7 +24,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Flask and web dependencies
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
 # Image processing
@@ -53,6 +53,14 @@ CORS(app, resources={
         "supports_credentials": True
     }
 })
+
+# Ensure CORS headers on all responses
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
 
 # ===== ULTRA-REVOLUTIONARY SIGIL GENERATOR CLASS =====
 class UltraRevolutionarySigilGenerator:
@@ -1367,7 +1375,8 @@ def serve_index():
     """Serve the main application"""
     try:
         return app.send_static_file('index.html')
-    except:
+    except Exception as e:
+        logger.error(f"Failed to serve index.html: {e}")
         return jsonify({
             'success': False,
             'error': 'Frontend not found',
@@ -1379,7 +1388,8 @@ def serve_static(path):
     """Serve static files"""
     try:
         return app.send_static_file(path)
-    except:
+    except Exception as e:
+        logger.error(f"Failed to serve static file {path}: {e}")
         # Fallback to index.html for client-side routing
         try:
             return app.send_static_file('index.html')
@@ -1407,7 +1417,7 @@ def health():
         }
     })
 
-@app.route('/api/generate', methods=['POST'])
+@app.route('/generate', methods=['POST'])
 def generate_sigil():
     """Ultra-revolutionary sigil generation endpoint"""
     start_time = datetime.now()
@@ -1477,7 +1487,7 @@ def generate_sigil():
             'timestamp': datetime.now().isoformat()
         }), 500
 
-@app.route('/api/vibes', methods=['GET'])
+@app.route('/vibes', methods=['GET'])
 def get_available_vibes():
     """Get list of available energy vibes with enhanced descriptions"""
     vibes = list(generator.vibe_styles.keys())
