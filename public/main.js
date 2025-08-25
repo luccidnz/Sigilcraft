@@ -164,7 +164,47 @@ class SigilcraftApp {
 
     const phrase = this.domElements.phraseInput?.value?.trim();
     if (!phrase) {
-      this.showToast('❌ Please enter a phrase', 'error');
+      this.showToast('❌ Please enter a phrase');
+      return;
+    }
+
+    if (phrase.length < 2) {
+      this.showToast('❌ Phrase must be at least 2 characters');
+      return;
+    }
+
+    try {
+      this.state.isGenerating = true;
+      this.updateUI();
+
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          phrase,
+          vibe: this.state.selectedEnergy,
+          advanced: this.state.isPro
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        this.displaySigil(data);
+        this.showToast('✨ Sigil generated successfully!');
+      } else {
+        this.showToast(`❌ ${data.error || 'Generation failed'}`);
+      }
+    } catch (error) {
+      console.error('Generation error:', error);
+      this.showToast('❌ Network error occurred');
+    } finally {
+      this.state.isGenerating = false;
+      this.updateUI();
+    }
+  }, 'error');
       return;
     }
 
@@ -676,6 +716,26 @@ class SigilcraftApp {
     const lowerText = text.toLowerCase();
 
     for (const [archetype, keywords] of Object.entries(archetypes)) {
+      for (const keyword of keywords) {
+        if (lowerText.includes(keyword)) {
+          semanticMatches.push(archetype);
+          break;
+        }
+      }
+    }
+
+    return {
+      wordCount: words.length,
+      charCount: chars.length,
+      uniqueLetters,
+      vowelRatio,
+      wordVariety,
+      avgWordLength: Math.round(avgWordLength * 10) / 10,
+      energySignature,
+      uniquenessLevel,
+      semanticMatches: [...new Set(semanticMatches)]
+    };
+  }) {
       if (keywords.some(keyword => lowerText.includes(keyword))) {
         semanticMatches.push(archetype);
       }
@@ -806,7 +866,7 @@ class SigilcraftApp {
     }
   }
 
-  initializeParticles() {
+  initializeParticles(createParticles() {
     // Simplified particles for better performance
     if (this.isMobile) return; // Skip on mobile for performance
 
@@ -843,9 +903,14 @@ class SigilcraftApp {
     document.body.appendChild(particleContainer);
   }
 
-  // Placeholder for the updateUI method, assuming it exists elsewhere or will be implemented.
-  // If this method is intended to be part of this class, it should be defined.
   updateUI() {
+    // Update UI elements based on current state
+    this.renderEnergySelection();
+    this.updateCharCounter();
+    if (this.domElements.phraseInput?.value) {
+      this.updateTextAnalysis(this.domElements.phraseInput.value);
+    }
+  }
     // This method needs to be implemented to update the UI elements after an error.
     // For now, it's a placeholder.
   }
