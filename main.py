@@ -1510,9 +1510,16 @@ if __name__ == '__main__':
     print(f"🚀 Starting server on port {port}")
     print(f"🔧 Debug mode: {'ON' if debug_mode else 'OFF'}")
     
-    app.run(
-        host='0.0.0.0',
-        port=port,
-        debug=debug_mode,
-        threaded=True
-    )
+    try:
+        app.run(
+            host='0.0.0.0',
+            port=port,
+            debug=debug_mode,
+            threaded=True,
+            use_reloader=False  # Prevent double startup in production
+        )
+    except KeyboardInterrupt:
+        print("\n🛑 Server shutdown gracefully")
+    except Exception as e:
+        print(f"❌ Server startup failed: {e}")
+        sys.exit(1)
