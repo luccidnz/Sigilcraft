@@ -1,4 +1,3 @@
-
 class SigilcraftApp {
   constructor() {
     this.state = {
@@ -215,8 +214,9 @@ class SigilcraftApp {
       }
 
     } catch (error) {
-      console.error('Generation error:', error);
-      this.showToast(`❌ Generation failed: ${error.message}`, 'error');
+      console.error('❌ Generation error:', error);
+      console.error('Error details:', error.message, error.stack);
+      throw error;
     } finally {
       this.state.isGenerating = false;
       this.updateGenerateButton();
@@ -289,12 +289,12 @@ class SigilcraftApp {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = new Image();
-      
+
       img.onload = () => {
         canvas.width = img.width;
         canvas.height = img.height;
         ctx.drawImage(img, 0, 0);
-        
+
         canvas.toBlob((blob) => {
           const file = new File([blob], 'sigil.png', { type: 'image/png' });
           navigator.share({
@@ -304,7 +304,7 @@ class SigilcraftApp {
           });
         });
       };
-      
+
       img.src = `data:image/png;base64,${this.state.lastGeneratedImage.image}`;
     } else {
       // Fallback: copy image to clipboard
@@ -317,12 +317,12 @@ class SigilcraftApp {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = new Image();
-      
+
       img.onload = async () => {
         canvas.width = img.width;
         canvas.height = img.height;
         ctx.drawImage(img, 0, 0);
-        
+
         canvas.toBlob(async (blob) => {
           try {
             await navigator.clipboard.write([
@@ -334,7 +334,7 @@ class SigilcraftApp {
           }
         });
       };
-      
+
       img.src = `data:image/png;base64,${this.state.lastGeneratedImage.image}`;
     } catch (error) {
       this.showToast('🔗 Use download button to save', 'info');
@@ -446,11 +446,11 @@ class SigilcraftApp {
     if (this.domElements.proBadge) {
       this.domElements.proBadge.style.display = this.state.isPro ? 'flex' : 'none';
     }
-    
+
     if (this.domElements.unlockSection) {
       this.domElements.unlockSection.style.display = this.state.isPro ? 'none' : 'block';
     }
-    
+
     this.renderEnergySelection();
   }
 
@@ -468,7 +468,7 @@ class SigilcraftApp {
   closeModals() {
     const modals = document.querySelectorAll('.modal');
     modals.forEach(modal => modal.style.display = 'none');
-    
+
     // Clear pro key input
     if (this.domElements.proKeyInput) {
       this.domElements.proKeyInput.value = '';
@@ -480,7 +480,7 @@ class SigilcraftApp {
 
     const key = this.domElements.proKeyInput.value.trim();
     const validKeys = ['changeme_super_secret', 'sigilcraft_pro_2024', 'ultra_revolutionary'];
-    
+
     if (validKeys.includes(key)) {
       this.state.isPro = true;
       localStorage.setItem('sigilcraft_pro', 'true');
@@ -588,27 +588,27 @@ class SigilcraftApp {
     const vowels = chars.match(/[aeiouAEIOU]/g) || [];
     const consonants = chars.match(/[bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ]/g) || [];
     const uniqueLetters = new Set(chars.toLowerCase().match(/[a-z]/g) || []).size;
-    
+
     // Advanced metrics
     const vowelRatio = Math.round((vowels.length / chars.length) * 100) || 0;
     const wordVariety = new Set(words.map(w => w.toLowerCase())).size;
     const avgWordLength = words.reduce((sum, word) => sum + word.length, 0) / words.length;
-    
+
     // Energy signature calculation
     let energyValue = 0;
     for (const char of text.toLowerCase()) {
       energyValue += char.charCodeAt(0);
     }
     const energySignature = (energyValue % 999).toString().padStart(3, '0');
-    
+
     // Uniqueness level
     let uniquenessLevel = 'Simple';
     const complexityScore = (wordVariety * uniqueLetters * avgWordLength) / Math.max(1, words.length);
-    
+
     if (complexityScore > 15) uniquenessLevel = 'Profound';
     else if (complexityScore > 10) uniquenessLevel = 'Complex';
     else if (complexityScore > 5) uniquenessLevel = 'Moderate';
-    
+
     // Semantic analysis
     const archetypes = {
       'love': ['love', 'heart', 'romance', 'passion', 'affection'],
@@ -622,16 +622,16 @@ class SigilcraftApp {
       'transformation': ['change', 'transform', 'evolve', 'grow', 'shift'],
       'healing': ['heal', 'cure', 'restore', 'renewal', 'regenerate']
     };
-    
+
     const semanticMatches = [];
     const lowerText = text.toLowerCase();
-    
+
     for (const [archetype, keywords] of Object.entries(archetypes)) {
       if (keywords.some(keyword => lowerText.includes(keyword))) {
         semanticMatches.push(archetype);
       }
     }
-    
+
     // Predict vibe based on content
     let predictedVibe = 'mystical';
     if (lowerText.includes('star') || lowerText.includes('space') || lowerText.includes('cosmic')) predictedVibe = 'cosmic';
@@ -641,7 +641,7 @@ class SigilcraftApp {
     if (lowerText.includes('crystal') || lowerText.includes('gem') || lowerText.includes('diamond')) predictedVibe = 'crystal';
     if (lowerText.includes('storm') || lowerText.includes('thunder') || lowerText.includes('lightning')) predictedVibe = 'storm';
     if (lowerText.includes('void') || lowerText.includes('empty') || lowerText.includes('infinite')) predictedVibe = 'void';
-    
+
     // Manifestation pattern
     const patterns = ['spiral', 'radial', 'flowing', 'geometric', 'organic', 'crystalline', 'chaotic', 'harmonic'];
     const manifestationPattern = patterns[energyValue % patterns.length];
@@ -746,7 +746,7 @@ class SigilcraftApp {
     if (counter && this.domElements.phraseInput) {
       const length = this.domElements.phraseInput.value.length;
       counter.textContent = `${length}/500`;
-      
+
       if (length > 450) {
         counter.style.color = 'var(--error)';
       } else if (length > 400) {
@@ -792,6 +792,21 @@ class SigilcraftApp {
     }
 
     document.body.appendChild(particleContainer);
+  }
+
+  // Placeholder for the updateUI method, assuming it exists elsewhere or will be implemented.
+  // If this method is intended to be part of this class, it should be defined.
+  updateUI() {
+    // This method needs to be implemented to update the UI elements after an error.
+    // For now, it's a placeholder.
+  }
+
+  // Placeholder for the showError method, assuming it exists elsewhere or will be implemented.
+  // If this method is intended to be part of this class, it should be defined.
+  showError(message) {
+    // This method needs to be implemented to display error messages to the user.
+    // For now, it's a placeholder.
+    this.showToast(message, 'error');
   }
 }
 

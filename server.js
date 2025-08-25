@@ -1,4 +1,3 @@
-
 import express from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
@@ -69,13 +68,13 @@ app.use(express.urlencoded({
 app.use((req, res, next) => {
   const start = Date.now();
   const originalSend = res.send;
-  
+
   res.send = function(data) {
     const duration = Date.now() - start;
     console.log(`${req.method} ${req.path} - ${res.statusCode} (${duration}ms)`);
     originalSend.call(this, data);
   };
-  
+
   next();
 });
 
@@ -105,7 +104,7 @@ app.get('/api/health', (req, res) => {
 app.post('/api/generate', generateLimiter, async (req, res) => {
   const startTime = Date.now();
   const requestId = Math.random().toString(36).substring(7);
-  
+
   try {
     const { phrase, vibe, advanced } = req.body;
 
@@ -141,7 +140,7 @@ app.post('/api/generate', generateLimiter, async (req, res) => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
-    const response = await fetch(`${FLASK_URL}/generate`, {
+    const response = await fetch(`${FLASK_URL}/api/generate`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -160,7 +159,7 @@ app.post('/api/generate', generateLimiter, async (req, res) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`❌ [${requestId}] Backend error ${response.status}:`, errorText);
-      
+
       throw new Error(`Backend service error: ${response.status}`);
     }
 
@@ -216,16 +215,16 @@ app.post('/api/generate', generateLimiter, async (req, res) => {
 app.get('/api/vibes', async (req, res) => {
   try {
     const response = await fetch(`${FLASK_URL}/vibes`);
-    
+
     if (!response.ok) {
       throw new Error(`Backend error: ${response.status}`);
     }
-    
+
     const data = await response.json();
     res.json(data);
   } catch (error) {
     console.error('Error fetching vibes:', error);
-    
+
     // Fallback response if backend is unavailable
     res.json({
       success: true,

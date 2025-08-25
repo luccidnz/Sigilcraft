@@ -16,7 +16,7 @@ run = ["sh", "-c", "python main.py & node server.js"]
 deploymentTarget = "cloudrun"
 
 [workflows]
-runButton = "Start Application"
+runButton = "Ultra Sigilcraft"
 
 [[workflows.workflow]]
 name = "Run"
@@ -99,6 +99,23 @@ args = "python main.py &"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "sleep 2"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node server.js"
+
+[[workflows.workflow]]
+name = "Ultra Sigilcraft"
+author = 45492115
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python main.py &"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "sleep 3"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"

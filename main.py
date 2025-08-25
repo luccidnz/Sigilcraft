@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 """
 SIGILCRAFT: ULTRA-REVOLUTIONARY SIGIL GENERATOR V4.0
@@ -65,11 +64,11 @@ def after_request(response):
 # ===== ULTRA-REVOLUTIONARY SIGIL GENERATOR CLASS =====
 class UltraRevolutionarySigilGenerator:
     """Ultra-revolutionary sigil generation with extreme text-specific uniqueness"""
-    
+
     def __init__(self):
         self.size = 1024
         self.center = (self.size // 2, self.size // 2)
-        
+
         # Completely redesigned vibe configurations with extreme differentiation
         self.vibe_styles = {
             'mystical': {
@@ -161,65 +160,65 @@ class UltraRevolutionarySigilGenerator:
                 'pattern_scale': 2.0
             }
         }
-    
+
     def generate_sigil(self, phrase: str, vibe: str = 'mystical', advanced: bool = False) -> str:
         """Generate ultra-unique sigils with extreme text responsiveness"""
         try:
             logger.info(f"🎨 Generating ultra-revolutionary sigil: '{phrase}' with vibe: {vibe}")
-            
+
             # Get style configuration
             style = self.vibe_styles.get(vibe, self.vibe_styles['mystical'])
-            
+
             # Create ultra high-resolution canvas
             canvas_size = 2048 if advanced else self.size
             img = Image.new('RGBA', (canvas_size, canvas_size), (0, 0, 0, 0))
             draw = ImageDraw.Draw(img)
-            
+
             # Generate ultra-unique seed with phrase specificity
             seed = self._generate_ultra_unique_seed(phrase, vibe)
             random.seed(seed)
             np.random.seed(seed % (2**32 - 1))
-            
+
             # Create sigil with multiple layers
             self._create_base_pattern(draw, phrase, style, canvas_size)
             self._create_text_pattern(draw, phrase, style, canvas_size)
             self._create_vibe_pattern(draw, phrase, vibe, style, canvas_size)
-            
+
             # Apply effects
             if advanced:
                 img = self._apply_ultra_effects(img, style, phrase)
             else:
                 img = self._apply_enhanced_effects(img, style, phrase)
-            
+
             # Convert to base64
             return self._image_to_base64(img)
-            
+
         except Exception as e:
             logger.error(f"❌ Ultra-revolutionary sigil generation failed: {e}")
             raise
-    
+
     def _generate_ultra_unique_seed(self, phrase: str, vibe: str) -> int:
         """Generate ultra-unique seed incorporating all text characteristics"""
         combined_data = f"{phrase}|{vibe}|{len(phrase)}|{hash(phrase)}"
         final_hash = hashlib.sha512(combined_data.encode()).hexdigest()
         return int(final_hash[:16], 16) % (2**31)
-    
+
     def _create_base_pattern(self, draw: ImageDraw, phrase: str, style: Dict, size: int):
         """Create base pattern based on phrase"""
         center = (size // 2, size // 2)
-        
+
         # Create base geometry
         for i in range(min(12, len(phrase))):
             char = phrase[i] if i < len(phrase) else phrase[i % len(phrase)]
             angle = (ord(char) * 13 + i * 30) % 360
             radius = (size // 10) + (ord(char) % (size // 20))
-            
+
             x = center[0] + radius * math.cos(math.radians(angle))
             y = center[1] + radius * math.sin(math.radians(angle))
-            
+
             color = style['colors'][i % len(style['colors'])]
             size_factor = max(3, ord(char) % 15)
-            
+
             try:
                 # Draw character-based symbol
                 if ord(char) % 3 == 0:
@@ -240,22 +239,22 @@ class UltraRevolutionarySigilGenerator:
                         draw.polygon(points, outline=color, width=2)
             except:
                 pass
-    
+
     def _create_text_pattern(self, draw: ImageDraw, phrase: str, style: Dict, size: int):
         """Create pattern based on text structure"""
         center = (size // 2, size // 2)
         words = phrase.split()
-        
+
         for i, word in enumerate(words[:8]):
             word_energy = sum(ord(c) for c in word.lower())
             angle = (word_energy * 7 + i * 45) % 360
             distance = (size // 6) + (len(word) * size // 40)
-            
+
             x = center[0] + distance * math.cos(math.radians(angle))
             y = center[1] + distance * math.sin(math.radians(angle))
-            
+
             color = style['colors'][(word_energy + i) % len(style['colors'])]
-            
+
             # Create word-specific pattern
             try:
                 if len(word) <= 3:
@@ -278,16 +277,16 @@ class UltraRevolutionarySigilGenerator:
                         py = y + (size//35) * math.sin(math.radians(j * 60))
                         points.append((px, py))
                     draw.polygon(points, outline=color, width=2)
-                
+
                 # Connect to center
                 draw.line([center, (x, y)], fill=color, width=1)
             except:
                 pass
-    
+
     def _create_vibe_pattern(self, draw: ImageDraw, phrase: str, vibe: str, style: Dict, size: int):
         """Create vibe-specific resonance patterns"""
         center = (size // 2, size // 2)
-        
+
         if vibe == 'cosmic':
             # Star pattern
             for i in range(8):
@@ -295,7 +294,7 @@ class UltraRevolutionarySigilGenerator:
                 radius = size // 4
                 x = center[0] + radius * math.cos(math.radians(angle))
                 y = center[1] + radius * math.sin(math.radians(angle))
-                
+
                 color = style['colors'][i % len(style['colors'])]
                 try:
                     # Draw star rays
@@ -305,7 +304,7 @@ class UltraRevolutionarySigilGenerator:
                     draw.ellipse([x-star_size, y-star_size, x+star_size, y+star_size], fill=color)
                 except:
                     pass
-        
+
         elif vibe == 'elemental':
             # Natural flow pattern
             for i in range(6):
@@ -315,7 +314,7 @@ class UltraRevolutionarySigilGenerator:
                     radius = (size // 8) + (j * size // 40)
                     x = center[0] + radius * math.cos(math.radians(angle))
                     y = center[1] + radius * math.sin(math.radians(angle))
-                    
+
                     if j > 0:
                         color = style['colors'][(i + j) % len(style['colors'])]
                         try:
@@ -323,47 +322,47 @@ class UltraRevolutionarySigilGenerator:
                         except:
                             pass
                     prev_pos = (x, y)
-        
+
         elif vibe == 'crystal':
             # Geometric crystal pattern
             for layer in range(3):
                 layer_radius = (size // 8) + (layer * size // 12)
                 sides = 6 + (layer * 2)
-                
+
                 points = []
                 for i in range(sides):
                     angle = (360 / sides) * i
                     x = center[0] + layer_radius * math.cos(math.radians(angle))
                     y = center[1] + layer_radius * math.sin(math.radians(angle))
                     points.append((x, y))
-                
+
                 color = style['colors'][layer % len(style['colors'])]
                 try:
                     if len(points) >= 3:
                         draw.polygon(points, outline=color, width=2)
                 except:
                     pass
-        
+
         else:
             # Default mystical pattern
             for ring in range(4):
                 ring_radius = (size // 12) + (ring * size // 20)
                 segments = 8 + (ring * 2)
-                
+
                 for i in range(segments):
                     angle = (360 / segments) * i + (ring * 15)
                     x = center[0] + ring_radius * math.cos(math.radians(angle))
                     y = center[1] + ring_radius * math.sin(math.radians(angle))
-                    
+
                     color = style['colors'][(ring + i) % len(style['colors'])]
                     symbol_size = max(2, size // 80)
-                    
+
                     try:
                         draw.ellipse([x-symbol_size, y-symbol_size, x+symbol_size, y+symbol_size], 
                                    fill=color)
                     except:
                         pass
-    
+
     def _apply_enhanced_effects(self, img: Image.Image, style: Dict, phrase: str) -> Image.Image:
         """Apply enhanced visual effects"""
         if style.get('glow_intensity', 0) > 0:
@@ -371,21 +370,21 @@ class UltraRevolutionarySigilGenerator:
             for layer in range(3):
                 blur_radius = (layer + 1) * 2
                 glow = img.filter(ImageFilter.GaussianBlur(radius=blur_radius))
-                
+
                 enhancer = ImageEnhance.Brightness(glow)
                 intensity = style['glow_intensity'] * (0.7 ** layer)
                 glow = enhancer.enhance(intensity)
-                
+
                 result = Image.alpha_composite(result, glow)
-            
+
             return result
-        
+
         return img
-    
+
     def _apply_ultra_effects(self, img: Image.Image, style: Dict, phrase: str) -> Image.Image:
         """Apply ultra-revolutionary visual effects for advanced generation"""
         base_img = img.copy()
-        
+
         # Enhanced glow effect
         if style.get('glow_intensity', 0) > 0:
             glow_radii = [1, 2, 4, 6, 10]
@@ -395,29 +394,29 @@ class UltraRevolutionarySigilGenerator:
                 intensity = style['glow_intensity'] * (0.5 ** (radius / 5))
                 glow = enhancer.enhance(intensity)
                 base_img = Image.alpha_composite(base_img, glow)
-        
+
         # Enhanced contrast
         enhancer = ImageEnhance.Contrast(base_img)
         base_img = enhancer.enhance(1.2)
-        
+
         # Enhanced saturation
         enhancer = ImageEnhance.Color(base_img)
         base_img = enhancer.enhance(1.3)
-        
+
         return base_img
-    
+
     def _image_to_base64(self, img: Image.Image) -> str:
         """Convert PIL Image to base64 string with optimization"""
         buffer = BytesIO()
-        
+
         # Resize for web delivery while maintaining quality
         target_size = 1024
         if img.size[0] > target_size:
             img = img.resize((target_size, target_size), Image.Resampling.LANCZOS)
-        
+
         img.save(buffer, format='PNG', optimize=True, compress_level=6)
         buffer.seek(0)
-        
+
         return base64.b64encode(buffer.getvalue()).decode('utf-8')
 
 # ===== FLASK ROUTES =====
@@ -439,7 +438,7 @@ def health():
 def generate_sigil():
     """Ultra-revolutionary sigil generation endpoint"""
     start_time = datetime.now()
-    
+
     try:
         data = request.get_json()
         if not data:
@@ -447,38 +446,38 @@ def generate_sigil():
                 'success': False,
                 'error': 'Invalid JSON data'
             }), 400
-        
+
         phrase = data.get('phrase', '').strip()
         vibe = data.get('vibe', 'mystical').lower()
         advanced = data.get('advanced', False)
-        
+
         # Validation
         if not phrase:
             return jsonify({
                 'success': False,
                 'error': 'Phrase is required'
             }), 400
-        
+
         if len(phrase) < 2:
             return jsonify({
                 'success': False,
                 'error': 'Phrase must be at least 2 characters long'
             }), 400
-        
+
         if len(phrase) > 500:
             return jsonify({
                 'success': False,
                 'error': 'Phrase is too long (max 500 characters)'
             }), 400
-        
+
         # Generate ultra-revolutionary sigil
         logger.info(f"🎨 Generating ultra-revolutionary sigil: '{phrase}' ({vibe}) [Advanced: {advanced}]")
-        
+
         sigil_image = generator.generate_sigil(phrase, vibe, advanced)
-        
+
         duration = (datetime.now() - start_time).total_seconds()
         logger.info(f"✅ Ultra-revolutionary sigil generated in {duration:.2f}s")
-        
+
         return jsonify({
             'success': True,
             'image': sigil_image,
@@ -491,11 +490,11 @@ def generate_sigil():
                 'version': '4.0.0'
             }
         })
-        
+
     except Exception as e:
         duration = (datetime.now() - start_time).total_seconds()
         logger.error(f"❌ Ultra-revolutionary generation failed after {duration:.2f}s: {e}")
-        
+
         return jsonify({
             'success': False,
             'error': str(e),
@@ -507,7 +506,7 @@ def generate_sigil():
 def get_available_vibes():
     """Get list of available energy vibes"""
     vibes = list(generator.vibe_styles.keys())
-    
+
     return jsonify({
         'success': True,
         'vibes': vibes,
@@ -547,14 +546,14 @@ if __name__ == '__main__':
     print(f"📦 PIL/Pillow version: {Image.__version__}")
     print(f"🔢 NumPy available: {'✅' if 'numpy' in sys.modules or 'np' in globals() else '❌'}")
     print("🎨 Ultra-revolutionary text-responsive sigil generation ready!")
-    
+
     # Get port from environment or default to 5001 (Flask backend)
     port = int(os.getenv('FLASK_PORT', 5001))
     debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
-    
+
     print(f"🚀 Starting server on port {port}")
     print(f"🔧 Debug mode: {'ON' if debug_mode else 'OFF'}")
-    
+
     try:
         app.run(
             host='0.0.0.0',
