@@ -1,12 +1,12 @@
 
 import express from 'express';
 import cors from 'cors';
-import helmet from 'helmet';
-import compression from 'compression';
 import rateLimit from 'express-rate-limit';
-import fetch from 'node-fetch';
+import compression from 'compression';
+import helmet from 'helmet';
+import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -17,43 +17,22 @@ const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const FLASK_URL = process.env.FLASK_URL || 'http://127.0.0.1:5001';
-const PRO_KEY = process.env.PRO_KEY || 'changeme_super_secret';
+const FLASK_URL = process.env.FLASK_URL || 'http://localhost:5001';
 
-console.log('🚀 Starting Enhanced Sigilcraft Server...');
-console.log(`- Environment: ${process.env.NODE_ENV || 'development'}`);
-console.log(`- Port: ${PORT}`);
-console.log(`- Flask Backend: ${FLASK_URL}`);
-console.log(`- Pro Key: ${PRO_KEY ? 'CONFIGURED' : 'NOT SET'}`);
-
-// ===== TRUST PROXY CONFIGURATION =====
-app.set('trust proxy', true);
-
-// ===== SECURITY MIDDLEWARE =====
+// ===== SECURITY & PERFORMANCE =====
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "blob:"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
-      connectSrc: ["'self'"]
-    }
-  },
+  contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false
 }));
 
-// ===== RATE LIMITING =====
+// Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per windowMs
   message: {
     error: 'Too many requests from this IP, please try again later.',
     retryAfter: 15 * 60 * 1000
-  },
-  standardHeaders: true,
-  legacyHeaders: false
+  }
 });
 
 const generateLimiter = rateLimit({
@@ -122,20 +101,19 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Enhanced sigil generation endpoint
+// Sigil generation endpoint (proxy to Flask backend)
 app.post('/api/generate', generateLimiter, async (req, res) => {
   const startTime = Date.now();
   const requestId = Math.random().toString(36).substring(7);
-
+  
   try {
-    const { phrase, vibe, advanced = false } = req.body;
+    const { phrase, vibe, advanced } = req.body;
 
-    // Enhanced validation
-    if (!phrase || typeof phrase !== 'string') {
+    // Validation
+    if (!phrase || typeof phrase !== 'string' || phrase.trim().length === 0) {
       return res.status(400).json({
         success: false,
-        error: 'Valid phrase is required',
-        code: 'INVALID_PHRASE'
+        error: 'Phrase is required and must be a non-empty string'
       });
     }
 
@@ -143,27 +121,25 @@ app.post('/api/generate', generateLimiter, async (req, res) => {
     if (cleanPhrase.length < 2) {
       return res.status(400).json({
         success: false,
-        error: 'Phrase must be at least 2 characters long',
-        code: 'PHRASE_TOO_SHORT'
+        error: 'Phrase must be at least 2 characters long'
       });
     }
 
     if (cleanPhrase.length > 500) {
       return res.status(400).json({
         success: false,
-        error: 'Phrase is too long (max 500 characters)',
-        code: 'PHRASE_TOO_LONG'
+        error: 'Phrase is too long (max 500 characters)'
       });
     }
 
     const validVibes = ['mystical', 'cosmic', 'elemental', 'crystal', 'shadow', 'light', 'storm', 'void'];
     const selectedVibe = validVibes.includes(vibe) ? vibe : 'mystical';
 
-    console.log(`🎨 [${requestId}] Generating sigil: "${cleanPhrase}" (${selectedVibe})`);
+    console.log(`🎨 [${requestId}] Generating sigil: "${cleanPhrase}" (${selectedVibe}) [Advanced: ${advanced}]`);
 
     // Create abort controller for timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
     const response = await fetch(`${FLASK_URL}/generate`, {
       method: 'POST',
@@ -219,112 +195,66 @@ app.post('/api/generate', generateLimiter, async (req, res) => {
       });
     }
 
-    if (error.code === 'ECONNREFUSED') {
+    if (error.message.includes('ECONNREFUSED') || error.message.includes('fetch failed')) {
       return res.status(503).json({
         success: false,
-        error: 'Backend service unavailable',
+        error: 'Backend service unavailable - please try again',
         code: 'SERVICE_UNAVAILABLE'
       });
     }
 
     res.status(500).json({
       success: false,
-      error: 'Internal server error during generation',
-      code: 'GENERATION_ERROR',
+      error: 'Internal server error',
+      code: 'INTERNAL_ERROR',
       requestId
     });
   }
 });
 
-// Pro status endpoint
-app.get('/api/pro-status', (req, res) => {
-  const authHeader = req.headers.authorization;
-  const proKey = req.headers['x-pro-key'];
-  
-  let isPro = false;
-  
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.substring(7);
-    isPro = token === PRO_KEY;
-  } else if (proKey) {
-    isPro = proKey === PRO_KEY;
-  }
-
-  res.json({
-    isPro,
-    features: isPro ? {
-      unlimitedGeneration: true,
-      advancedEnergies: true,
-      highResolution: true,
-      batchGeneration: true,
-      noWatermark: true
-    } : {
-      unlimitedGeneration: false,
-      advancedEnergies: false,
-      highResolution: false,
-      batchGeneration: false,
-      noWatermark: false
+// Available vibes endpoint
+app.get('/api/vibes', async (req, res) => {
+  try {
+    const response = await fetch(`${FLASK_URL}/vibes`);
+    
+    if (!response.ok) {
+      throw new Error(`Backend error: ${response.status}`);
     }
-  });
-});
-
-// Pro key validation endpoint
-app.post('/api/validate-pro-key', (req, res) => {
-  const { key } = req.body;
-  
-  if (!key || typeof key !== 'string') {
-    return res.status(400).json({
-      success: false,
-      error: 'Pro key is required'
+    
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching vibes:', error);
+    
+    // Fallback response if backend is unavailable
+    res.json({
+      success: true,
+      vibes: ['mystical', 'cosmic', 'elemental', 'crystal', 'shadow', 'light', 'storm', 'void'],
+      descriptions: {
+        'mystical': 'Ancient wisdom & sacred geometry with curved flowing energy',
+        'cosmic': 'Universal stellar connection with radiant burst patterns',
+        'elemental': 'Natural organic forces with flowing growth patterns',
+        'crystal': 'Prismatic clarity with angular geometric precision',
+        'shadow': 'Hidden mysterious power with jagged consuming energy',
+        'light': 'Pure divine radiance with emanating luminous patterns',
+        'storm': 'Raw electric chaos with explosive lightning energy',
+        'void': 'Infinite recursive potential with impossible geometry'
+      }
     });
   }
-
-  const isValid = key.trim() === PRO_KEY;
-  
-  res.json({
-    success: true,
-    valid: isValid,
-    message: isValid ? 'Pro key validated successfully' : 'Invalid pro key'
-  });
 });
 
-// Analytics endpoint (placeholder for future implementation)
-app.post('/api/analytics', (req, res) => {
-  const { event, data } = req.body;
-  
-  // In production, you would log this to your analytics service
-  console.log(`📊 Analytics Event: ${event}`, data);
-  
-  res.json({ success: true });
+// Catch all route - serve index.html for client-side routing
+app.get('*', (req, res) => {
+  res.sendFile(join(__dirname, 'public', 'index.html'));
 });
 
-// ===== ERROR HANDLING =====
-
-// 404 handler
-app.use((req, res) => {
-  if (req.path.startsWith('/api/')) {
-    res.status(404).json({
-      success: false,
-      error: 'API endpoint not found',
-      code: 'NOT_FOUND',
-      path: req.path
-    });
-  } else {
-    // Serve index.html for client-side routing
-    res.sendFile(join(__dirname, 'public', 'index.html'));
-  }
-});
-
-// Global error handler
-app.use((error, req, res, next) => {
-  console.error('💥 Unhandled error:', error);
-  
+// ===== ERROR HANDLERS =====
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
   res.status(500).json({
     success: false,
-    error: process.env.NODE_ENV === 'production' 
-      ? 'Internal server error' 
-      : error.message,
-    code: 'INTERNAL_ERROR',
+    error: 'Internal server error',
     timestamp: new Date().toISOString()
   });
 });
@@ -332,7 +262,6 @@ app.use((error, req, res, next) => {
 // ===== GRACEFUL SHUTDOWN =====
 const gracefulShutdown = (signal) => {
   console.log(`\n🛑 Received ${signal}. Graceful shutdown...`);
-  
   process.exit(0);
 };
 
@@ -356,5 +285,3 @@ server.on('error', (error) => {
   }
   process.exit(1);
 });
-
-export default app;
