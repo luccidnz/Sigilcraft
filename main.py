@@ -18,6 +18,10 @@ import logging
 import string
 import re
 import json
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Flask and web dependencies
 from flask import Flask, request, jsonify
@@ -1500,7 +1504,7 @@ if __name__ == '__main__':
     print("✨ Features: Extreme text analysis, character symphony, vibe resonance")
     
     # Get port from environment or default to 5001
-    port = int(os.getenv('PORT', 5001))
+    port = int(os.getenv('FLASK_PORT', 5001))
     debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
     
     print(f"🚀 Starting server on port {port}")
