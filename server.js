@@ -17,7 +17,7 @@ const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const FLASK_URL = process.env.FLASK_URL || 'http://0.0.0.0:5001';
+const FLASK_URL = process.env.FLASK_URL || 'http://127.0.0.1:5001';
 
 // ===== SECURITY & PERFORMANCE =====
 app.use(helmet({
