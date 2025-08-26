@@ -18,51 +18,51 @@ def run_command(cmd, timeout=30):
     except subprocess.TimeoutExpired:
         return False, "", "Command timed out"
 
-def test_flask_backend():
-    """Test Flask backend"""
-    print("🧪 Testing Flask backend...")
+def test_unified_server():
+    """Test unified server"""
+    print("🧪 Testing unified server...")
+    
+    # Determine port from environment
+    port = os.environ.get('PORT', '5000')
+    base_url = f"http://0.0.0.0:{port}"
     
     # Test root endpoint
     try:
-        response = requests.get("http://0.0.0.0:5001/", timeout=5)
+        response = requests.get(f"{base_url}/", timeout=5)
         if response.status_code == 200 and response.text == "OK":
-            print("✅ Flask root endpoint works")
+            print("✅ Root endpoint works")
         else:
-            print(f"❌ Flask root endpoint failed: {response.status_code}")
+            print(f"❌ Root endpoint failed: {response.status_code}")
             return False
     except Exception as e:
-        print(f"❌ Flask backend not responding: {e}")
+        print(f"❌ Server not responding: {e}")
         return False
     
     # Test health endpoint
     try:
-        response = requests.get("http://0.0.0.0:5001/health", timeout=5)
+        response = requests.get(f"{base_url}/health", timeout=5)
         if response.status_code == 200:
-            print("✅ Flask health endpoint works")
+            print("✅ Health endpoint works")
         else:
-            print(f"❌ Flask health endpoint failed: {response.status_code}")
+            print(f"❌ Health endpoint failed: {response.status_code}")
             return False
     except Exception as e:
-        print(f"❌ Flask health endpoint error: {e}")
+        print(f"❌ Health endpoint error: {e}")
+        return False
+    
+    # Test API endpoints
+    try:
+        response = requests.get(f"{base_url}/api/vibes", timeout=5)
+        if response.status_code == 200:
+            print("✅ Vibes API endpoint works")
+        else:
+            print(f"❌ Vibes API endpoint failed: {response.status_code}")
+            return False
+    except Exception as e:
+        print(f"❌ Vibes API endpoint error: {e}")
         return False
     
     return True
-
-def test_express_frontend():
-    """Test Express frontend"""
-    print("🧪 Testing Express frontend...")
-    
-    try:
-        response = requests.get("http://0.0.0.0:5000/", timeout=5)
-        if response.status_code == 200:
-            print("✅ Express frontend works")
-            return True
-        else:
-            print(f"❌ Express frontend failed: {response.status_code}")
-            return False
-    except Exception as e:
-        print(f"❌ Express frontend not responding: {e}")
-        return False
 
 def main():
     """Main test runner"""
@@ -82,15 +82,14 @@ def main():
     print("⏱️  Waiting for servers to start...")
     time.sleep(3)
     
-    # Test backends
-    flask_ok = test_flask_backend()
-    express_ok = test_express_frontend()
+    # Test unified server
+    server_ok = test_unified_server()
     
-    if flask_ok and express_ok:
+    if server_ok:
         print("🎉 All tests passed! Sigilcraft is ready!")
         return True
     else:
-        print("❌ Some tests failed. Check the logs above.")
+        print("❌ Server tests failed. Check the logs above.")
         return False
 
 if __name__ == "__main__":

@@ -12,11 +12,11 @@ language = "python3"
 requiredFiles = [".replit", "replit.nix"]
 
 [deployment]
-run = ["sh", "-c", "python main.py & sleep 3 && node server.js"]
+run = ["sh", "-c", "python unified_server.py"]
 deploymentTarget = "cloudrun"
 
 [workflows]
-runButton = "Sigilcraft Fixed"
+runButton = "Sigilcraft Production"
 
 [[workflows.workflow]]
 name = "Run"
@@ -235,6 +235,40 @@ args = "echo \"🚀 Starting Express Frontend on port 5000...\""
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "node server.js"
+
+[[workflows.workflow]]
+name = "Sigilcraft Production"
+author = 45492115
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python unified_server.py"
+
+[[workflows.workflow]]
+name = "Test & Validate"
+author = 45492115
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🧪 Running comprehensive test suite...\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python -m pytest tests/test_comprehensive.py -v"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🔍 Running smoke tests...\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python run_tests.py"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"✅ All tests completed!\""
 
 [[ports]]
 localPort = 3000

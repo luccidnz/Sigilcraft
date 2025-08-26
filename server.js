@@ -16,8 +16,8 @@ const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-// Flask backend URL configuration
-const FLASK_URL = `http://0.0.0.0:${process.env.PORT}`;
+// Flask backend URL configuration - Flask runs on same port in single-process mode
+const FLASK_URL = `http://0.0.0.0:${PORT}`;
 
 // ===== SECURITY & PERFORMANCE =====
 app.use(helmet({

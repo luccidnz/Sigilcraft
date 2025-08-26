@@ -574,8 +574,8 @@ if __name__ == '__main__':
     print(f"🔢 NumPy available: {'✅' if NUMPY_AVAILABLE else '❌'}")
     print("🎨 Ultra-revolutionary text-responsive sigil generation ready!")
 
-    # Get port from environment or default to 5001 (Flask backend)
-    port = int(os.getenv('FLASK_PORT', '5001'))
+    # Use Replit's PORT environment variable
+    port = int(os.environ.get('PORT', 5000))
     debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
 
     print(f"🚀 Starting server on port {port}")
