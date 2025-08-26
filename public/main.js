@@ -13,7 +13,7 @@ if (typeof window.SigilcraftApp !== 'undefined') {
 }
 
 // Main Sigilcraft Application Class
-class SigilcraftApp {
+window.SigilcraftApp = class SigilcraftApp {
     constructor() {
         this.isGenerating = false;
         this.currentCooldown = 0;
@@ -344,10 +344,12 @@ class SigilcraftApp {
 
 // Initialize app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    window.SigilcraftApp = new SigilcraftApp();
+    if (!window.sigilcraftAppInstance) {
+        window.sigilcraftAppInstance = new window.SigilcraftApp();
+    }
 });
 
 // Expose app globally for debugging
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = SigilcraftApp;
+    module.exports = window.SigilcraftApp;
 }
