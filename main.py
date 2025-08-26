@@ -430,6 +430,7 @@ generator = UltraRevolutionarySigilGenerator()
 @app.route('/', methods=['GET'])
 def root_health():
     """Root health check endpoint"""
+    logger.info("✅ Root health check accessed")
     return "OK", 200
 
 @app.route('/health', methods=['GET'])
@@ -531,12 +532,30 @@ def get_available_vibes():
         }
     })
 
+@app.route('/debug/routes', methods=['GET'])
+def debug_routes():
+    """Debug endpoint to list all registered routes"""
+    routes = []
+    for rule in app.url_map.iter_rules():
+        routes.append({
+            'path': rule.rule,
+            'methods': list(rule.methods),
+            'endpoint': rule.endpoint
+        })
+    return jsonify({
+        'success': True,
+        'routes': routes,
+        'count': len(routes)
+    })
+
 @app.errorhandler(404)
 def not_found(error):
+    logger.warning(f"404 - Path not found: {request.path}")
     return jsonify({
         'success': False,
         'error': 'Endpoint not found',
-        'code': 404
+        'code': 404,
+        'path': request.path
     }), 404
 
 @app.errorhandler(500)
