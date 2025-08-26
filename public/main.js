@@ -277,5 +277,4 @@ window.addEventListener('error', (event) => {
   }
 });
 
-// Make app globally accessible
-window.SigilcraftApp = SigilcraftApp;
+// App is already globally accessible via window.app
