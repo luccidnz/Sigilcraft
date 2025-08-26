@@ -28,8 +28,8 @@ def test_health_endpoint(client):
 
 def test_api_generate_validation(client):
     """Test sigil generation API with validation"""
-    # Test missing data
-    r = client.post("/api/generate")
+    # Test missing data (no JSON body)
+    r = client.post("/api/generate", headers={'Content-Type': 'application/json'})
     assert r.status_code == 400
     
     # Test invalid phrase
