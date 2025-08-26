@@ -1,116 +1,97 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#8b2bf6">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Sigilcraft">
-    <meta name="format-detection" content="telephone=no">
-    <title>Sigilcraft - Revolutionary Text-Responsive Sigil Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sigilcraft Ultra - Revolutionary AI Sigil Generator</title>
+    <meta name="description" content="Create unique, mystical sigils with ultra-revolutionary AI technology. Transform your intentions into powerful visual symbols.">
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Philosopher:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="generated-icon.png">
-    <link rel="apple-touch-icon" href="generated-icon.png">
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Manifesting your sigil...</p>
+        </div>
+    </div>
+
+    <!-- Main Container -->
     <div class="container">
+        <!-- Header -->
         <header class="header">
-            <h1 class="logo">
-                <i class="fas fa-magic"></i>
-                Sigilcraft
-            </h1>
-            <p class="logo-subtitle">Revolutionary Text-Responsive Generator</p>
-            <div class="pro-badge" style="display: none;">
-                <i class="fas fa-crown"></i> PRO ACTIVATED
-            </div>
+            <h1 class="title">🔮 Sigilcraft Ultra</h1>
+            <p class="subtitle">Revolutionary AI-Powered Sigil Generator</p>
+            <p class="description">Transform your intentions into powerful mystical symbols</p>
         </header>
 
+        <!-- Generation Form -->
         <main class="main-content">
-            <!-- Input Section -->
-            <section class="card">
-                <h2 class="card-title">✨ Manifest Your Intention</h2>
-                <div class="form-group">
-                    <label for="phraseInput" class="form-label">
-                        Enter your intention, desire, or sacred phrase
-                    </label>
-                    <textarea 
-                        id="phraseInput" 
-                        class="text-input" 
-                        placeholder="Type your intention here... (e.g., 'love and prosperity', 'inner peace', 'creative inspiration')"
+            <div class="generation-panel">
+                <div class="input-group">
+                    <label for="phraseInput" class="input-label">Your Intention or Phrase</label>
+                    <textarea
+                        id="phraseInput"
+                        class="phrase-input"
+                        placeholder="Enter your intention, desire, or phrase to transform into a sigil..."
                         maxlength="500"
-                        rows="4"
+                        rows="3"
                     ></textarea>
                     <div class="char-counter-container">
-                        <span id="charCounter" class="char-counter">0/500</span>
+                        <div id="charCounter" class="char-counter">0/500</div>
+                    </div>
+                </div>
+
+                <div class="controls-row">
+                    <div class="input-group">
+                        <label for="vibeSelect" class="input-label">Energy Vibe</label>
+                        <select id="vibeSelect" class="vibe-select">
+                            <option value="mystical">Mystical</option>
+                        </select>
                     </div>
 
-              <div id="textAnalysis" class="text-analysis">
-                <h4>✨ Text Analysis</h4>
-                <div class="analysis-prompt">
-                  Enter text above to see detailed analysis
+                    <div class="input-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="advancedToggle" class="advanced-toggle">
+                            <span class="checkmark"></span>
+                            Ultra-High Quality
+                        </label>
+                    </div>
                 </div>
-              </div>
+
+                <button id="generateBtn" class="generate-btn" disabled>
+                    Generate Sigil
+                </button>
             </div>
 
-            <!-- Energy Selection -->
-            <div class="form-group">
-              <label class="form-label">Choose Your Energy Vibe</label>
-              <div id="energyGrid" class="energy-grid">
-                <!-- Energy options will be populated by JavaScript -->
-              </div>
-            </div>
+            <!-- Result Container -->
+            <div id="resultContainer" class="result-container" style="display: none;">
+                <h2 class="result-title">Your Revolutionary Sigil</h2>
+                
+                <div class="sigil-display">
+                    <img id="sigilImage" class="sigil-image" alt="Generated Sigil" />
+                </div>
 
-            <!-- Advanced Options -->
-            <div class="form-group">
-              <label class="checkbox-label">
-                <input type="checkbox" id="advancedMode" class="checkbox">
-                <span class="checkmark"></span>
-                Ultra-High Resolution Mode (PRO)
-              </label>
+                <div class="result-actions">
+                    <button id="downloadBtn" class="action-btn download-btn" disabled>
+                        📥 Download
+                    </button>
+                    <button id="shareBtn" class="action-btn share-btn" disabled>
+                        📤 Share
+                    </button>
+                </div>
             </div>
-
-            <!-- Generate Button -->
-            <button id="generateBtn" class="btn btn-primary btn-large">
-              <i class="fas fa-magic"></i>
-              <span>Generate Revolutionary Sigil</span>
-            </button>
-          </section>
-
-          <!-- Results Section -->
-          <section id="resultsSection" class="card results-section" style="display: none;">
-            <h2 class="card-title">🎨 Your Revolutionary Sigil</h2>
-            <div id="sigilContainer" class="sigil-container">
-              <!-- Sigil will be displayed here -->
-            </div>
-          </section>
         </main>
-      </div>
 
-      <!-- Loading overlay -->
-      <div id="loadingOverlay" class="loading-overlay" style="display: none;">
-        <div class="loading-content">
-          <div class="loading-spinner"></div>
-          <div class="loading-text">Manifesting your revolutionary sigil...</div>
-        </div>
-      </div>
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2024 Sigilcraft Ultra - Revolutionary Sigil Generation Technology</p>
+        </footer>
+    </div>
 
-      <!-- Font Awesome for icons -->
-      <script src="https://kit.fontawesome.com/a076d05399.js"></script>
-      
-      <!-- Main JavaScript -->
-      <script src="main.js"></script>
-    </body>
-  </html>erlay">
-        <div class="loading-content">
-          <div class="loading-spinner"></div>
-          <p>Manifesting your revolutionary sigil...</p>
-        </div>
-      </div>
-
-      <script src="main.js"></script>
-    </body>
-  </html>
+    <!-- Load JavaScript -->
+    <script src="main.js"></script>
+</body>
+</html>
