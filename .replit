@@ -170,6 +170,43 @@ args = "sleep 1"
 task = "shell.exec"
 args = "node server.js"
 
+[[workflows.workflow]]
+name = "Ultra Deploy Ready"
+author = 45492115
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🧹 Cleaning up processes...\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pkill -f \"python main.py\" 2>/dev/null || true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pkill -f \"node server.js\" 2>/dev/null || true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "sleep 2"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🔬 Running smoke tests...\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python -m pytest tests/ -v"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"✅ Tests passed! Starting optimized deployment...\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python main.py"
+
 [[ports]]
 localPort = 3000
 externalPort = 3000

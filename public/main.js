@@ -1,4 +1,3 @@
-
 /**
  * SIGILCRAFT: ULTRA-REVOLUTIONARY SIGIL GENERATOR
  * Enhanced Frontend Application with Revolutionary Features
@@ -63,7 +62,7 @@ class SigilcraftApp {
     try {
       const response = await fetch('/api/vibes');
       const data = await response.json();
-      
+
       if (data.success) {
         this.populateVibeSelector(data.vibes, data.descriptions);
       }
@@ -90,7 +89,7 @@ class SigilcraftApp {
     if (!vibeSelect) return;
 
     vibeSelect.innerHTML = '';
-    
+
     vibes.forEach(vibe => {
       const option = document.createElement('option');
       option.value = vibe;
@@ -123,7 +122,7 @@ class SigilcraftApp {
     this.updateUI();
 
     try {
-      const response = await fetch('/api/generate', {
+      const response = await fetch('/api/sigil', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -180,7 +179,7 @@ class SigilcraftApp {
 
     const downloadBtn = document.getElementById('downloadBtn');
     const shareBtn = document.getElementById('shareBtn');
-    
+
     if (downloadBtn) downloadBtn.disabled = !this.currentSigil;
     if (shareBtn) shareBtn.disabled = !this.currentSigil;
   }
@@ -195,7 +194,7 @@ class SigilcraftApp {
       const link = document.createElement('a');
       link.href = `data:image/png;base64,${this.currentSigil.image}`;
       link.download = `sigil-${this.currentSigil.phrase.replace(/[^a-zA-Z0-9]/g, '_')}-${Date.now()}.png`;
-      
+
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

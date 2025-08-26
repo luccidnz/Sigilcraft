@@ -16,7 +16,8 @@ const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const FLASK_URL = process.env.FLASK_URL || 'http://127.0.0.1:5001';
+// Backend runs on same server, no need for separate URL
+const BACKEND_PORT = process.env.PORT || 5000;
 
 // ===== SECURITY & PERFORMANCE =====
 app.use(helmet({
