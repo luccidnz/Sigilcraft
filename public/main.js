@@ -1,7 +1,4 @@
-` tags.
 
-<replit_final_file>
-// Sigilcraft Enhanced Frontend
 class SigilcraftApp {
   constructor() {
     this.currentSigil = null;
@@ -21,6 +18,8 @@ class SigilcraftApp {
   setupEventListeners() {
     const phraseInput = document.getElementById('phraseInput');
     const generateBtn = document.getElementById('generateBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const shareBtn = document.getElementById('shareBtn');
 
     if (phraseInput) {
       phraseInput.addEventListener('input', () => {
@@ -32,6 +31,25 @@ class SigilcraftApp {
     if (generateBtn) {
       generateBtn.addEventListener('click', () => this.generateSigil());
     }
+
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', () => this.downloadSigil());
+    }
+
+    if (shareBtn) {
+      shareBtn.addEventListener('click', () => this.shareSigil());
+    }
+
+    // Energy selection
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('.energy-card')) {
+        const card = e.target.closest('.energy-card');
+        const vibe = card.dataset.vibe;
+        if (vibe) {
+          this.selectEnergyVibe(vibe);
+        }
+      }
+    });
   }
 
   async loadEnergyVibes() {
@@ -61,73 +79,68 @@ class SigilcraftApp {
       'shadow': '🌑',
       'light': '☀️',
       'storm': '⚡',
-      'void': '🕳️'
+      'void': '🌀'
     };
 
     grid.innerHTML = vibes.map(vibe => `
-      <div class="energy-option ${vibe === this.selectedVibe ? 'selected' : ''}" 
-           data-vibe="${vibe}">
+      <div class="energy-card ${vibe === this.selectedVibe ? 'selected' : ''}" data-vibe="${vibe}">
         <div class="energy-icon">${energyIcons[vibe] || '✨'}</div>
-        <div class="energy-content">
-          <div class="energy-name">${vibe.charAt(0).toUpperCase() + vibe.slice(1)}</div>
-          <div class="energy-desc">${this.energies[vibe] || 'Mystical energy'}</div>
-        </div>
+        <div class="energy-name">${vibe.charAt(0).toUpperCase() + vibe.slice(1)}</div>
+        <div class="energy-description">${this.energies[vibe] || 'Mystical energy'}</div>
       </div>
     `).join('');
-
-    // Add click listeners
-    grid.querySelectorAll('.energy-option').forEach(option => {
-      option.addEventListener('click', () => {
-        this.selectEnergyVibe(option.dataset.vibe);
-      });
-    });
   }
 
   renderFallbackEnergyGrid() {
-    const fallbackVibes = ['mystical', 'cosmic', 'elemental', 'crystal'];
+    const fallbackVibes = ['mystical', 'cosmic', 'elemental', 'crystal', 'shadow', 'light', 'storm', 'void'];
+    const fallbackDescriptions = {
+      'mystical': 'Ancient wisdom & sacred geometry',
+      'cosmic': 'Universal stellar connection',
+      'elemental': 'Natural organic forces',
+      'crystal': 'Prismatic geometric precision',
+      'shadow': 'Hidden mysterious power',
+      'light': 'Pure divine radiance',
+      'storm': 'Raw electric chaos',
+      'void': 'Infinite recursive potential'
+    };
+    this.energies = fallbackDescriptions;
     this.renderEnergyGrid(fallbackVibes);
   }
 
   selectEnergyVibe(vibe) {
     this.selectedVibe = vibe;
-
+    
     // Update UI
-    document.querySelectorAll('.energy-option').forEach(option => {
-      option.classList.toggle('selected', option.dataset.vibe === vibe);
+    document.querySelectorAll('.energy-card').forEach(card => {
+      card.classList.remove('selected');
     });
+    
+    const selectedCard = document.querySelector(`[data-vibe="${vibe}"]`);
+    if (selectedCard) {
+      selectedCard.classList.add('selected');
+    }
+
+    console.log(`🎯 Selected energy vibe: ${vibe}`);
   }
 
   setupCharCounter() {
-    const phraseInput = document.getElementById('phraseInput');
-    const counterContainer = document.querySelector('.char-counter-container');
-
-    if (!phraseInput) return;
-
-    // Create counter if it doesn't exist
-    if (!counterContainer) {
-      const container = document.createElement('div');
-      container.className = 'char-counter-container';
-      container.innerHTML = '<span id="charCounter" class="char-counter">0/500</span>';
-      phraseInput.parentNode.appendChild(container);
-    }
-
     this.updateCharCounter();
   }
 
   updateCharCounter() {
-    const input = document.getElementById('phraseInput');
-    const counter = document.getElementById('charCounter');
-
-    if (input && counter) {
-      const length = input.value.length;
-      counter.textContent = `${length}/500`;
-
-      if (length > 450) {
-        counter.style.color = 'var(--error)';
-      } else if (length > 350) {
-        counter.style.color = 'var(--warning)';
+    const phraseInput = document.getElementById('phraseInput');
+    const charCounter = document.getElementById('charCounter');
+    
+    if (phraseInput && charCounter) {
+      const currentLength = phraseInput.value.length;
+      charCounter.textContent = `${currentLength}/500`;
+      
+      if (currentLength > 450) {
+        charCounter.style.color = '#ff6b6b';
+      } else if (currentLength > 350) {
+        charCounter.style.color = '#ffd93d';
       } else {
-        counter.style.color = 'var(--text-tertiary)';
+        charCounter.style.color = '#6bcf7f';
       }
     }
   }
@@ -137,54 +150,42 @@ class SigilcraftApp {
   }
 
   analyzeText() {
-    const input = document.getElementById('phraseInput');
+    const phraseInput = document.getElementById('phraseInput');
     const analysisDiv = document.getElementById('textAnalysis');
+    
+    if (!phraseInput || !analysisDiv) return;
 
-    if (!input || !analysisDiv) return;
-
-    const text = input.value.trim();
-
-    if (text.length === 0) {
-      analysisDiv.innerHTML = `
-        <h4>✨ Text Analysis</h4>
-        <div class="analysis-prompt">Enter text above to see detailed analysis</div>
-      `;
+    const text = phraseInput.value.trim();
+    if (!text) {
+      analysisDiv.style.display = 'none';
       return;
     }
 
-    // Perform text analysis
+    analysisDiv.style.display = 'block';
+    
     const words = text.split(/\s+/).filter(word => word.length > 0);
-    const characters = text.length;
+    const chars = text.length;
     const vowels = (text.match(/[aeiouAEIOU]/g) || []).length;
     const consonants = (text.match(/[bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ]/g) || []).length;
-
-    let complexity = 'Simple';
-    if (characters > 50) complexity = 'Moderate';
-    if (characters > 100) complexity = 'Complex';
-    if (characters > 200) complexity = 'Profound';
 
     analysisDiv.innerHTML = `
       <h4>✨ Text Analysis</h4>
       <div class="analysis-grid">
         <div class="analysis-item">
-          <span class="label">Words:</span>
-          <span class="value">${words.length}</span>
+          <span class="analysis-label">Words:</span>
+          <span class="analysis-value">${words.length}</span>
         </div>
         <div class="analysis-item">
-          <span class="label">Characters:</span>
-          <span class="value">${characters}</span>
+          <span class="analysis-label">Characters:</span>
+          <span class="analysis-value">${chars}</span>
         </div>
         <div class="analysis-item">
-          <span class="label">Vowels:</span>
-          <span class="value">${vowels}</span>
+          <span class="analysis-label">Vowels:</span>
+          <span class="analysis-value">${vowels}</span>
         </div>
         <div class="analysis-item">
-          <span class="label">Consonants:</span>
-          <span class="value">${consonants}</span>
-        </div>
-        <div class="analysis-item">
-          <span class="label">Complexity:</span>
-          <span class="value complexity-${complexity}">${complexity}</span>
+          <span class="analysis-label">Consonants:</span>
+          <span class="analysis-value">${consonants}</span>
         </div>
       </div>
     `;
@@ -193,20 +194,36 @@ class SigilcraftApp {
   async generateSigil() {
     const phraseInput = document.getElementById('phraseInput');
     const generateBtn = document.getElementById('generateBtn');
+    const sigilResult = document.getElementById('sigilResult');
+    const loadingDiv = document.getElementById('loading');
+    
+    if (!phraseInput || !generateBtn) return;
 
-    if (!phraseInput || !phraseInput.value.trim()) {
-      this.showToast('Please enter a phrase to generate a sigil', 'warning');
+    const phrase = phraseInput.value.trim();
+    if (!phrase) {
+      this.showToast('Please enter a phrase or intention', 'warning');
       return;
     }
 
-    const phrase = phraseInput.value.trim();
-    const advanced = document.getElementById('advancedMode')?.checked || false;
+    if (phrase.length < 2) {
+      this.showToast('Phrase must be at least 2 characters long', 'warning');
+      return;
+    }
+
+    // Update UI for loading state
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Manifesting...';
+    
+    if (loadingDiv) {
+      loadingDiv.style.display = 'block';
+    }
+    
+    if (sigilResult) {
+      sigilResult.style.display = 'none';
+    }
 
     try {
-      generateBtn.disabled = true;
-      generateBtn.textContent = 'Manifesting...';
-
-      this.showLoadingOverlay();
+      console.log(`🎨 Generating sigil for: "${phrase}" with vibe: ${this.selectedVibe}`);
 
       const response = await fetch('/api/generate', {
         method: 'POST',
@@ -216,75 +233,67 @@ class SigilcraftApp {
         body: JSON.stringify({
           phrase: phrase,
           vibe: this.selectedVibe,
-          advanced: advanced
+          advanced: false
         })
       });
 
       const data = await response.json();
 
       if (data.success) {
+        this.currentSigil = data;
         this.displaySigil(data);
-        this.showToast('Revolutionary sigil manifested!', 'success');
+        this.showToast('Revolutionary sigil manifested successfully!', 'success');
       } else {
         throw new Error(data.error || 'Generation failed');
       }
 
     } catch (error) {
       console.error('Generation error:', error);
-      this.showToast(error.message || 'Failed to generate sigil', 'error');
+      this.showToast(`Generation failed: ${error.message}`, 'error');
     } finally {
-      this.hideLoadingOverlay();
+      // Reset UI
       generateBtn.disabled = false;
-      generateBtn.textContent = 'Generate Sigil';
+      generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Sigil';
+      
+      if (loadingDiv) {
+        loadingDiv.style.display = 'none';
+      }
     }
   }
 
   displaySigil(data) {
-    const displayDiv = document.getElementById('sigilDisplay');
-    if (!displayDiv) return;
+    const sigilResult = document.getElementById('sigilResult');
+    const sigilImage = document.getElementById('sigilImage');
+    const sigilInfo = document.getElementById('sigilInfo');
+    
+    if (!sigilResult || !sigilImage) return;
 
-    this.currentSigil = data;
+    // Display the sigil image
+    sigilImage.src = `data:image/png;base64,${data.image}`;
+    sigilImage.alt = `Sigil for: ${data.phrase}`;
 
-    displayDiv.innerHTML = `
-      <div class="sigil-image-container">
-        <img src="data:image/png;base64,${data.image}" alt="Generated Sigil" class="sigil-image">
-      </div>
-      <div class="sigil-info">
-        <h3>"${data.phrase}"</h3>
-        <p class="sigil-vibe">${data.vibe.charAt(0).toUpperCase() + data.vibe.slice(1)} Energy</p>
-        <div class="sigilActions">
-          <button class="btn btn-secondary" onclick="app.downloadSigil()">📥 Download</button>
-          <button class="btn btn-secondary" onclick="app.shareSigil()">📤 Share</button>
+    // Update sigil info
+    if (sigilInfo) {
+      sigilInfo.innerHTML = `
+        <div class="sigil-details">
+          <h3>✨ Your Revolutionary Sigil</h3>
+          <p><strong>Phrase:</strong> "${data.phrase}"</p>
+          <p><strong>Energy Vibe:</strong> ${data.vibe.charAt(0).toUpperCase() + data.vibe.slice(1)}</p>
+          <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
         </div>
-      </div>
-    `;
-
-    displayDiv.scrollIntoView({ behavior: 'smooth' });
-  }
-
-  showLoadingOverlay() {
-    const overlay = document.createElement('div');
-    overlay.id = 'loadingOverlay';
-    overlay.className = 'loading-overlay';
-    overlay.innerHTML = `
-      <div class="loading-content">
-        <div class="spinner"></div>
-        <p>Manifesting your revolutionary sigil...</p>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-  }
-
-  hideLoadingOverlay() {
-    const overlay = document.getElementById('loadingOverlay');
-    if (overlay) {
-      document.body.removeChild(overlay);
+      `;
     }
+
+    // Show the result
+    sigilResult.style.display = 'block';
+    
+    // Scroll to result
+    sigilResult.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   downloadSigil() {
-    if (!this.currentSigil) {
-      this.showToast('No sigil to download', 'warning');
+    if (!this.currentSigil || !this.currentSigil.image) {
+      this.showToast('No sigil to download. Please generate a sigil first.', 'warning');
       return;
     }
 
@@ -349,5 +358,5 @@ window.addEventListener('error', (event) => {
   }
 });
 
-// Make app globally accessible for HTML onclick handlers
+// Make app globally accessible for debugging
 window.app = app;
