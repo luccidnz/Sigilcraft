@@ -225,12 +225,12 @@ class UltraRevolutionarySigilGenerator:
             try:
                 # Draw character-based symbol
                 if ord(char) % 3 == 0:
-                    draw.ellipse([x-size_factor, y-size_factor, x+size_factor, y+size_factor], 
+                    draw.ellipse([x-size_factor, y-size_factor, x+size_factor, y+size_factor],
                                outline=color, width=2)
                 elif ord(char) % 3 == 1:
-                    draw.line([(x-size_factor, y-size_factor), (x+size_factor, y+size_factor)], 
+                    draw.line([(x-size_factor, y-size_factor), (x+size_factor, y+size_factor)],
                              fill=color, width=3)
-                    draw.line([(x-size_factor, y+size_factor), (x+size_factor, y-size_factor)], 
+                    draw.line([(x-size_factor, y+size_factor), (x+size_factor, y-size_factor)],
                              fill=color, width=3)
                 else:
                     points = []
@@ -361,7 +361,7 @@ class UltraRevolutionarySigilGenerator:
                     symbol_size = max(2, size // 80)
 
                     try:
-                        draw.ellipse([x-symbol_size, y-symbol_size, x+symbol_size, y+symbol_size], 
+                        draw.ellipse([x-symbol_size, y-symbol_size, x+symbol_size, y+symbol_size],
                                    fill=color)
                     except:
                         pass
