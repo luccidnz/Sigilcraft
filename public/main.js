@@ -96,6 +96,95 @@ class SigilcraftApp {
   }
 
   setupCharCounter() {
+    const phraseInput = document.getElementById('phraseInput');
+    const counterContainer = document.querySelector('.char-counter-container');
+    
+    if (!phraseInput || !counterContainer) return;
+
+    const updateCounter = () => {
+      const current = phraseInput.value.length;
+      const max = 500;
+      
+      counterContainer.innerHTML = `
+        <div class="char-counter">
+          ${current}/${max} characters
+        </div>
+      `;
+      
+      if (current > max * 0.9) {
+        counterContainer.classList.add('warning');
+      } else {
+        counterContainer.classList.remove('warning');
+      }
+    };
+
+    phraseInput.addEventListener('input', updateCounter);
+    updateCounter();
+  }
+
+  downloadSigil(imageUrl, phrase) {
+    try {
+      const link = document.createElement('a');
+      link.download = `sigil-${phrase.replace(/\s+/g, '-').toLowerCase()}.png`;
+      link.href = imageUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      this.showToast('Sigil downloaded successfully!', 'success');
+    } catch (error) {
+      console.error('Download error:', error);
+      this.showToast('Failed to download sigil', 'error');
+    }
+  }
+
+  shareSigil(imageUrl) {
+    if (navigator.share) {
+      navigator.share({
+        title: 'My Revolutionary Sigil',
+        text: 'Check out this mystical sigil I created!',
+        url: window.location.href
+      }).catch(err => console.log('Error sharing:', err));
+    } else {
+      // Fallback: copy URL to clipboard
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        this.showToast('URL copied to clipboard!', 'success');
+      }).catch(() => {
+        this.showToast('Unable to share', 'error');
+      });
+    }
+  }
+
+  showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      setTimeout(() => {
+        if (document.body.contains(toast)) {
+          document.body.removeChild(toast);
+        }
+      }, 300);
+    }, 3000);
+  }
+}
+
+// Initialize the application
+const app = new SigilcraftApp();
+
+// Add global error handler
+window.addEventListener('error', (event) => {
+  console.error('Global error:', event.error);
+  if (window.app) {
+    window.app.showToast('An unexpected error occurred', 'error');
+  }
+});
+
+// Make app globally accessible for HTML onclick handlers
+window.app = app;
     this.updateCharCounter();
   }
 
@@ -219,9 +308,7 @@ class SigilcraftApp {
         this.showToast('Revolutionary sigil manifested!', 'success');
       } else {
         throw new Error(data.error || 'Generation failed');
-      }
-
-    } catch (error) {
+      }or || } catch (error) {
       console.error('Generation error:', error);
       this.showToast('Failed to generate sigil: ' + error.message, 'error');
     } finally {
