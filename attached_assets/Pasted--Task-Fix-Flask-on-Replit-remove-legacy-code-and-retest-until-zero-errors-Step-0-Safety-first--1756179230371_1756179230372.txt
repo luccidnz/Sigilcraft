@@ -1,0 +1,201 @@
+✅ Task: Fix Flask on Replit, remove legacy code, and retest until zero errors
+Step 0 — Safety first (branch + snapshot)
+
+Create a new branch fix/replit-port-and-cleanup.
+
+Make a Replit snapshot/export just in case.
+
+Step 1 — Make Flask bind to Replit’s $PORT
+
+Open the main Flask entry file (usually main.py).
+
+Ensure this is present near the top:
+
+import os
+from flask import Flask
+app = Flask(__name__)
+
+
+Add a root route (prevents 404 on /):
+
+@app.get("/")
+def health():
+    return "OK", 200
+
+
+Replace the runner at the bottom with:
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
+
+Step 2 — Fix run/deploy commands
+
+Open .replit and set:
+
+run = "python3 main.py"
+
+
+If there’s a Deploy config, set the command to:
+
+gunicorn -b 0.0.0.0:$PORT main:app
+
+
+If the Flask instance isn’t app in main.py, adjust to module_name:app_object.
+
+Step 3 — Purge legacy/blocking code & configs
+
+Search and remove/patch hard-coded ports:
+
+Find any 5000, 5001, 127.0.0.1, or localhost used by client fetches or servers.
+
+Replace server ports with $PORT logic (as above).
+
+Replace frontend URLs with relative paths (e.g., "/api/sigil").
+
+Kill unused servers:
+
+If there are extra server files (e.g., server.py, app.py, wsgi.py) that are not the entrypoint, either delete them or clearly comment why they exist. Keep only one active server.
+
+Remove dead frameworks/configs:
+
+Delete stale bundlers or deploy files you no longer use: old Procfile, outdated vercel.json, railway.json, render.yaml, duplicate Dockerfiles, old replit.nix entries that conflict, etc.
+
+Static build leftovers:
+
+If a previous frontend build lives in dist/ or build/ and is not used, remove it or regenerate a fresh build.
+
+Requirements cleanup:
+
+pip freeze > requirements.txt (or minimally ensure it contains the packages you actually import).
+
+Remove unused heavy packages if they’re not imported anywhere.
+
+Step 4 — Codebase wide health pass
+
+Install tools (if not present):
+
+pip install --upgrade pip
+pip install flask gunicorn flask-cors
+pip install ruff pytest
+
+
+Lint quick:
+
+ruff check . --fix
+
+
+Search for common pitfalls:
+
+Grep for:
+
+http://localhost, 127.0.0.1, :5000, :5001
+
+CORS( or missing CORS where a separate frontend is used
+
+If separate frontend hits the API, add:
+
+from flask_cors import CORS
+CORS(app)
+
+
+Verify env usage:
+
+Ensure secrets/keys are read from os.environ[...] and not hard-coded.
+
+Step 5 — Route audit (prevent 404s)
+
+List all Flask routes:
+
+for rule in app.url_map.iter_rules():
+    print(rule, rule.methods)
+
+
+Confirm the routes you expect actually exist (e.g., /api/generate, /api/sigil, etc.)
+
+If the app is meant to serve a frontend, wire it:
+
+app = Flask(__name__, static_folder="static", static_url_path="")
+@app.route("/")
+def index():
+    return app.send_static_file("index.html")
+
+
+Only if you actually have static/index.html.
+
+Step 6 — Run & verify locally in Replit
+
+Stop the repl, then Run.
+
+Open the webview:
+
+/ must return OK (or the index page if you wired static).
+
+Hit each API route manually (e.g., /api/sigil) and confirm 200 or expected error shape.
+
+Step 7 — Automated smoke tests (create quick tests)
+
+Create tests/test_smoke.py:
+
+import os
+import pytest
+from main import app
+
+@pytest.fixture
+def client():
+    app.testing = True
+    with app.test_client() as c:
+        yield c
+
+def test_root_ok(client):
+    r = client.get("/")
+    assert r.status_code in (200, 204)
+
+# Add one test per critical API route:
+def test_api_exists(client):
+    # change path to your real route
+    r = client.get("/api/sigil")
+    assert r.status_code in (200, 400, 422, 401)
+
+
+Run:
+
+pytest -q
+
+Step 8 — Retest loop until clean
+
+If any 404 appears, map it to a missing route and add/rename accordingly.
+
+If any CORS error appears (frontend separate), confirm flask-cors is enabled.
+
+If any 500 appears, open the stacktrace, fix the exact line, re-run tests.
+
+Repeat Run → pytest until zero errors and the UI works.
+
+Step 9 — Finalize
+
+Commit all changes with a clear message:
+
+git add -A
+git commit -m "Fix Replit port binding, add health route, remove legacy files, clean requirements, add tests"
+
+
+Merge the branch to main.
+
+(Optional) Configure Deploy to use:
+
+gunicorn -b 0.0.0.0:$PORT main:app
+
+Acceptance criteria
+
+Webview loads without 404/500.
+
+/ returns “OK” or serves the index page.
+
+All core API routes reachable from the frontend via relative URLs.
+
+pytest passes all smoke tests.
+
+No hard-coded localhost/5000/5001 remains.
+
+No orphan servers/configs left behind.
