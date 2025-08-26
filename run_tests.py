@@ -24,7 +24,7 @@ def test_unified_server():
     
     # Determine port from environment
     port = os.environ.get('PORT', '5000')
-    base_url = f"http://0.0.0.0:{port}"
+    base_url = f"http://127.0.0.1:{port}"
     
     # Test root endpoint
     try:

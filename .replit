@@ -1,4 +1,4 @@
-entrypoint = "server.js"
+entrypoint = "unified_server.py"
 modules = ["python-3.11", "nodejs-20"]
 
 [nix]
@@ -17,224 +17,6 @@ deploymentTarget = "cloudrun"
 
 [workflows]
 runButton = "Sigilcraft Production"
-
-[[workflows.workflow]]
-name = "Run"
-author = 45492115
-mode = "parallel"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python main.py"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node server.js"
-
-[[workflows.workflow]]
-name = "Run Backend"
-author = 45492115
-mode = "parallel"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python main.py"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node server.js"
-
-[[workflows.workflow]]
-name = "Run Fixed"
-author = 45492115
-mode = "parallel"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node server.js"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python main.py"
-
-[[workflows.workflow]]
-name = "Run Application"
-author = 45492115
-mode = "parallel"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python main.py"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node server.js"
-
-[[workflows.workflow]]
-name = "Start Application"
-author = 45492115
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python main.py &"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "sleep 2"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node server.js"
-
-[[workflows.workflow]]
-name = "Sigilcraft Ultra"
-author = 45492115
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "echo \"🔧 Cleaning up any existing processes...\""
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pkill -f \"python main.py\" 2>/dev/null || true"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pkill -f \"node server.js\" 2>/dev/null || true"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "sleep 2"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "echo \"🔮 Starting Ultra-Revolutionary Sigilcraft Backend...\""
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python main.py &"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "sleep 4"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "echo \"🚀 Starting Enhanced Frontend Server...\""
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node server.js"
-
-[[workflows.workflow]]
-name = "Backend Only"
-author = 45492115
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "echo \"🔮 Starting Python Backend Only...\""
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pkill -f \"python main.py\" 2>/dev/null || true"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "sleep 1"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python main.py"
-
-[[workflows.workflow]]
-name = "Frontend Only"
-author = 45492115
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "echo \"🚀 Starting Node.js Frontend Only...\""
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pkill -f \"node server.js\" 2>/dev/null || true"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "sleep 1"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node server.js"
-
-[[workflows.workflow]]
-name = "Ultra Deploy Ready"
-author = 45492115
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "echo \"🧹 Cleaning up processes...\""
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pkill -f \"python main.py\" 2>/dev/null || true"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pkill -f \"node server.js\" 2>/dev/null || true"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "sleep 2"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "echo \"🔬 Running smoke tests...\""
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python -m pytest tests/ -v"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "echo \"✅ Tests passed! Starting optimized deployment...\""
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python main.py"
-
-[[workflows.workflow]]
-name = "Sigilcraft Fixed"
-author = 45492115
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pkill -f \"python main.py\" 2>/dev/null || true"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pkill -f \"node server.js\" 2>/dev/null || true"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "echo \"🔮 Starting Flask Backend on port 5001...\""
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python main.py &"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "echo \"🚀 Starting Express Frontend on port 5000...\""
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node server.js"
 
 [[workflows.workflow]]
 name = "Sigilcraft Production"
@@ -256,11 +38,11 @@ args = "echo \"🧪 Running comprehensive test suite...\""
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python -m pytest tests/test_comprehensive.py -v"
+args = "python -m pytest tests/test_smoke.py -v"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "echo \"🔍 Running smoke tests...\""
+args = "echo \"🔍 Running integration tests...\""
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
@@ -270,18 +52,19 @@ args = "python run_tests.py"
 task = "shell.exec"
 args = "echo \"✅ All tests completed!\""
 
-[[ports]]
-localPort = 3000
-externalPort = 3000
+[[workflows.workflow]]
+name = "Backend Only"
+author = 45492115
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🔮 Starting Python Backend Only...\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python main.py"
 
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 5001
-externalPort = 3001
-
-[[ports]]
-localPort = 5002
-externalPort = 3002

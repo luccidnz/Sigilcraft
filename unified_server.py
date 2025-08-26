@@ -1,39 +1,13 @@
-
 #!/usr/bin/env python3
 """
 UNIFIED SIGILCRAFT SERVER FOR REPLIT
-Runs Flask API backend with proper port binding
+Single-process Flask backend bound to Replit's PORT
 """
 
 import os
 import sys
-import subprocess
-import time
 import signal
-import threading
-from pathlib import Path
-
-# Import the Flask app
 from main import app as flask_app
-
-def start_express_server():
-    """Start Express server in background"""
-    try:
-        print("🚀 Starting Express frontend server...")
-        process = subprocess.Popen(
-            ['node', 'server.js'],
-            env={**os.environ, 'FLASK_BACKEND': 'true'},
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            universal_newlines=True
-        )
-        
-        # Log Express output
-        for line in process.stdout:
-            print(f"[EXPRESS] {line.strip()}")
-            
-    except Exception as e:
-        print(f"❌ Failed to start Express server: {e}")
 
 def signal_handler(signum, frame):
     """Handle graceful shutdown"""
@@ -44,23 +18,24 @@ if __name__ == '__main__':
     # Register signal handlers
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
-    
+
     print("🔮 Starting Unified Sigilcraft Server for Replit...")
-    
-    # Get port from Replit environment
+
+    # Get port from Replit environment - this is critical for deployment
     port = int(os.environ.get('PORT', 5000))
-    
-    print(f"🎯 Server will run on port {port}")
+
+    print(f"🎯 Server running on 0.0.0.0:{port}")
     print("🎨 Ultra-revolutionary sigil generation ready!")
-    
+    print(f"🌍 Access your app at: https://your-repl-name.replit.app")
+
     try:
-        # Start Flask app directly (single process mode)
+        # Start Flask app with proper Replit configuration
         flask_app.run(
-            host='0.0.0.0',
-            port=port,
-            debug=False,
-            threaded=True,
-            use_reloader=False
+            host='0.0.0.0',  # Required for Replit external access
+            port=port,       # Use Replit's PORT environment variable
+            debug=False,     # Disable debug in production
+            threaded=True,   # Enable threading for better performance
+            use_reloader=False  # Disable reloader to prevent conflicts
         )
     except KeyboardInterrupt:
         print("\n🛑 Server shutdown gracefully")
