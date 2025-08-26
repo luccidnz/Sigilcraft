@@ -1,7 +1,8 @@
+
 #!/usr/bin/env python3
 """
 UNIFIED SIGILCRAFT SERVER FOR REPLIT
-Single-process Flask backend bound to Replit's PORT
+Production-ready Flask backend with WSGI server
 """
 
 import os
@@ -28,17 +29,49 @@ if __name__ == '__main__':
     print("🎨 Ultra-revolutionary sigil generation ready!")
     print(f"🌍 Access your app at: https://your-repl-name.replit.app")
 
-    try:
-        # Start Flask app with proper Replit configuration
-        flask_app.run(
-            host='0.0.0.0',  # Required for Replit external access
-            port=port,       # Use Replit's PORT environment variable
-            debug=False,     # Disable debug in production
-            threaded=True,   # Enable threading for better performance
-            use_reloader=False  # Disable reloader to prevent conflicts
-        )
-    except KeyboardInterrupt:
-        print("\n🛑 Server shutdown gracefully")
-    except Exception as e:
-        print(f"❌ Server startup failed: {e}")
-        sys.exit(1)
+    # Check if we're in a production environment (deployed)
+    is_production = os.environ.get('REPLIT_DEPLOYMENT') == 'true'
+
+    if is_production:
+        print("🚀 Running in production mode with Gunicorn...")
+        try:
+            import gunicorn.app.wsgiapp as wsgi
+            # Configure Gunicorn for production
+            sys.argv = [
+                'gunicorn',
+                '--bind', f'0.0.0.0:{port}',
+                '--workers', '2',
+                '--worker-class', 'sync',
+                '--timeout', '30',
+                '--max-requests', '1000',
+                '--max-requests-jitter', '100',
+                '--preload',
+                '--log-level', 'info',
+                'main:app'
+            ]
+            wsgi.run()
+        except ImportError:
+            print("⚠️  Gunicorn not available, falling back to Flask dev server")
+            flask_app.run(
+                host='0.0.0.0',
+                port=port,
+                debug=False,
+                threaded=True,
+                use_reloader=False
+            )
+    else:
+        print("🔧 Running in development mode...")
+        try:
+            # Start Flask app with proper Replit configuration
+            flask_app.run(
+                host='0.0.0.0',  # Required for Replit external access
+                port=port,       # Use Replit's PORT environment variable
+                debug=False,     # Keep debug disabled for cleaner logs
+                threaded=True,   # Enable threading for better performance
+                use_reloader=False  # Disable reloader to prevent conflicts
+            )
+        except KeyboardInterrupt:
+            print("\n🛑 Server shutdown gracefully")
+        except Exception as e:
+            print(f"❌ Server startup failed: {e}")
+            sys.exit(1)
