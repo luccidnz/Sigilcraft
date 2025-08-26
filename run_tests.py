@@ -1,0 +1,98 @@
+
+#!/usr/bin/env python3
+"""
+Comprehensive test runner for Sigilcraft
+"""
+import os
+import sys
+import subprocess
+import time
+import requests
+from pathlib import Path
+
+def run_command(cmd, timeout=30):
+    """Run command with timeout"""
+    try:
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=timeout)
+        return result.returncode == 0, result.stdout, result.stderr
+    except subprocess.TimeoutExpired:
+        return False, "", "Command timed out"
+
+def test_flask_backend():
+    """Test Flask backend"""
+    print("🧪 Testing Flask backend...")
+    
+    # Test root endpoint
+    try:
+        response = requests.get("http://0.0.0.0:5001/", timeout=5)
+        if response.status_code == 200 and response.text == "OK":
+            print("✅ Flask root endpoint works")
+        else:
+            print(f"❌ Flask root endpoint failed: {response.status_code}")
+            return False
+    except Exception as e:
+        print(f"❌ Flask backend not responding: {e}")
+        return False
+    
+    # Test health endpoint
+    try:
+        response = requests.get("http://0.0.0.0:5001/health", timeout=5)
+        if response.status_code == 200:
+            print("✅ Flask health endpoint works")
+        else:
+            print(f"❌ Flask health endpoint failed: {response.status_code}")
+            return False
+    except Exception as e:
+        print(f"❌ Flask health endpoint error: {e}")
+        return False
+    
+    return True
+
+def test_express_frontend():
+    """Test Express frontend"""
+    print("🧪 Testing Express frontend...")
+    
+    try:
+        response = requests.get("http://0.0.0.0:5000/", timeout=5)
+        if response.status_code == 200:
+            print("✅ Express frontend works")
+            return True
+        else:
+            print(f"❌ Express frontend failed: {response.status_code}")
+            return False
+    except Exception as e:
+        print(f"❌ Express frontend not responding: {e}")
+        return False
+
+def main():
+    """Main test runner"""
+    print("🚀 Starting Sigilcraft Health Check...")
+    
+    # Run pytest first
+    print("🧪 Running pytest smoke tests...")
+    success, stdout, stderr = run_command("python -m pytest tests/test_smoke.py -v")
+    
+    if success:
+        print("✅ Pytest tests passed")
+    else:
+        print(f"❌ Pytest tests failed:\n{stderr}")
+        return False
+    
+    # Give servers time to start
+    print("⏱️  Waiting for servers to start...")
+    time.sleep(3)
+    
+    # Test backends
+    flask_ok = test_flask_backend()
+    express_ok = test_express_frontend()
+    
+    if flask_ok and express_ok:
+        print("🎉 All tests passed! Sigilcraft is ready!")
+        return True
+    else:
+        print("❌ Some tests failed. Check the logs above.")
+        return False
+
+if __name__ == "__main__":
+    success = main()
+    sys.exit(0 if success else 1)

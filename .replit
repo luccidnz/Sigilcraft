@@ -16,7 +16,7 @@ run = ["sh", "-c", "python main.py & sleep 3 && node server.js"]
 deploymentTarget = "cloudrun"
 
 [workflows]
-runButton = "Sigilcraft Ultra"
+runButton = "Sigilcraft Fixed"
 
 [[workflows.workflow]]
 name = "Run"
@@ -206,6 +206,47 @@ args = "echo \"✅ Tests passed! Starting optimized deployment...\""
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python main.py"
+
+[[workflows.workflow]]
+name = "Sigilcraft Fixed"
+author = 45492115
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🔧 Cleaning up any existing processes...\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pkill -f \"python main.py\" 2>/dev/null || true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pkill -f \"node server.js\" 2>/dev/null || true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "sleep 2"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🔮 Starting Flask Backend on port 5001...\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python main.py &"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "sleep 4"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🚀 Starting Express Frontend on port 5000...\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node server.js"
 
 [[ports]]
 localPort = 3000

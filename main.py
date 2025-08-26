@@ -427,6 +427,11 @@ class UltraRevolutionarySigilGenerator:
 # Initialize ultra-revolutionary generator
 generator = UltraRevolutionarySigilGenerator()
 
+@app.route('/', methods=['GET'])
+def root_health():
+    """Root health check endpoint"""
+    return "OK", 200
+
 @app.route('/health', methods=['GET'])
 def health():
     """Health check endpoint"""
@@ -563,7 +568,7 @@ if __name__ == '__main__':
             port=port,
             debug=debug_mode,
             threaded=True,
-            use_reloader=False  # Prevent double startup in production
+            use_reloader=False
         )
     except KeyboardInterrupt:
         print("\n🛑 Server shutdown gracefully")

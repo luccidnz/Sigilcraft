@@ -16,8 +16,9 @@ const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-// Backend runs on same server, no need for separate URL
-const BACKEND_PORT = process.env.PORT || 5000;
+// Flask backend URL configuration
+const FLASK_PORT = process.env.FLASK_PORT || 5001;
+const FLASK_URL = `http://0.0.0.0:${FLASK_PORT}`;
 
 // ===== SECURITY & PERFORMANCE =====
 app.use(helmet({
@@ -87,6 +88,11 @@ app.use(express.static(join(__dirname, 'public'), {
 }));
 
 // ===== API ROUTES =====
+
+// Root health route
+app.get('/', (req, res) => {
+  res.status(200).send('Sigilcraft Frontend Server - OK');
+});
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
