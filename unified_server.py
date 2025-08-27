@@ -9,11 +9,27 @@ import os
 import sys
 import signal
 from main import app as flask_app
+from flask import send_from_directory
 
 def signal_handler(signum, frame):
     """Handle graceful shutdown"""
     print(f"\n🛑 Received signal {signum}. Shutting down gracefully...")
     sys.exit(0)
+
+# Add static file serving routes
+@flask_app.route('/')
+def serve_index():
+    """Serve the main index.html"""
+    return send_from_directory('public', 'index.html')
+
+@flask_app.route('/<path:filename>')
+def serve_static(filename):
+    """Serve static files from public directory"""
+    try:
+        return send_from_directory('public', filename)
+    except:
+        # If file not found, serve index.html for client-side routing
+        return send_from_directory('public', 'index.html')
 
 if __name__ == '__main__':
     # Register signal handlers
