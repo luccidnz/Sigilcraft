@@ -29,49 +29,72 @@ if __name__ == '__main__':
     print("🎨 Ultra-revolutionary sigil generation ready!")
     print(f"🌍 Access your app at: https://your-repl-name.replit.app")
 
-    # Check if we're in a production environment (deployed)
-    is_production = os.environ.get('REPLIT_DEPLOYMENT') == 'true'
-
-    if is_production:
-        print("🚀 Running in production mode with Gunicorn...")
+    # Always try to use Gunicorn for production-ready serving
+    print("🚀 Attempting to run with production WSGI server...")
+    
+    try:
+        import gunicorn.app.wsgiapp as wsgi
+        print("✅ Gunicorn available - using production WSGI server")
+        
+        # Configure Gunicorn for optimal Replit performance
+        sys.argv = [
+            'gunicorn',
+            '--bind', f'0.0.0.0:{port}',
+            '--workers', '1',  # Single worker for Replit's resource limits
+            '--worker-class', 'sync',
+            '--timeout', '30',
+            '--max-requests', '1000',
+            '--max-requests-jitter', '100',
+            '--preload',
+            '--log-level', 'info',
+            '--access-logfile', '-',
+            '--error-logfile', '-',
+            'main:app'
+        ]
+        wsgi.run()
+        
+    except ImportError:
+        print("⚠️  Gunicorn not available - installing and retrying...")
+        
+        # Try to install Gunicorn
         try:
+            import subprocess
+            subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'gunicorn'])
+            print("✅ Gunicorn installed successfully")
+            
+            # Retry with Gunicorn
             import gunicorn.app.wsgiapp as wsgi
-            # Configure Gunicorn for production
             sys.argv = [
                 'gunicorn',
                 '--bind', f'0.0.0.0:{port}',
-                '--workers', '2',
+                '--workers', '1',
                 '--worker-class', 'sync',
                 '--timeout', '30',
                 '--max-requests', '1000',
                 '--max-requests-jitter', '100',
                 '--preload',
                 '--log-level', 'info',
+                '--access-logfile', '-',
+                '--error-logfile', '-',
                 'main:app'
             ]
             wsgi.run()
-        except ImportError:
-            print("⚠️  Gunicorn not available, falling back to Flask dev server")
-            flask_app.run(
-                host='0.0.0.0',
-                port=port,
-                debug=False,
-                threaded=True,
-                use_reloader=False
-            )
-    else:
-        print("🔧 Running in development mode...")
-        try:
-            # Start Flask app with proper Replit configuration
-            flask_app.run(
-                host='0.0.0.0',  # Required for Replit external access
-                port=port,       # Use Replit's PORT environment variable
-                debug=False,     # Keep debug disabled for cleaner logs
-                threaded=True,   # Enable threading for better performance
-                use_reloader=False  # Disable reloader to prevent conflicts
-            )
-        except KeyboardInterrupt:
-            print("\n🛑 Server shutdown gracefully")
-        except Exception as e:
-            print(f"❌ Server startup failed: {e}")
-            sys.exit(1)
+            
+        except Exception as install_error:
+            print(f"❌ Failed to install Gunicorn: {install_error}")
+            print("🔧 Falling back to Flask development server...")
+            
+            try:
+                # Fallback to Flask with production-like settings
+                flask_app.run(
+                    host='0.0.0.0',  # Required for Replit external access
+                    port=port,       # Use Replit's PORT environment variable
+                    debug=False,     # Keep debug disabled
+                    threaded=True,   # Enable threading for better performance
+                    use_reloader=False  # Disable reloader to prevent conflicts
+                )
+            except KeyboardInterrupt:
+                print("\n🛑 Server shutdown gracefully")
+            except Exception as e:
+                print(f"❌ Server startup failed: {e}")
+                sys.exit(1)
