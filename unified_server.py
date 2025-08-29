@@ -20,15 +20,26 @@ def signal_handler(signum, frame):
 @flask_app.route('/')
 def serve_index():
     """Serve the main index.html"""
-    return send_from_directory('public', 'index.html')
+    try:
+        return send_from_directory('public', 'index.html')
+    except Exception as e:
+        print(f"Error serving index.html: {e}")
+        return f"Error: {e}", 500
 
 @flask_app.route('/<path:filename>')
 def serve_static(filename):
     """Serve static files from public directory"""
     try:
-        return send_from_directory('public', filename)
-    except:
-        # If file not found, serve index.html for client-side routing
+        # Check if file exists in public directory
+        import os
+        file_path = os.path.join('public', filename)
+        if os.path.exists(file_path):
+            return send_from_directory('public', filename)
+        else:
+            # If file not found, serve index.html for client-side routing
+            return send_from_directory('public', 'index.html')
+    except Exception as e:
+        print(f"Error serving {filename}: {e}")
         return send_from_directory('public', 'index.html')
 
 if __name__ == '__main__':
@@ -40,6 +51,11 @@ if __name__ == '__main__':
 
     # Get port from Replit environment - this is critical for deployment
     port = int(os.environ.get('PORT', 5000))
+    
+    # Ensure public directory exists
+    if not os.path.exists('public'):
+        print("❌ Public directory not found!")
+        sys.exit(1)
 
     print(f"🎯 Server running on 0.0.0.0:{port}")
     print("🎨 Ultra-revolutionary sigil generation ready!")

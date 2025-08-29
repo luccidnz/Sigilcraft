@@ -45,7 +45,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # ===== FLASK APP SETUP =====
-app = Flask(__name__)
+app = Flask(__name__, static_folder='public', static_url_path='')
 CORS(app, resources={
     r"/*": {
         "origins": "*",
@@ -428,10 +428,13 @@ class UltraRevolutionarySigilGenerator:
 generator = UltraRevolutionarySigilGenerator()
 
 @app.route('/', methods=['GET'])
-def root_health():
-    """Root health check endpoint"""
-    logger.info("✅ Root health check accessed")
-    return "OK", 200
+def serve_frontend():
+    """Serve the frontend index.html"""
+    try:
+        return send_from_directory('public', 'index.html')
+    except Exception as e:
+        logger.error(f"❌ Error serving frontend: {e}")
+        return f"Sigilcraft Frontend Error: {e}", 500
 
 @app.route('/health', methods=['GET'])
 def health():
