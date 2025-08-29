@@ -118,14 +118,14 @@ class UltraRevolutionarySigilGenerator:
                 'pattern_scale': 0.9
             },
             'shadow': {
-                'colors': [(64, 64, 64), (128, 0, 128), (105, 105, 105), (169, 169, 169), (25, 25, 25), (47, 79, 79), (72, 61, 139)],
+                'colors': [(180, 100, 180), (200, 80, 200), (160, 120, 160), (220, 150, 220), (140, 90, 140), (190, 130, 190), (170, 110, 170)],
                 'base_patterns': ['void_portal', 'shadow_tendrils', 'dark_sigil', 'obscured_geometry'],
                 'stroke_multiplier': 2.0,
                 'complexity_bias': 'hidden',
                 'geometry_type': 'jagged',
                 'energy_flow': 'consuming',
                 'symbol_density': 'sparse',
-                'glow_intensity': 0.3,
+                'glow_intensity': 0.6,
                 'pattern_scale': 1.4
             },
             'light': {
@@ -151,14 +151,14 @@ class UltraRevolutionarySigilGenerator:
                 'pattern_scale': 1.7
             },
             'void': {
-                'colors': [(25, 25, 112), (0, 0, 0), (72, 61, 139), (106, 90, 205), (75, 0, 130), (25, 25, 25), (47, 79, 79)],
+                'colors': [(150, 100, 200), (120, 80, 180), (180, 120, 220), (200, 150, 250), (160, 90, 190), (140, 70, 170), (190, 140, 230)],
                 'base_patterns': ['infinite_spiral', 'dimensional_portal', 'void_geometry', 'recursive_depth'],
                 'stroke_multiplier': 1.8,
                 'complexity_bias': 'infinite',
                 'geometry_type': 'impossible',
                 'energy_flow': 'recursive',
                 'symbol_density': 'deep',
-                'glow_intensity': 0.4,
+                'glow_intensity': 0.7,
                 'pattern_scale': 2.0
             }
         }
@@ -455,10 +455,10 @@ class UltraRevolutionarySigilGenerator:
                         y = center[1] + (segment_radius + jagged_offset) * math.sin(math.radians(angle))
                         
                         base_color = style['colors'][(ring + i) % len(style['colors'])]
-                        # Force darker but visible shadow colors
+                        # Force much brighter shadow colors for visibility
                         enhanced_color = []
                         for c in base_color:
-                            boosted = min(255, max(120, int(c * 2.0)))
+                            boosted = min(255, max(160, int(c * 3.2)))
                             enhanced_color.append(boosted)
                         enhanced_color = tuple(enhanced_color)
                         
@@ -567,11 +567,11 @@ class UltraRevolutionarySigilGenerator:
                     next_y = center[1] + next_radius * math.sin(math.radians(next_recursive_angle))
                     
                     base_color = style['colors'][(void_layer + segment) % len(style['colors'])]
-                    # Force darker but visible void colors with depth
+                    # Force much brighter void colors with depth
                     enhanced_color = []
                     for c in base_color:
-                        depth_factor = 1.5 + (void_layer * 0.2)
-                        boosted = min(255, max(100, int(c * depth_factor)))
+                        depth_factor = 2.8 + (void_layer * 0.3)
+                        boosted = min(255, max(150, int(c * depth_factor)))
                         enhanced_color.append(boosted)
                     enhanced_color = tuple(enhanced_color)
                     
@@ -594,8 +594,81 @@ class UltraRevolutionarySigilGenerator:
                     except:
                         pass
 
+        elif vibe == 'light':
+            # FIXED: Enhanced radiant light pattern with proper rays and luminous geometry
+            # Create multiple light ray systems
+            for ray_system in range(4):
+                system_angle_offset = ray_system * 45 + (phrase_seed % 90)
+                
+                # Create radiant light rays from center
+                for ray in range(12):
+                    ray_angle = (360 / 12) * ray + system_angle_offset
+                    
+                    # Create multi-segment light rays
+                    for segment in range(6):
+                        start_radius = (size // 15) + (segment * size // 20)
+                        end_radius = start_radius + (size // 25)
+                        
+                        # Ray start point
+                        start_x = center[0] + start_radius * math.cos(math.radians(ray_angle))
+                        start_y = center[1] + start_radius * math.sin(math.radians(ray_angle))
+                        
+                        # Ray end point
+                        end_x = center[0] + end_radius * math.cos(math.radians(ray_angle))
+                        end_y = center[1] + end_radius * math.sin(math.radians(ray_angle))
+                        
+                        base_color = style['colors'][(ray_system + ray + segment) % len(style['colors'])]
+                        # Force ultra-bright light colors
+                        enhanced_color = []
+                        for c in base_color:
+                            boosted = min(255, max(200, int(c * 4.0)))
+                            enhanced_color.append(boosted)
+                        enhanced_color = tuple(enhanced_color)
+                        
+                        try:
+                            # Bright light ray segments
+                            ray_width = max(3, 8 - segment)
+                            draw.line([(start_x, start_y), (end_x, end_y)], fill=enhanced_color, width=ray_width)
+                            
+                            # Luminous points at ray ends
+                            light_size = max(4, 10 - segment)
+                            draw.ellipse([end_x-light_size, end_y-light_size, end_x+light_size, end_y+light_size], 
+                                       fill=enhanced_color)
+                            
+                            # Add brilliant center highlight
+                            highlight_size = max(2, light_size // 2)
+                            ultra_bright = tuple(min(255, c) for c in enhanced_color)
+                            draw.ellipse([end_x-highlight_size, end_y-highlight_size, 
+                                        end_x+highlight_size, end_y+highlight_size], fill=ultra_bright)
+                        except:
+                            pass
+                            
+                # Create divine mandala center
+                for mandala_ring in range(3):
+                    ring_radius = (size // 30) + (mandala_ring * size // 40)
+                    ring_points = 8 + (mandala_ring * 4)
+                    
+                    for point in range(ring_points):
+                        point_angle = (360 / ring_points) * point + (mandala_ring * 30)
+                        x = center[0] + ring_radius * math.cos(math.radians(point_angle))
+                        y = center[1] + ring_radius * math.sin(math.radians(point_angle))
+                        
+                        base_color = style['colors'][(mandala_ring + point) % len(style['colors'])]
+                        enhanced_color = []
+                        for c in base_color:
+                            boosted = min(255, max(220, int(c * 4.5)))
+                            enhanced_color.append(boosted)
+                        enhanced_color = tuple(enhanced_color)
+                        
+                        try:
+                            mandala_size = max(6, 12 - mandala_ring * 2)
+                            draw.ellipse([x-mandala_size, y-mandala_size, x+mandala_size, y+mandala_size], 
+                                       fill=enhanced_color, outline=enhanced_color, width=2)
+                        except:
+                            pass
+
         else:
-            # Enhanced mystical pattern (fallback for all other vibes including 'light')
+            # Enhanced mystical pattern (fallback for other vibes)
             for ring in range(5):  # More rings
                 ring_radius = (size // 10) + (ring * size // 18)
                 segments = 8 + (ring * 2)
