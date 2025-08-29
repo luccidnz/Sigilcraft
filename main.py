@@ -207,139 +207,168 @@ class UltraRevolutionarySigilGenerator:
         return int(final_hash[:16], 16) % (2**31)
 
     def _create_base_pattern(self, draw: ImageDraw, phrase: str, style: Dict, size: int):
-        """Create base pattern based on phrase"""
+        """Create base pattern with enhanced contrast and visibility"""
         center = (size // 2, size // 2)
 
-        # Create base geometry
+        # Create base geometry with much higher contrast
         for i in range(min(12, len(phrase))):
             char = phrase[i] if i < len(phrase) else phrase[i % len(phrase)]
             angle = (ord(char) * 13 + i * 30) % 360
-            radius = (size // 10) + (ord(char) % (size // 20))
+            radius = (size // 8) + (ord(char) % (size // 15))
 
             x = center[0] + radius * math.cos(math.radians(angle))
             y = center[1] + radius * math.sin(math.radians(angle))
 
-            color = style['colors'][i % len(style['colors'])]
-            size_factor = max(3, ord(char) % 15)
+            # Enhance color intensity and add alpha
+            base_color = style['colors'][i % len(style['colors'])]
+            # Boost color intensity by 50% and ensure minimum brightness
+            enhanced_color = tuple(min(255, max(80, int(c * 1.5))) for c in base_color)
+            
+            size_factor = max(8, ord(char) % 20)  # Larger symbols
+            stroke_width = max(4, int(style['stroke_multiplier'] * 6))  # Thicker strokes
 
             try:
-                stroke_width = int(style['stroke_multiplier'] * 3)
-                # Draw character-based symbol with enhanced visibility
+                # Draw character-based symbol with maximum visibility
                 if ord(char) % 3 == 0:
+                    # Filled circle with thick outline
                     draw.ellipse([x-size_factor, y-size_factor, x+size_factor, y+size_factor],
-                               outline=color, width=stroke_width)
-                    # Add filled center for better visibility
-                    inner_size = max(1, size_factor // 2)
+                               fill=enhanced_color, outline=enhanced_color, width=stroke_width)
+                    # Add bright center highlight
+                    highlight_color = tuple(min(255, c + 60) for c in enhanced_color)
+                    inner_size = max(3, size_factor // 3)
                     draw.ellipse([x-inner_size, y-inner_size, x+inner_size, y+inner_size],
-                               fill=color)
+                               fill=highlight_color)
                 elif ord(char) % 3 == 1:
+                    # Thick crossing lines
                     draw.line([(x-size_factor, y-size_factor), (x+size_factor, y+size_factor)],
-                             fill=color, width=stroke_width)
+                             fill=enhanced_color, width=stroke_width)
                     draw.line([(x-size_factor, y+size_factor), (x+size_factor, y-size_factor)],
-                             fill=color, width=stroke_width)
+                             fill=enhanced_color, width=stroke_width)
+                    # Add center dot
+                    draw.ellipse([x-3, y-3, x+3, y+3], fill=enhanced_color)
                 else:
+                    # Filled polygon with outline
                     points = []
                     for j in range(6):
                         px = x + size_factor * math.cos(math.radians(j * 60))
                         py = y + size_factor * math.sin(math.radians(j * 60))
                         points.append((px, py))
                     if len(points) >= 3:
-                        draw.polygon(points, outline=color, width=stroke_width)
+                        draw.polygon(points, fill=enhanced_color, outline=enhanced_color, width=stroke_width)
             except:
                 pass
 
     def _create_text_pattern(self, draw: ImageDraw, phrase: str, style: Dict, size: int):
-        """Create pattern based on text structure"""
+        """Create high-contrast text pattern with enhanced visibility"""
         center = (size // 2, size // 2)
         words = phrase.split()
 
         for i, word in enumerate(words[:8]):
             word_energy = sum(ord(c) for c in word.lower())
             angle = (word_energy * 7 + i * 45) % 360
-            distance = (size // 6) + (len(word) * size // 40)
+            distance = (size // 5) + (len(word) * size // 30)  # Better spacing
 
             x = center[0] + distance * math.cos(math.radians(angle))
             y = center[1] + distance * math.sin(math.radians(angle))
 
-            color = style['colors'][(word_energy + i) % len(style['colors'])]
+            # Enhanced color with better contrast
+            base_color = style['colors'][(word_energy + i) % len(style['colors'])]
+            enhanced_color = tuple(min(255, max(100, int(c * 1.6))) for c in base_color)
 
-            # Create word-specific pattern
+            # Create word-specific pattern with maximum visibility
             try:
-                stroke_width = int(style['stroke_multiplier'] * 2)
-                connector_width = max(2, int(style['stroke_multiplier']))
+                stroke_width = max(5, int(style['stroke_multiplier'] * 4))  # Much thicker strokes
+                connector_width = max(4, int(style['stroke_multiplier'] * 2))
 
                 if len(word) <= 3:
-                    # Small triangle with enhanced visibility
+                    # Larger triangle with high contrast
                     points = []
-                    triangle_size = size // 35
+                    triangle_size = size // 25  # Bigger
                     for j in range(3):
                         px = x + triangle_size * math.cos(math.radians(j * 120))
                         py = y + triangle_size * math.sin(math.radians(j * 120))
                         points.append((px, py))
-                    draw.polygon(points, outline=color, width=stroke_width, fill=color)
+                    draw.polygon(points, fill=enhanced_color, outline=enhanced_color, width=stroke_width)
+                    
                 elif len(word) <= 6:
-                    # Medium square with enhanced visibility
-                    s = size // 45
-                    draw.rectangle([x-s, y-s, x+s, y+s], outline=color, width=stroke_width, fill=color)
+                    # Larger square with high contrast
+                    s = size // 30  # Bigger
+                    draw.rectangle([x-s, y-s, x+s, y+s], fill=enhanced_color, outline=enhanced_color, width=stroke_width)
+                    
                 else:
-                    # Large hexagon with enhanced visibility
+                    # Larger hexagon with high contrast
                     points = []
-                    hex_size = size // 30
+                    hex_size = size // 20  # Bigger
                     for j in range(6):
                         px = x + hex_size * math.cos(math.radians(j * 60))
                         py = y + hex_size * math.sin(math.radians(j * 60))
                         points.append((px, py))
-                    draw.polygon(points, outline=color, width=stroke_width, fill=color)
+                    draw.polygon(points, fill=enhanced_color, outline=enhanced_color, width=stroke_width)
 
-                # Connect to center with enhanced line
-                draw.line([center, (x, y)], fill=color, width=connector_width)
+                # Enhanced connector line with glow effect
+                draw.line([center, (x, y)], fill=enhanced_color, width=connector_width)
+                # Add subtle glow to connector
+                glow_color = tuple(min(255, c + 40) for c in enhanced_color)
+                draw.line([center, (x, y)], fill=glow_color, width=max(1, connector_width // 2))
+                
             except:
                 pass
 
     def _create_vibe_pattern(self, draw: ImageDraw, phrase: str, vibe: str, style: Dict, size: int):
-        """Create vibe-specific resonance patterns"""
+        """Create high-contrast vibe-specific resonance patterns"""
         center = (size // 2, size // 2)
 
         if vibe == 'cosmic':
-            # Star pattern
+            # Enhanced star pattern with maximum contrast
             for i in range(8):
                 angle = i * 45
-                radius = size // 4
+                radius = size // 3
                 x = center[0] + radius * math.cos(math.radians(angle))
                 y = center[1] + radius * math.sin(math.radians(angle))
 
-                color = style['colors'][i % len(style['colors'])]
+                base_color = style['colors'][i % len(style['colors'])]
+                enhanced_color = tuple(min(255, max(120, int(c * 1.8))) for c in base_color)
+                
                 try:
-                    # Draw star rays
-                    draw.line([center, (x, y)], fill=color, width=3)
-                    # Add star points
-                    star_size = size // 60
-                    draw.ellipse([x-star_size, y-star_size, x+star_size, y+star_size], fill=color)
+                    # Thick star rays with glow
+                    draw.line([center, (x, y)], fill=enhanced_color, width=8)
+                    # Bright star points
+                    star_size = size // 40
+                    draw.ellipse([x-star_size, y-star_size, x+star_size, y+star_size], 
+                               fill=enhanced_color, outline=enhanced_color, width=3)
+                    # Add center highlight
+                    highlight = tuple(min(255, c + 80) for c in enhanced_color)
+                    draw.ellipse([x-star_size//2, y-star_size//2, x+star_size//2, y+star_size//2], fill=highlight)
                 except:
                     pass
 
         elif vibe == 'elemental':
-            # Natural flow pattern
+            # Enhanced natural flow pattern
             for i in range(6):
                 start_angle = i * 60
-                for j in range(5):
-                    angle = start_angle + (j * 10)
-                    radius = (size // 8) + (j * size // 40)
+                prev_pos = None
+                for j in range(7):  # More segments
+                    angle = start_angle + (j * 8)
+                    radius = (size // 6) + (j * size // 30)
                     x = center[0] + radius * math.cos(math.radians(angle))
                     y = center[1] + radius * math.sin(math.radians(angle))
 
-                    if j > 0:
-                        color = style['colors'][(i + j) % len(style['colors'])]
+                    if prev_pos:
+                        base_color = style['colors'][(i + j) % len(style['colors'])]
+                        enhanced_color = tuple(min(255, max(100, int(c * 1.7))) for c in base_color)
                         try:
-                            draw.line([prev_pos, (x, y)], fill=color, width=2)
+                            draw.line([prev_pos, (x, y)], fill=enhanced_color, width=6)
+                            # Add connection nodes
+                            node_size = 4
+                            draw.ellipse([x-node_size, y-node_size, x+node_size, y+node_size], fill=enhanced_color)
                         except:
                             pass
                     prev_pos = (x, y)
 
         elif vibe == 'crystal':
-            # Geometric crystal pattern
-            for layer in range(3):
-                layer_radius = (size // 8) + (layer * size // 12)
+            # Enhanced geometric crystal pattern
+            for layer in range(4):  # More layers
+                layer_radius = (size // 6) + (layer * size // 10)
                 sides = 6 + (layer * 2)
 
                 points = []
@@ -349,17 +378,21 @@ class UltraRevolutionarySigilGenerator:
                     y = center[1] + layer_radius * math.sin(math.radians(angle))
                     points.append((x, y))
 
-                color = style['colors'][layer % len(style['colors'])]
+                base_color = style['colors'][layer % len(style['colors'])]
+                enhanced_color = tuple(min(255, max(120, int(c * 1.9))) for c in base_color)
+                
                 try:
                     if len(points) >= 3:
-                        draw.polygon(points, outline=color, width=2)
+                        # Filled polygon with bright outline
+                        fill_color = tuple(c // 3 for c in enhanced_color)  # Subtle fill
+                        draw.polygon(points, fill=fill_color, outline=enhanced_color, width=5)
                 except:
                     pass
 
         else:
-            # Default mystical pattern
-            for ring in range(4):
-                ring_radius = (size // 12) + (ring * size // 20)
+            # Enhanced mystical pattern
+            for ring in range(5):  # More rings
+                ring_radius = (size // 10) + (ring * size // 18)
                 segments = 8 + (ring * 2)
 
                 for i in range(segments):
@@ -367,55 +400,91 @@ class UltraRevolutionarySigilGenerator:
                     x = center[0] + ring_radius * math.cos(math.radians(angle))
                     y = center[1] + ring_radius * math.sin(math.radians(angle))
 
-                    color = style['colors'][(ring + i) % len(style['colors'])]
-                    symbol_size = max(2, size // 80)
+                    base_color = style['colors'][(ring + i) % len(style['colors'])]
+                    enhanced_color = tuple(min(255, max(100, int(c * 1.6))) for c in base_color)
+                    symbol_size = max(6, size // 60)  # Larger symbols
 
                     try:
+                        # Bright filled circles with outlines
                         draw.ellipse([x-symbol_size, y-symbol_size, x+symbol_size, y+symbol_size],
-                                   fill=color)
+                                   fill=enhanced_color, outline=enhanced_color, width=2)
+                        # Add bright center
+                        center_size = max(2, symbol_size // 2)
+                        highlight = tuple(min(255, c + 60) for c in enhanced_color)
+                        draw.ellipse([x-center_size, y-center_size, x+center_size, y+center_size], fill=highlight)
                     except:
                         pass
 
     def _apply_enhanced_effects(self, img: Image.Image, style: Dict, phrase: str) -> Image.Image:
-        """Apply enhanced visual effects"""
+        """Apply maximum contrast and sharpness effects"""
+        result = img.copy()
+        
+        # Apply sharpening filter first
+        result = result.filter(ImageFilter.UnsharpMask(radius=2, percent=200, threshold=3))
+        
+        # Enhanced contrast
+        enhancer = ImageEnhance.Contrast(result)
+        result = enhancer.enhance(2.2)  # Much higher contrast
+        
+        # Enhanced color saturation
+        enhancer = ImageEnhance.Color(result)
+        result = enhancer.enhance(2.0)  # Much more vibrant colors
+        
+        # Enhanced brightness for visibility
+        enhancer = ImageEnhance.Brightness(result)
+        result = enhancer.enhance(1.3)
+        
+        # Apply controlled glow only if specified
         if style.get('glow_intensity', 0) > 0:
-            result = img.copy()
-            for layer in range(3):
-                blur_radius = (layer + 1) * 2
+            glow_layers = []
+            for layer in range(2):  # Fewer, more controlled glow layers
+                blur_radius = (layer + 1) * 1.5
                 glow = img.filter(ImageFilter.GaussianBlur(radius=blur_radius))
-
+                
                 enhancer = ImageEnhance.Brightness(glow)
-                intensity = style['glow_intensity'] * (0.7 ** layer)
+                intensity = min(2.5, style['glow_intensity'] * 1.5) * (0.6 ** layer)
                 glow = enhancer.enhance(intensity)
-
+                glow_layers.append(glow)
+            
+            # Composite glow layers
+            for glow in glow_layers:
                 result = Image.alpha_composite(result, glow)
-
-            return result
-
-        return img
+        
+        return result
 
     def _apply_ultra_effects(self, img: Image.Image, style: Dict, phrase: str) -> Image.Image:
-        """Apply ultra-revolutionary visual effects for advanced generation"""
+        """Apply ultra-revolutionary visual effects with maximum quality"""
         base_img = img.copy()
-
-        # Enhanced glow effect
+        
+        # Apply multiple sharpening passes for ultra-crisp results
+        base_img = base_img.filter(ImageFilter.UnsharpMask(radius=1, percent=150, threshold=2))
+        base_img = base_img.filter(ImageFilter.UnsharpMask(radius=3, percent=100, threshold=1))
+        
+        # Ultra-enhanced contrast
+        enhancer = ImageEnhance.Contrast(base_img)
+        base_img = enhancer.enhance(2.8)  # Maximum contrast
+        
+        # Ultra-enhanced color saturation
+        enhancer = ImageEnhance.Color(base_img)
+        base_img = enhancer.enhance(2.5)  # Maximum saturation
+        
+        # Enhanced brightness for perfect visibility
+        enhancer = ImageEnhance.Brightness(base_img)
+        base_img = enhancer.enhance(1.4)
+        
+        # Controlled ultra glow effect
         if style.get('glow_intensity', 0) > 0:
-            glow_radii = [1, 2, 4, 6, 10]
+            glow_radii = [0.8, 1.5, 3, 5]  # More precise glow radii
             for radius in glow_radii:
-                glow = base_img.filter(ImageFilter.GaussianBlur(radius=radius))
+                glow = img.filter(ImageFilter.GaussianBlur(radius=radius))
                 enhancer = ImageEnhance.Brightness(glow)
-                intensity = style['glow_intensity'] * (0.5 ** (radius / 5))
+                intensity = min(3.0, style['glow_intensity'] * 2.0) * (0.4 ** (radius / 3))
                 glow = enhancer.enhance(intensity)
                 base_img = Image.alpha_composite(base_img, glow)
-
-        # Enhanced contrast
-        enhancer = ImageEnhance.Contrast(base_img)
-        base_img = enhancer.enhance(1.2)
-
-        # Enhanced saturation
-        enhancer = ImageEnhance.Color(base_img)
-        base_img = enhancer.enhance(1.3)
-
+        
+        # Final detail enhancement
+        base_img = base_img.filter(ImageFilter.DETAIL)
+        
         return base_img
 
     def _image_to_base64(self, img: Image.Image) -> str:
