@@ -71,95 +71,103 @@ class UltraRevolutionarySigilGenerator:
         self.size = 1024
         self.center = (self.size // 2, self.size // 2)
 
-        # Completely redesigned vibe configurations with extreme differentiation
+        # Completely redesigned vibe configurations with ENHANCED BRIGHTNESS AND CONTRAST
         self.vibe_styles = {
             'mystical': {
-                'colors': [(138, 43, 226), (75, 0, 130), (148, 0, 211), (186, 85, 211), (123, 104, 238), (221, 160, 221)],
+                'colors': [(200, 100, 255), (150, 50, 200), (220, 80, 255), (255, 150, 255), (180, 150, 255), (255, 200, 255)],
                 'base_patterns': ['pentagram', 'sacred_circle', 'ancient_rune', 'mystic_spiral'],
-                'stroke_multiplier': 1.0,
+                'stroke_multiplier': 2.0,
                 'complexity_bias': 'ancient',
                 'geometry_type': 'curved',
                 'energy_flow': 'inward_spiral',
                 'symbol_density': 'moderate',
-                'glow_intensity': 0.8,
-                'pattern_scale': 1.2
+                'glow_intensity': 1.8,
+                'pattern_scale': 1.2,
+                'brightness_boost': 1.4
             },
             'cosmic': {
-                'colors': [(0, 100, 200), (100, 0, 200), (200, 0, 100), (0, 255, 255), (255, 0, 255), (138, 43, 226), (64, 224, 208)],
+                'colors': [(100, 200, 255), (200, 100, 255), (255, 100, 200), (100, 255, 255), (255, 100, 255), (200, 150, 255), (150, 255, 255)],
                 'base_patterns': ['constellation', 'galaxy_spiral', 'nebula_cloud', 'star_burst'],
-                'stroke_multiplier': 0.8,
+                'stroke_multiplier': 1.5,
                 'complexity_bias': 'infinite',
                 'geometry_type': 'stellar',
                 'energy_flow': 'radial_burst',
                 'symbol_density': 'high',
-                'glow_intensity': 1.2,
-                'pattern_scale': 1.8
+                'glow_intensity': 2.2,
+                'pattern_scale': 1.8,
+                'brightness_boost': 1.6
             },
             'elemental': {
-                'colors': [(34, 139, 34), (255, 140, 0), (30, 144, 255), (139, 69, 19), (255, 69, 0), (0, 128, 0), (255, 215, 0)],
+                'colors': [(100, 220, 100), (255, 200, 50), (80, 200, 255), (200, 120, 80), (255, 120, 50), (50, 200, 50), (255, 255, 100)],
                 'base_patterns': ['nature_flow', 'elemental_cross', 'root_system', 'wave_pattern'],
-                'stroke_multiplier': 1.5,
+                'stroke_multiplier': 2.2,
                 'complexity_bias': 'organic',
                 'geometry_type': 'natural',
                 'energy_flow': 'flowing',
                 'symbol_density': 'organic',
-                'glow_intensity': 0.6,
-                'pattern_scale': 1.1
+                'glow_intensity': 1.4,
+                'pattern_scale': 1.1,
+                'brightness_boost': 1.5
             },
             'crystal': {
-                'colors': [(255, 20, 147), (0, 255, 255), (255, 215, 0), (255, 105, 180), (64, 224, 208), (255, 255, 255), (147, 0, 211)],
+                'colors': [(255, 80, 200), (80, 255, 255), (255, 255, 80), (255, 150, 220), (120, 255, 250), (255, 255, 255), (200, 80, 255)],
                 'base_patterns': ['crystal_lattice', 'prismatic', 'faceted_gem', 'refraction'],
-                'stroke_multiplier': 0.6,
+                'stroke_multiplier': 1.8,
                 'complexity_bias': 'geometric',
                 'geometry_type': 'angular',
                 'energy_flow': 'prismatic',
                 'symbol_density': 'precise',
-                'glow_intensity': 1.5,
-                'pattern_scale': 0.9
+                'glow_intensity': 2.5,
+                'pattern_scale': 0.9,
+                'brightness_boost': 1.7
             },
             'shadow': {
-                'colors': [(64, 64, 64), (128, 0, 128), (105, 105, 105), (169, 169, 169), (25, 25, 25), (47, 79, 79), (72, 61, 139)],
+                'colors': [(150, 150, 150), (200, 100, 200), (180, 180, 180), (220, 220, 220), (100, 100, 100), (120, 150, 150), (150, 120, 200)],
                 'base_patterns': ['void_portal', 'shadow_tendrils', 'dark_sigil', 'obscured_geometry'],
-                'stroke_multiplier': 2.0,
+                'stroke_multiplier': 3.0,
                 'complexity_bias': 'hidden',
                 'geometry_type': 'jagged',
                 'energy_flow': 'consuming',
                 'symbol_density': 'sparse',
-                'glow_intensity': 0.3,
-                'pattern_scale': 1.4
+                'glow_intensity': 1.2,
+                'pattern_scale': 1.4,
+                'brightness_boost': 2.0
             },
             'light': {
-                'colors': [(255, 255, 0), (255, 215, 0), (255, 255, 255), (255, 250, 205), (255, 255, 224), (250, 250, 210), (255, 255, 240)],
+                'colors': [(255, 255, 150), (255, 255, 100), (255, 255, 255), (255, 255, 200), (255, 255, 180), (255, 255, 220), (255, 255, 255)],
                 'base_patterns': ['radiant_sun', 'light_rays', 'divine_mandala', 'brilliant_star'],
-                'stroke_multiplier': 0.7,
+                'stroke_multiplier': 1.5,
                 'complexity_bias': 'illuminating',
                 'geometry_type': 'radial',
                 'energy_flow': 'emanating',
                 'symbol_density': 'luminous',
-                'glow_intensity': 2.0,
-                'pattern_scale': 1.6
+                'glow_intensity': 3.0,
+                'pattern_scale': 1.6,
+                'brightness_boost': 1.8
             },
             'storm': {
-                'colors': [(75, 0, 130), (255, 255, 0), (0, 0, 139), (220, 20, 60), (255, 20, 147), (138, 43, 226), (255, 69, 0)],
+                'colors': [(150, 80, 200), (255, 255, 150), (80, 80, 220), (255, 80, 120), (255, 80, 200), (200, 120, 255), (255, 150, 80)],
                 'base_patterns': ['lightning_tree', 'storm_vortex', 'electric_web', 'chaos_fractal'],
-                'stroke_multiplier': 1.3,
+                'stroke_multiplier': 2.5,
                 'complexity_bias': 'chaotic',
                 'geometry_type': 'electric',
                 'energy_flow': 'explosive',
                 'symbol_density': 'intense',
-                'glow_intensity': 1.1,
-                'pattern_scale': 1.7
+                'glow_intensity': 2.1,
+                'pattern_scale': 1.7,
+                'brightness_boost': 1.6
             },
             'void': {
-                'colors': [(25, 25, 112), (0, 0, 0), (72, 61, 139), (106, 90, 205), (75, 0, 130), (25, 25, 25), (47, 79, 79)],
+                'colors': [(100, 100, 180), (80, 80, 150), (150, 120, 220), (180, 150, 255), (120, 80, 200), (100, 100, 150), (120, 150, 180)],
                 'base_patterns': ['infinite_spiral', 'dimensional_portal', 'void_geometry', 'recursive_depth'],
-                'stroke_multiplier': 1.8,
+                'stroke_multiplier': 2.8,
                 'complexity_bias': 'infinite',
                 'geometry_type': 'impossible',
                 'energy_flow': 'recursive',
                 'symbol_density': 'deep',
-                'glow_intensity': 0.4,
-                'pattern_scale': 2.0
+                'glow_intensity': 1.6,
+                'pattern_scale': 2.0,
+                'brightness_boost': 1.8
             }
         }
 
@@ -206,6 +214,25 @@ class UltraRevolutionarySigilGenerator:
         final_hash = hashlib.sha512(combined_data.encode()).hexdigest()
         return int(final_hash[:16], 16) % (2**31)
 
+    def _enhance_color_brightness(self, color: Tuple[int, int, int], boost: float = 1.0) -> Tuple[int, int, int]:
+        """Enhance color brightness and ensure minimum visibility"""
+        r, g, b = color
+        
+        # Apply brightness boost
+        r = min(255, int(r * boost))
+        g = min(255, int(g * boost))
+        b = min(255, int(b * boost))
+        
+        # Ensure minimum brightness for visibility
+        brightness = (r * 0.299 + g * 0.587 + b * 0.114)
+        if brightness < 80:  # Too dark, boost significantly
+            factor = 120 / max(brightness, 1)
+            r = min(255, int(r * factor))
+            g = min(255, int(g * factor))
+            b = min(255, int(b * factor))
+        
+        return (r, g, b)
+
     def _create_base_pattern(self, draw: ImageDraw, phrase: str, style: Dict, size: int):
         """Create base pattern based on phrase"""
         center = (size // 2, size // 2)
@@ -219,19 +246,21 @@ class UltraRevolutionarySigilGenerator:
             x = center[0] + radius * math.cos(math.radians(angle))
             y = center[1] + radius * math.sin(math.radians(angle))
 
-            color = style['colors'][i % len(style['colors'])]
-            size_factor = max(3, ord(char) % 15)
+            base_color = style['colors'][i % len(style['colors'])]
+            color = self._enhance_color_brightness(base_color, style.get('brightness_boost', 1.0))
+            size_factor = max(5, ord(char) % 20)  # Increased base size
+            stroke_width = max(3, int(style['stroke_multiplier'] * 2))
 
             try:
-                # Draw character-based symbol
+                # Draw character-based symbol with enhanced visibility
                 if ord(char) % 3 == 0:
                     draw.ellipse([x-size_factor, y-size_factor, x+size_factor, y+size_factor],
-                               outline=color, width=2)
+                               outline=color, width=stroke_width, fill=(*color, 80))
                 elif ord(char) % 3 == 1:
                     draw.line([(x-size_factor, y-size_factor), (x+size_factor, y+size_factor)],
-                             fill=color, width=3)
+                             fill=color, width=stroke_width)
                     draw.line([(x-size_factor, y+size_factor), (x+size_factor, y-size_factor)],
-                             fill=color, width=3)
+                             fill=color, width=stroke_width)
                 else:
                     points = []
                     for j in range(6):
@@ -239,7 +268,7 @@ class UltraRevolutionarySigilGenerator:
                         py = y + size_factor * math.sin(math.radians(j * 60))
                         points.append((px, py))
                     if len(points) >= 3:
-                        draw.polygon(points, outline=color, width=2)
+                        draw.polygon(points, outline=color, width=stroke_width, fill=(*color, 60))
             except:
                 pass
 
@@ -256,33 +285,35 @@ class UltraRevolutionarySigilGenerator:
             x = center[0] + distance * math.cos(math.radians(angle))
             y = center[1] + distance * math.sin(math.radians(angle))
 
-            color = style['colors'][(word_energy + i) % len(style['colors'])]
+            base_color = style['colors'][(word_energy + i) % len(style['colors'])]
+            color = self._enhance_color_brightness(base_color, style.get('brightness_boost', 1.0))
+            stroke_width = max(2, int(style['stroke_multiplier']))
 
-            # Create word-specific pattern
+            # Create word-specific pattern with enhanced visibility
             try:
                 if len(word) <= 3:
                     # Small triangle
                     points = []
                     for j in range(3):
-                        px = x + (size//40) * math.cos(math.radians(j * 120))
-                        py = y + (size//40) * math.sin(math.radians(j * 120))
+                        px = x + (size//30) * math.cos(math.radians(j * 120))  # Larger size
+                        py = y + (size//30) * math.sin(math.radians(j * 120))
                         points.append((px, py))
-                    draw.polygon(points, outline=color, width=2)
+                    draw.polygon(points, outline=color, width=stroke_width, fill=(*color, 100))
                 elif len(word) <= 6:
                     # Medium square
-                    s = size // 50
-                    draw.rectangle([x-s, y-s, x+s, y+s], outline=color, width=2)
+                    s = size // 35  # Larger size
+                    draw.rectangle([x-s, y-s, x+s, y+s], outline=color, width=stroke_width, fill=(*color, 80))
                 else:
                     # Large hexagon
                     points = []
                     for j in range(6):
-                        px = x + (size//35) * math.cos(math.radians(j * 60))
-                        py = y + (size//35) * math.sin(math.radians(j * 60))
+                        px = x + (size//25) * math.cos(math.radians(j * 60))  # Larger size
+                        py = y + (size//25) * math.sin(math.radians(j * 60))
                         points.append((px, py))
-                    draw.polygon(points, outline=color, width=2)
+                    draw.polygon(points, outline=color, width=stroke_width, fill=(*color, 60))
 
-                # Connect to center
-                draw.line([center, (x, y)], fill=color, width=1)
+                # Connect to center with thicker line
+                draw.line([center, (x, y)], fill=color, width=max(2, stroke_width // 2))
             except:
                 pass
 
@@ -298,13 +329,15 @@ class UltraRevolutionarySigilGenerator:
                 x = center[0] + radius * math.cos(math.radians(angle))
                 y = center[1] + radius * math.sin(math.radians(angle))
 
-                color = style['colors'][i % len(style['colors'])]
+                base_color = style['colors'][i % len(style['colors'])]
+                color = self._enhance_color_brightness(base_color, style.get('brightness_boost', 1.0))
+                stroke_width = max(4, int(style['stroke_multiplier'] * 2))
                 try:
-                    # Draw star rays
-                    draw.line([center, (x, y)], fill=color, width=3)
-                    # Add star points
-                    star_size = size // 60
-                    draw.ellipse([x-star_size, y-star_size, x+star_size, y+star_size], fill=color)
+                    # Draw star rays with enhanced thickness
+                    draw.line([center, (x, y)], fill=color, width=stroke_width)
+                    # Add brighter star points
+                    star_size = size // 40  # Larger stars
+                    draw.ellipse([x-star_size, y-star_size, x+star_size, y+star_size], fill=color, outline=color, width=2)
                 except:
                     pass
 
@@ -319,9 +352,11 @@ class UltraRevolutionarySigilGenerator:
                     y = center[1] + radius * math.sin(math.radians(angle))
 
                     if j > 0:
-                        color = style['colors'][(i + j) % len(style['colors'])]
+                        base_color = style['colors'][(i + j) % len(style['colors'])]
+                        color = self._enhance_color_brightness(base_color, style.get('brightness_boost', 1.0))
+                        stroke_width = max(3, int(style['stroke_multiplier']))
                         try:
-                            draw.line([prev_pos, (x, y)], fill=color, width=2)
+                            draw.line([prev_pos, (x, y)], fill=color, width=stroke_width)
                         except:
                             pass
                     prev_pos = (x, y)
@@ -339,10 +374,12 @@ class UltraRevolutionarySigilGenerator:
                     y = center[1] + layer_radius * math.sin(math.radians(angle))
                     points.append((x, y))
 
-                color = style['colors'][layer % len(style['colors'])]
+                base_color = style['colors'][layer % len(style['colors'])]
+                color = self._enhance_color_brightness(base_color, style.get('brightness_boost', 1.0))
+                stroke_width = max(3, int(style['stroke_multiplier'] * 1.5))
                 try:
                     if len(points) >= 3:
-                        draw.polygon(points, outline=color, width=2)
+                        draw.polygon(points, outline=color, width=stroke_width, fill=(*color, 40))
                 except:
                     pass
 
@@ -357,54 +394,79 @@ class UltraRevolutionarySigilGenerator:
                     x = center[0] + ring_radius * math.cos(math.radians(angle))
                     y = center[1] + ring_radius * math.sin(math.radians(angle))
 
-                    color = style['colors'][(ring + i) % len(style['colors'])]
-                    symbol_size = max(2, size // 80)
+                    base_color = style['colors'][(ring + i) % len(style['colors'])]
+                    color = self._enhance_color_brightness(base_color, style.get('brightness_boost', 1.0))
+                    symbol_size = max(4, size // 60)  # Larger symbols
+                    stroke_width = max(2, int(style['stroke_multiplier']))
 
                     try:
                         draw.ellipse([x-symbol_size, y-symbol_size, x+symbol_size, y+symbol_size],
-                                   fill=color)
+                                   fill=color, outline=color, width=stroke_width)
                     except:
                         pass
 
     def _apply_enhanced_effects(self, img: Image.Image, style: Dict, phrase: str) -> Image.Image:
-        """Apply enhanced visual effects"""
-        if style.get('glow_intensity', 0) > 0:
-            result = img.copy()
-            for layer in range(3):
-                blur_radius = (layer + 1) * 2
-                glow = img.filter(ImageFilter.GaussianBlur(radius=blur_radius))
+        """Apply DRAMATICALLY enhanced visual effects for maximum visibility"""
+        result = img.copy()
+        
+        # Always apply multiple glow layers for maximum brightness
+        glow_intensity = max(1.5, style.get('glow_intensity', 1.0))
+        
+        # Multiple glow passes for extreme brightness
+        for layer in range(5):
+            blur_radius = (layer + 1) * 1.5
+            glow = img.filter(ImageFilter.GaussianBlur(radius=blur_radius))
+            
+            # Dramatic brightness enhancement
+            enhancer = ImageEnhance.Brightness(glow)
+            intensity = glow_intensity * (0.8 ** layer) * 1.5  # Boosted intensity
+            glow = enhancer.enhance(intensity)
+            
+            result = Image.alpha_composite(result, glow)
+        
+        # Overall brightness boost
+        enhancer = ImageEnhance.Brightness(result)
+        result = enhancer.enhance(1.6)  # Significant brightness boost
+        
+        # Enhanced contrast for better visibility
+        enhancer = ImageEnhance.Contrast(result)
+        result = enhancer.enhance(1.4)
+        
+        # Enhanced saturation for vivid colors
+        enhancer = ImageEnhance.Color(result)
+        result = enhancer.enhance(1.5)
 
-                enhancer = ImageEnhance.Brightness(glow)
-                intensity = style['glow_intensity'] * (0.7 ** layer)
-                glow = enhancer.enhance(intensity)
-
-                result = Image.alpha_composite(result, glow)
-
-            return result
-
-        return img
+        return result
 
     def _apply_ultra_effects(self, img: Image.Image, style: Dict, phrase: str) -> Image.Image:
-        """Apply ultra-revolutionary visual effects for advanced generation"""
+        """Apply MAXIMUM ultra-revolutionary visual effects for advanced generation"""
         base_img = img.copy()
 
-        # Enhanced glow effect
-        if style.get('glow_intensity', 0) > 0:
-            glow_radii = [1, 2, 4, 6, 10]
-            for radius in glow_radii:
-                glow = base_img.filter(ImageFilter.GaussianBlur(radius=radius))
-                enhancer = ImageEnhance.Brightness(glow)
-                intensity = style['glow_intensity'] * (0.5 ** (radius / 5))
-                glow = enhancer.enhance(intensity)
-                base_img = Image.alpha_composite(base_img, glow)
+        # EXTREME glow effect for maximum visibility
+        glow_intensity = max(2.0, style.get('glow_intensity', 1.0))
+        glow_radii = [0.5, 1, 2, 3, 5, 8, 12, 15]  # More glow layers
+        
+        for radius in glow_radii:
+            glow = base_img.filter(ImageFilter.GaussianBlur(radius=radius))
+            enhancer = ImageEnhance.Brightness(glow)
+            intensity = glow_intensity * (0.7 ** (radius / 8)) * 2.0  # Much stronger
+            glow = enhancer.enhance(intensity)
+            base_img = Image.alpha_composite(base_img, glow)
 
-        # Enhanced contrast
+        # MAXIMUM brightness boost
+        enhancer = ImageEnhance.Brightness(base_img)
+        base_img = enhancer.enhance(2.0)  # Double brightness
+
+        # EXTREME contrast for sharp definition
         enhancer = ImageEnhance.Contrast(base_img)
-        base_img = enhancer.enhance(1.2)
+        base_img = enhancer.enhance(1.8)  # Much higher contrast
 
-        # Enhanced saturation
+        # VIVID color saturation
         enhancer = ImageEnhance.Color(base_img)
-        base_img = enhancer.enhance(1.3)
+        base_img = enhancer.enhance(1.8)  # Maximum saturation
+
+        # Additional sharpening for crisp edges
+        base_img = base_img.filter(ImageFilter.UnsharpMask(radius=1, percent=150, threshold=0))
 
         return base_img
 
