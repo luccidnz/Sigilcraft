@@ -207,10 +207,10 @@ class UltraRevolutionarySigilGenerator:
         return int(final_hash[:16], 16) % (2**31)
 
     def _create_base_pattern(self, draw: ImageDraw, phrase: str, style: Dict, size: int):
-        """Create base pattern with enhanced contrast and visibility"""
+        """Create base pattern with maximum contrast and visibility for all vibes"""
         center = (size // 2, size // 2)
 
-        # Create base geometry with much higher contrast
+        # Create base geometry with ultra-high contrast
         for i in range(min(12, len(phrase))):
             char = phrase[i] if i < len(phrase) else phrase[i % len(phrase)]
             angle = (ord(char) * 13 + i * 30) % 360
@@ -219,13 +219,20 @@ class UltraRevolutionarySigilGenerator:
             x = center[0] + radius * math.cos(math.radians(angle))
             y = center[1] + radius * math.sin(math.radians(angle))
 
-            # Enhance color intensity and add alpha
+            # ULTRA-ENHANCED color processing for maximum visibility
             base_color = style['colors'][i % len(style['colors'])]
-            # Boost color intensity by 50% and ensure minimum brightness
-            enhanced_color = tuple(min(255, max(80, int(c * 1.5))) for c in base_color)
             
-            size_factor = max(8, ord(char) % 20)  # Larger symbols
-            stroke_width = max(4, int(style['stroke_multiplier'] * 6))  # Thicker strokes
+            # Ensure EVERY color has minimum brightness and maximum contrast
+            enhanced_color = []
+            for c in base_color:
+                # Force minimum brightness of 120, maximum boost of 2.2x
+                boosted = min(255, max(120, int(c * 2.2)))
+                enhanced_color.append(boosted)
+            enhanced_color = tuple(enhanced_color)
+            
+            # Much larger symbols and thicker strokes for ALL vibes
+            size_factor = max(12, ord(char) % 25)  # Even larger symbols
+            stroke_width = max(6, int(style['stroke_multiplier'] * 8))  # Much thicker strokes
 
             try:
                 # Draw character-based symbol with maximum visibility
@@ -271,9 +278,14 @@ class UltraRevolutionarySigilGenerator:
             x = center[0] + distance * math.cos(math.radians(angle))
             y = center[1] + distance * math.sin(math.radians(angle))
 
-            # Enhanced color with better contrast
+            # MAXIMUM contrast enhancement for all vibes
             base_color = style['colors'][(word_energy + i) % len(style['colors'])]
-            enhanced_color = tuple(min(255, max(100, int(c * 1.6))) for c in base_color)
+            # Force ultra-high contrast with minimum brightness of 140
+            enhanced_color = []
+            for c in base_color:
+                boosted = min(255, max(140, int(c * 2.5)))
+                enhanced_color.append(boosted)
+            enhanced_color = tuple(enhanced_color)
 
             # Create word-specific pattern with maximum visibility
             try:
@@ -319,7 +331,7 @@ class UltraRevolutionarySigilGenerator:
         center = (size // 2, size // 2)
 
         if vibe == 'cosmic':
-            # Enhanced star pattern with maximum contrast
+            # ULTRA-enhanced star pattern with forced maximum contrast
             for i in range(8):
                 angle = i * 45
                 radius = size // 3
@@ -327,7 +339,12 @@ class UltraRevolutionarySigilGenerator:
                 y = center[1] + radius * math.sin(math.radians(angle))
 
                 base_color = style['colors'][i % len(style['colors'])]
-                enhanced_color = tuple(min(255, max(120, int(c * 1.8))) for c in base_color)
+                # Force ultra-bright cosmic colors
+                enhanced_color = []
+                for c in base_color:
+                    boosted = min(255, max(160, int(c * 3.0)))
+                    enhanced_color.append(boosted)
+                enhanced_color = tuple(enhanced_color)
                 
                 try:
                     # Thick star rays with glow
@@ -355,7 +372,12 @@ class UltraRevolutionarySigilGenerator:
 
                     if prev_pos:
                         base_color = style['colors'][(i + j) % len(style['colors'])]
-                        enhanced_color = tuple(min(255, max(100, int(c * 1.7))) for c in base_color)
+                        # Force ultra-bright elemental colors
+                        enhanced_color = []
+                        for c in base_color:
+                            boosted = min(255, max(150, int(c * 2.8)))
+                            enhanced_color.append(boosted)
+                        enhanced_color = tuple(enhanced_color)
                         try:
                             draw.line([prev_pos, (x, y)], fill=enhanced_color, width=6)
                             # Add connection nodes
@@ -379,7 +401,12 @@ class UltraRevolutionarySigilGenerator:
                     points.append((x, y))
 
                 base_color = style['colors'][layer % len(style['colors'])]
-                enhanced_color = tuple(min(255, max(120, int(c * 1.9))) for c in base_color)
+                # Force ultra-bright crystal colors
+                enhanced_color = []
+                for c in base_color:
+                    boosted = min(255, max(160, int(c * 3.2)))
+                    enhanced_color.append(boosted)
+                enhanced_color = tuple(enhanced_color)
                 
                 try:
                     if len(points) >= 3:
@@ -401,8 +428,13 @@ class UltraRevolutionarySigilGenerator:
                     y = center[1] + ring_radius * math.sin(math.radians(angle))
 
                     base_color = style['colors'][(ring + i) % len(style['colors'])]
-                    enhanced_color = tuple(min(255, max(100, int(c * 1.6))) for c in base_color)
-                    symbol_size = max(6, size // 60)  # Larger symbols
+                    # Force ultra-bright mystical colors
+                    enhanced_color = []
+                    for c in base_color:
+                        boosted = min(255, max(140, int(c * 2.7)))
+                        enhanced_color.append(boosted)
+                    enhanced_color = tuple(enhanced_color)
+                    symbol_size = max(8, size // 50)  # Even larger symbols
 
                     try:
                         # Bright filled circles with outlines
@@ -422,17 +454,17 @@ class UltraRevolutionarySigilGenerator:
         # Apply sharpening filter first
         result = result.filter(ImageFilter.UnsharpMask(radius=2, percent=200, threshold=3))
         
-        # Enhanced contrast
+        # MAXIMUM contrast for all vibes
         enhancer = ImageEnhance.Contrast(result)
-        result = enhancer.enhance(2.2)  # Much higher contrast
+        result = enhancer.enhance(3.0)  # Ultra-high contrast
         
-        # Enhanced color saturation
+        # MAXIMUM color saturation
         enhancer = ImageEnhance.Color(result)
-        result = enhancer.enhance(2.0)  # Much more vibrant colors
+        result = enhancer.enhance(2.8)  # Ultra-vibrant colors
         
-        # Enhanced brightness for visibility
+        # MAXIMUM brightness for perfect visibility
         enhancer = ImageEnhance.Brightness(result)
-        result = enhancer.enhance(1.3)
+        result = enhancer.enhance(1.5)
         
         # Apply controlled glow only if specified
         if style.get('glow_intensity', 0) > 0:
