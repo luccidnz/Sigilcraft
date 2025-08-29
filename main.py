@@ -329,6 +329,7 @@ class UltraRevolutionarySigilGenerator:
     def _create_vibe_pattern(self, draw: ImageDraw, phrase: str, vibe: str, style: Dict, size: int):
         """Create high-contrast vibe-specific resonance patterns"""
         center = (size // 2, size // 2)
+        phrase_seed = sum(ord(c) for c in phrase.lower())
 
         if vibe == 'cosmic':
             # ULTRA-enhanced star pattern with forced maximum contrast
@@ -388,36 +389,213 @@ class UltraRevolutionarySigilGenerator:
                     prev_pos = (x, y)
 
         elif vibe == 'crystal':
-            # Enhanced geometric crystal pattern
-            for layer in range(4):  # More layers
-                layer_radius = (size // 6) + (layer * size // 10)
+            # FIXED: Enhanced prismatic crystal lattice pattern
+            for layer in range(5):  # More layers for complexity
+                layer_radius = (size // 8) + (layer * size // 12)
                 sides = 6 + (layer * 2)
+                rotation = layer * 15 + (phrase_seed % 45)  # Phrase-specific rotation
 
                 points = []
                 for i in range(sides):
-                    angle = (360 / sides) * i
+                    angle = (360 / sides) * i + rotation
                     x = center[0] + layer_radius * math.cos(math.radians(angle))
                     y = center[1] + layer_radius * math.sin(math.radians(angle))
                     points.append((x, y))
 
                 base_color = style['colors'][layer % len(style['colors'])]
-                # Force ultra-bright crystal colors
+                # Force ultra-bright crystal colors with prismatic effect
                 enhanced_color = []
                 for c in base_color:
-                    boosted = min(255, max(160, int(c * 3.2)))
+                    boosted = min(255, max(180, int(c * 3.5)))
                     enhanced_color.append(boosted)
                 enhanced_color = tuple(enhanced_color)
                 
                 try:
                     if len(points) >= 3:
-                        # Filled polygon with bright outline
-                        fill_color = tuple(c // 3 for c in enhanced_color)  # Subtle fill
-                        draw.polygon(points, fill=fill_color, outline=enhanced_color, width=5)
+                        # Bright filled polygon for crystal facets
+                        fill_color = tuple(max(60, c // 2) for c in enhanced_color)
+                        draw.polygon(points, fill=fill_color, outline=enhanced_color, width=6)
+                        
+                        # Add crystalline inner structure
+                        if layer > 0:
+                            for i in range(0, len(points), 2):
+                                if i + 2 < len(points):
+                                    draw.line([points[i], points[i+2]], fill=enhanced_color, width=3)
+                        
+                        # Add crystal vertices
+                        for point in points:
+                            vertex_size = 6
+                            draw.ellipse([point[0]-vertex_size, point[1]-vertex_size, 
+                                        point[0]+vertex_size, point[1]+vertex_size], 
+                                       fill=enhanced_color)
                 except:
                     pass
 
+        elif vibe == 'shadow':
+            # FIXED: Enhanced shadow tendrils and void portals
+            # Create multiple shadow layers with varying opacity and jagged patterns
+            for ring in range(6):
+                ring_radius = (size // 12) + (ring * size // 15)
+                tendril_count = 5 + (ring * 2)
+                
+                for i in range(tendril_count):
+                    # Create jagged, irregular shadow tendrils
+                    base_angle = (360 / tendril_count) * i + (phrase_seed % 360)
+                    angle_variation = 15 + (phrase_seed % 20)
+                    
+                    # Multiple segments for each tendril
+                    prev_point = center
+                    for segment in range(4 + ring):
+                        angle = base_angle + random.randint(-angle_variation, angle_variation)
+                        segment_radius = ring_radius + (segment * size // 40)
+                        
+                        # Add jagged variations
+                        jagged_offset = random.randint(-size//60, size//60)
+                        x = center[0] + (segment_radius + jagged_offset) * math.cos(math.radians(angle))
+                        y = center[1] + (segment_radius + jagged_offset) * math.sin(math.radians(angle))
+                        
+                        base_color = style['colors'][(ring + i) % len(style['colors'])]
+                        # Force darker but visible shadow colors
+                        enhanced_color = []
+                        for c in base_color:
+                            boosted = min(255, max(120, int(c * 2.0)))
+                            enhanced_color.append(boosted)
+                        enhanced_color = tuple(enhanced_color)
+                        
+                        try:
+                            # Thick shadow tendrils
+                            stroke_width = max(4, 8 - ring)
+                            draw.line([prev_point, (x, y)], fill=enhanced_color, width=stroke_width)
+                            
+                            # Shadow nodes
+                            node_size = max(3, 8 - ring)
+                            draw.ellipse([x-node_size, y-node_size, x+node_size, y+node_size], 
+                                       fill=enhanced_color, outline=enhanced_color, width=2)
+                        except:
+                            pass
+                        prev_point = (x, y)
+
+        elif vibe == 'storm':
+            # FIXED: Enhanced chaotic lightning and electric storm patterns
+            storm_center_x, storm_center_y = center
+            
+            # Create multiple storm systems
+            for storm_sys in range(3):
+                # Offset storm centers for chaos
+                offset_x = random.randint(-size//6, size//6)
+                offset_y = random.randint(-size//6, size//6)
+                storm_x = storm_center_x + offset_x
+                storm_y = storm_center_y + offset_y
+                
+                # Lightning branches from each storm center
+                for branch in range(8 + storm_sys * 3):
+                    base_angle = (phrase_seed * 7 + branch * 35) % 360
+                    
+                    # Create chaotic lightning path
+                    current_x, current_y = storm_x, storm_y
+                    
+                    for segment in range(6 + random.randint(0, 4)):
+                        # Chaotic angle variations for lightning
+                        angle_chaos = random.randint(-45, 45)
+                        angle = base_angle + angle_chaos + (segment * random.randint(-15, 15))
+                        
+                        # Variable segment length for chaos
+                        segment_length = size // 20 + random.randint(-size//40, size//40)
+                        
+                        next_x = current_x + segment_length * math.cos(math.radians(angle))
+                        next_y = current_y + segment_length * math.sin(math.radians(angle))
+                        
+                        base_color = style['colors'][(storm_sys + branch + segment) % len(style['colors'])]
+                        # Force ultra-bright electric colors
+                        enhanced_color = []
+                        for c in base_color:
+                            boosted = min(255, max(180, int(c * 3.8)))
+                            enhanced_color.append(boosted)
+                        enhanced_color = tuple(enhanced_color)
+                        
+                        try:
+                            # Thick electric bolts with random width variation
+                            bolt_width = random.randint(3, 8)
+                            draw.line([(current_x, current_y), (next_x, next_y)], 
+                                     fill=enhanced_color, width=bolt_width)
+                            
+                            # Electric charge points
+                            charge_size = random.randint(4, 10)
+                            draw.ellipse([next_x-charge_size, next_y-charge_size, 
+                                        next_x+charge_size, next_y+charge_size], 
+                                       fill=enhanced_color)
+                            
+                            # Random secondary bolts for more chaos
+                            if random.random() < 0.4:
+                                side_angle = angle + random.randint(-90, 90)
+                                side_length = segment_length // 2
+                                side_x = next_x + side_length * math.cos(math.radians(side_angle))
+                                side_y = next_y + side_length * math.sin(math.radians(side_angle))
+                                draw.line([(next_x, next_y), (side_x, side_y)], 
+                                         fill=enhanced_color, width=max(2, bolt_width//2))
+                        except:
+                            pass
+                        
+                        current_x, current_y = next_x, next_y
+
+        elif vibe == 'void':
+            # FIXED: Enhanced recursive void geometry and dimensional portals
+            # Create multiple void spirals with recursive depth
+            for void_layer in range(7):
+                layer_radius = (size // 15) + (void_layer * size // 20)
+                spiral_segments = 12 + (void_layer * 4)
+                
+                # Create recursive spiral patterns
+                for segment in range(spiral_segments):
+                    # Recursive angle calculation for infinite feel
+                    base_angle = (segment * 360 / spiral_segments) + (void_layer * 23)
+                    recursive_angle = base_angle + (phrase_seed % 180) + (segment * void_layer * 3)
+                    
+                    # Recursive radius with depth illusion
+                    recursive_radius = layer_radius * (1 + math.sin(math.radians(segment * 15)) * 0.3)
+                    
+                    x = center[0] + recursive_radius * math.cos(math.radians(recursive_angle))
+                    y = center[1] + recursive_radius * math.sin(math.radians(recursive_angle))
+                    
+                    # Calculate next point for continuous spiral
+                    next_segment = (segment + 1) % spiral_segments
+                    next_angle = (next_segment * 360 / spiral_segments) + (void_layer * 23)
+                    next_recursive_angle = next_angle + (phrase_seed % 180) + (next_segment * void_layer * 3)
+                    next_radius = layer_radius * (1 + math.sin(math.radians(next_segment * 15)) * 0.3)
+                    
+                    next_x = center[0] + next_radius * math.cos(math.radians(next_recursive_angle))
+                    next_y = center[1] + next_radius * math.sin(math.radians(next_recursive_angle))
+                    
+                    base_color = style['colors'][(void_layer + segment) % len(style['colors'])]
+                    # Force darker but visible void colors with depth
+                    enhanced_color = []
+                    for c in base_color:
+                        depth_factor = 1.5 + (void_layer * 0.2)
+                        boosted = min(255, max(100, int(c * depth_factor)))
+                        enhanced_color.append(boosted)
+                    enhanced_color = tuple(enhanced_color)
+                    
+                    try:
+                        # Void spiral lines with varying thickness
+                        line_width = max(2, 6 - (void_layer // 2))
+                        draw.line([(x, y), (next_x, next_y)], fill=enhanced_color, width=line_width)
+                        
+                        # Void portals (dimensional dots)
+                        portal_size = max(2, 8 - void_layer)
+                        draw.ellipse([x-portal_size, y-portal_size, x+portal_size, y+portal_size], 
+                                   fill=enhanced_color, outline=enhanced_color, width=2)
+                        
+                        # Inner recursive connections to center for infinite depth
+                        if void_layer > 0 and segment % 3 == 0:
+                            inner_factor = 0.6
+                            inner_x = center[0] + (x - center[0]) * inner_factor
+                            inner_y = center[1] + (y - center[1]) * inner_factor
+                            draw.line([(x, y), (inner_x, inner_y)], fill=enhanced_color, width=max(1, line_width//2))
+                    except:
+                        pass
+
         else:
-            # Enhanced mystical pattern
+            # Enhanced mystical pattern (fallback for all other vibes including 'light')
             for ring in range(5):  # More rings
                 ring_radius = (size // 10) + (ring * size // 18)
                 segments = 8 + (ring * 2)
