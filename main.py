@@ -223,15 +223,20 @@ class UltraRevolutionarySigilGenerator:
             size_factor = max(3, ord(char) % 15)
 
             try:
-                # Draw character-based symbol
+                stroke_width = int(style['stroke_multiplier'] * 3)
+                # Draw character-based symbol with enhanced visibility
                 if ord(char) % 3 == 0:
                     draw.ellipse([x-size_factor, y-size_factor, x+size_factor, y+size_factor],
-                               outline=color, width=2)
+                               outline=color, width=stroke_width)
+                    # Add filled center for better visibility
+                    inner_size = max(1, size_factor // 2)
+                    draw.ellipse([x-inner_size, y-inner_size, x+inner_size, y+inner_size],
+                               fill=color)
                 elif ord(char) % 3 == 1:
                     draw.line([(x-size_factor, y-size_factor), (x+size_factor, y+size_factor)],
-                             fill=color, width=3)
+                             fill=color, width=stroke_width)
                     draw.line([(x-size_factor, y+size_factor), (x+size_factor, y-size_factor)],
-                             fill=color, width=3)
+                             fill=color, width=stroke_width)
                 else:
                     points = []
                     for j in range(6):
@@ -239,7 +244,7 @@ class UltraRevolutionarySigilGenerator:
                         py = y + size_factor * math.sin(math.radians(j * 60))
                         points.append((px, py))
                     if len(points) >= 3:
-                        draw.polygon(points, outline=color, width=2)
+                        draw.polygon(points, outline=color, width=stroke_width)
             except:
                 pass
 
@@ -260,29 +265,34 @@ class UltraRevolutionarySigilGenerator:
 
             # Create word-specific pattern
             try:
-                if len(word) <= 3:
-                    # Small triangle
-                    points = []
-                    for j in range(3):
-                        px = x + (size//40) * math.cos(math.radians(j * 120))
-                        py = y + (size//40) * math.sin(math.radians(j * 120))
-                        points.append((px, py))
-                    draw.polygon(points, outline=color, width=2)
-                elif len(word) <= 6:
-                    # Medium square
-                    s = size // 50
-                    draw.rectangle([x-s, y-s, x+s, y+s], outline=color, width=2)
-                else:
-                    # Large hexagon
-                    points = []
-                    for j in range(6):
-                        px = x + (size//35) * math.cos(math.radians(j * 60))
-                        py = y + (size//35) * math.sin(math.radians(j * 60))
-                        points.append((px, py))
-                    draw.polygon(points, outline=color, width=2)
+                stroke_width = int(style['stroke_multiplier'] * 2)
+                connector_width = max(2, int(style['stroke_multiplier']))
 
-                # Connect to center
-                draw.line([center, (x, y)], fill=color, width=1)
+                if len(word) <= 3:
+                    # Small triangle with enhanced visibility
+                    points = []
+                    triangle_size = size // 35
+                    for j in range(3):
+                        px = x + triangle_size * math.cos(math.radians(j * 120))
+                        py = y + triangle_size * math.sin(math.radians(j * 120))
+                        points.append((px, py))
+                    draw.polygon(points, outline=color, width=stroke_width, fill=color)
+                elif len(word) <= 6:
+                    # Medium square with enhanced visibility
+                    s = size // 45
+                    draw.rectangle([x-s, y-s, x+s, y+s], outline=color, width=stroke_width, fill=color)
+                else:
+                    # Large hexagon with enhanced visibility
+                    points = []
+                    hex_size = size // 30
+                    for j in range(6):
+                        px = x + hex_size * math.cos(math.radians(j * 60))
+                        py = y + hex_size * math.sin(math.radians(j * 60))
+                        points.append((px, py))
+                    draw.polygon(points, outline=color, width=stroke_width, fill=color)
+
+                # Connect to center with enhanced line
+                draw.line([center, (x, y)], fill=color, width=connector_width)
             except:
                 pass
 
