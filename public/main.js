@@ -555,7 +555,7 @@
             this.currentSigil = data;
             
             if (this.elements.sigilImage) {
-                this.elements.sigilImage.src = `data:image/png;base64,${data.image}`;
+                this.elements.sigilImage.src = data.image; // data.image already contains the full data URL
                 this.elements.sigilImage.alt = `Sigil for: ${data.phrase}`;
             }
 
@@ -591,7 +591,7 @@
                 const item = document.createElement('div');
                 item.className = 'batch-item';
                 item.innerHTML = `
-                    <img src="data:image/png;base64,${result.image}" alt="Sigil ${index + 1}">
+                    <img src="${result.image}" alt="Sigil ${index + 1}">
                 `;
                 
                 item.addEventListener('click', () => {
@@ -672,7 +672,7 @@
 
             try {
                 const link = document.createElement('a');
-                link.href = `data:image/png;base64,${this.currentSigil.image}`;
+                link.href = this.currentSigil.image; // Use direct image data URL
                 link.download = `sigilcraft-${this.currentSigil.phrase.replace(/[^a-zA-Z0-9]/g, '_')}-${Date.now()}.png`;
                 document.body.appendChild(link);
                 link.click();
@@ -690,7 +690,7 @@
             if (!this.currentSigil) return;
             
             if (this.elements.sharePreviewImage) {
-                this.elements.sharePreviewImage.src = `data:image/png;base64,${this.currentSigil.image}`;
+                this.elements.sharePreviewImage.src = this.currentSigil.image;
             }
             
             if (this.elements.sharePreviewText) {
@@ -811,7 +811,7 @@
                 const galleryItem = document.createElement('div');
                 galleryItem.className = 'gallery-item';
                 galleryItem.innerHTML = `
-                    <img src="data:image/png;base64,${item.image}" alt="${item.phrase}">
+                    <img src="${item.image}" alt="${item.phrase}">
                     <div class="gallery-item-info">
                         <div class="gallery-item-phrase">${item.phrase}</div>
                         <div class="gallery-item-vibe">${this.capitalizeFirst(item.vibe)} Energy</div>
@@ -837,7 +837,7 @@
             }
         },
 
-        async upgradeToProz() {
+        async upgradeToPro() {
             // In a real implementation, this would redirect to Stripe
             this.showToast('🚀 Redirecting to secure checkout...', 'info');
             
