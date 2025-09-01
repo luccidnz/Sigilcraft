@@ -107,15 +107,15 @@ class UltraRevolutionarySigilGenerator:
                 'pattern_scale': 1.1
             },
             'crystal': {
-                'colors': [(255, 20, 147), (0, 255, 255), (255, 215, 0), (255, 105, 180), (64, 224, 208), (255, 255, 255), (147, 0, 211)],
+                'colors': [(255, 20, 147), (0, 255, 255), (255, 215, 0), (255, 105, 180), (64, 224, 208), (255, 255, 255), (147, 0, 211), (255, 100, 255), (100, 255, 255)],
                 'base_patterns': ['crystal_lattice', 'prismatic', 'faceted_gem', 'refraction'],
-                'stroke_multiplier': 0.6,
+                'stroke_multiplier': 1.2,
                 'complexity_bias': 'geometric',
                 'geometry_type': 'angular',
                 'energy_flow': 'prismatic',
                 'symbol_density': 'precise',
-                'glow_intensity': 1.5,
-                'pattern_scale': 0.9
+                'glow_intensity': 1.8,
+                'pattern_scale': 1.1
             },
             'shadow': {
                 'colors': [(180, 100, 180), (200, 80, 200), (160, 120, 160), (220, 150, 220), (140, 90, 140), (190, 130, 190), (170, 110, 170)],
@@ -389,47 +389,98 @@ class UltraRevolutionarySigilGenerator:
                     prev_pos = (x, y)
 
         elif vibe == 'crystal':
-            # FIXED: Enhanced prismatic crystal lattice pattern
-            for layer in range(5):  # More layers for complexity
-                layer_radius = (size // 8) + (layer * size // 12)
-                sides = 6 + (layer * 2)
-                rotation = layer * 15 + (phrase_seed % 45)  # Phrase-specific rotation
-
+            # ULTRA-ENHANCED: Crystal lattice pattern with perfect prismatic geometry
+            # Create multiple crystalline layers with geometric precision
+            for layer in range(6):  # More layers for crystal complexity
+                layer_radius = (size // 10) + (layer * size // 16)
+                sides = max(3, 6 + (layer * 2))  # Ensure minimum 3 sides
+                rotation = layer * 22.5 + (phrase_seed % 60)  # Phrase-specific rotation
+                
+                # Generate crystal facet points
                 points = []
                 for i in range(sides):
-                    angle = (360 / sides) * i + rotation
+                    angle = (360.0 / sides) * i + rotation
                     x = center[0] + layer_radius * math.cos(math.radians(angle))
                     y = center[1] + layer_radius * math.sin(math.radians(angle))
                     points.append((x, y))
 
                 base_color = style['colors'][layer % len(style['colors'])]
-                # Force ultra-bright crystal colors with prismatic effect
+                # Ultra-bright crystal colors with maximum prismatic effect
                 enhanced_color = []
                 for c in base_color:
-                    boosted = min(255, max(180, int(c * 3.5)))
+                    # Maximum crystal brightness with prismatic boost
+                    boosted = min(255, max(190, int(c * 4.2)))
                     enhanced_color.append(boosted)
                 enhanced_color = tuple(enhanced_color)
                 
+                # Create prismatic fill color
+                prismatic_fill = tuple(max(80, min(200, c // 1.8)) for c in enhanced_color)
+                
                 try:
                     if len(points) >= 3:
-                        # Bright filled polygon for crystal facets
-                        fill_color = tuple(max(60, c // 2) for c in enhanced_color)
-                        draw.polygon(points, fill=fill_color, outline=enhanced_color, width=6)
+                        # Ultra-bright crystalline facets
+                        stroke_width = max(4, 8 - layer)
+                        draw.polygon(points, fill=prismatic_fill, outline=enhanced_color, width=stroke_width)
                         
-                        # Add crystalline inner structure
+                        # Add crystalline inner lattice structure
                         if layer > 0:
-                            for i in range(0, len(points), 2):
-                                if i + 2 < len(points):
-                                    draw.line([points[i], points[i+2]], fill=enhanced_color, width=3)
+                            # Connect every point to create crystal lattice
+                            for i in range(len(points)):
+                                next_i = (i + 1) % len(points)
+                                opposite_i = (i + len(points) // 2) % len(points)
+                                
+                                # Inner crystalline connections
+                                inner_width = max(2, 5 - layer)
+                                draw.line([points[i], points[opposite_i]], fill=enhanced_color, width=inner_width)
+                                
+                                # Connect to center for crystal structure
+                                if layer % 2 == 0:
+                                    draw.line([center, points[i]], fill=enhanced_color, width=inner_width)
                         
-                        # Add crystal vertices
+                        # Ultra-bright crystal vertices with prismatic glow
                         for point in points:
-                            vertex_size = 6
+                            vertex_size = max(5, 12 - layer)
+                            # Main crystal vertex
                             draw.ellipse([point[0]-vertex_size, point[1]-vertex_size, 
                                         point[0]+vertex_size, point[1]+vertex_size], 
-                                       fill=enhanced_color)
-                except:
-                    pass
+                                       fill=enhanced_color, outline=enhanced_color, width=2)
+                            
+                            # Prismatic highlight
+                            highlight_size = max(2, vertex_size // 2)
+                            ultra_bright = tuple(min(255, c + 40) for c in enhanced_color)
+                            draw.ellipse([point[0]-highlight_size, point[1]-highlight_size, 
+                                        point[0]+highlight_size, point[1]+highlight_size], 
+                                       fill=ultra_bright)
+                        
+                        # Add central crystal core
+                        if layer == 0:
+                            core_size = size // 40
+                            core_color = tuple(min(255, c + 60) for c in enhanced_color)
+                            draw.ellipse([center[0]-core_size, center[1]-core_size,
+                                        center[0]+core_size, center[1]+core_size],
+                                       fill=core_color, outline=enhanced_color, width=3)
+                            
+                            # Ultra-bright core highlight
+                            inner_core = max(1, core_size // 2)
+                            draw.ellipse([center[0]-inner_core, center[1]-inner_core,
+                                        center[0]+inner_core, center[1]+inner_core],
+                                       fill=(255, 255, 255))
+                        
+                except Exception as crystal_error:
+                    # Fallback crystal pattern if complex geometry fails
+                    try:
+                        # Simple bright crystal points as fallback
+                        for i in range(8):
+                            angle = i * 45 + (layer * 15)
+                            radius = layer_radius
+                            x = center[0] + radius * math.cos(math.radians(angle))
+                            y = center[1] + radius * math.sin(math.radians(angle))
+                            
+                            crystal_size = max(8, 15 - layer)
+                            draw.ellipse([x-crystal_size, y-crystal_size, x+crystal_size, y+crystal_size],
+                                       fill=enhanced_color, outline=enhanced_color, width=3)
+                    except:
+                        pass
 
         elif vibe == 'shadow':
             # FIXED: Enhanced shadow tendrils and void portals
