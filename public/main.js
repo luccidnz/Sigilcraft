@@ -1,4 +1,3 @@
-
 // ===== SIGILCRAFT NEXUS - ULTIMATE SPIRITUAL FRONTEND ===== 
 // Revolutionary mystical experience with pro features and gallery
 
@@ -18,7 +17,7 @@
         currentRequest: null,
         currentSigil: null,
         gallery: [],
-        
+
         // Pro features
         proFeatures: {
             allVibes: false,
@@ -44,7 +43,7 @@
         async init() {
             try {
                 console.log('🔮 Initializing Sigilcraft Nexus...');
-                
+
                 this.bindElements();
                 this.bindEvents();
                 this.initializeFloatingElements();
@@ -54,7 +53,7 @@
                 this.loadGallery();
                 this.checkProStatus();
                 this.updateProFeatures();
-                
+
                 console.log('✨ Sigilcraft Nexus initialized successfully!');
             } catch (error) {
                 console.error('❌ Nexus initialization failed:', error);
@@ -70,51 +69,51 @@
                 vibeSelect: document.getElementById('vibeSelect'),
                 qualitySelect: document.getElementById('qualitySelect'),
                 generateBtn: document.getElementById('generateBtn'),
-                
+
                 // Result elements
                 resultContainer: document.getElementById('resultContainer'),
                 sigilImage: document.getElementById('sigilImage'),
                 resultPhrase: document.getElementById('resultPhrase'),
                 resultVibe: document.getElementById('resultVibe'),
-                
+
                 // Action buttons
                 downloadBtn: document.getElementById('downloadBtn'),
                 shareBtn: document.getElementById('shareBtn'),
                 regenerateBtn: document.getElementById('regenerateBtn'),
                 newSigilBtn: document.getElementById('newSigilBtn'),
                 viewGalleryBtn: document.getElementById('viewGalleryBtn'),
-                
+
                 // Navigation
                 galleryBtn: document.getElementById('galleryBtn'),
                 proBtn: document.getElementById('proBtn'),
-                
+
                 // Toggles
                 saveToGallery: document.getElementById('saveToGallery'),
                 batchMode: document.getElementById('batchMode'),
-                
+
                 // Modals
                 loadingOverlay: document.getElementById('loadingOverlay'),
                 proModal: document.getElementById('proModal'),
                 shareModal: document.getElementById('shareModal'),
                 galleryModal: document.getElementById('galleryModal'),
-                
+
                 // Modal content
                 galleryContent: document.getElementById('galleryContent'),
                 galleryEmpty: document.getElementById('galleryEmpty'),
                 sharePreviewImage: document.getElementById('sharePreviewImage'),
                 sharePreviewText: document.getElementById('sharePreviewText'),
-                
+
                 // Pro elements
                 proStatus: document.getElementById('proStatus'),
                 upgradeBtn: document.getElementById('upgradeBtn'),
                 proKeyInput: document.getElementById('proKeyInput'),
                 activateKeyBtn: document.getElementById('activateKeyBtn'),
-                
+
                 // Batch elements
                 batchControls: document.getElementById('batchControls'),
                 batchResults: document.getElementById('batchResults'),
                 batchGrid: document.getElementById('batchGrid'),
-                
+
                 // Counters
                 charCounter: document.getElementById('charCounter'),
                 toastContainer: document.getElementById('toastContainer')
@@ -133,7 +132,7 @@
         bindEvents() {
             // Core generation
             this.elements.generateBtn.addEventListener('click', () => this.generateSigil());
-            
+
             // Input events
             this.elements.phraseInput.addEventListener('input', () => {
                 this.updateCharacterCounter();
@@ -149,10 +148,10 @@
 
             // Vibe selection
             this.elements.vibeSelect.addEventListener('change', () => this.updateVibeDescription());
-            
+
             // Quality selection
             this.elements.qualitySelect.addEventListener('change', () => this.validateQualitySelection());
-            
+
             // Batch mode toggle
             if (this.elements.batchMode) {
                 this.elements.batchMode.addEventListener('change', () => this.toggleBatchMode());
@@ -162,19 +161,19 @@
             if (this.elements.downloadBtn) {
                 this.elements.downloadBtn.addEventListener('click', () => this.downloadSigil());
             }
-            
+
             if (this.elements.shareBtn) {
                 this.elements.shareBtn.addEventListener('click', () => this.openShareModal());
             }
-            
+
             if (this.elements.regenerateBtn) {
                 this.elements.regenerateBtn.addEventListener('click', () => this.regenerateSigil());
             }
-            
+
             if (this.elements.newSigilBtn) {
                 this.elements.newSigilBtn.addEventListener('click', () => this.createNewSigil());
             }
-            
+
             if (this.elements.viewGalleryBtn) {
                 this.elements.viewGalleryBtn.addEventListener('click', () => this.openGallery());
             }
@@ -183,7 +182,7 @@
             if (this.elements.galleryBtn) {
                 this.elements.galleryBtn.addEventListener('click', () => this.openGallery());
             }
-            
+
             if (this.elements.proBtn) {
                 this.elements.proBtn.addEventListener('click', () => this.openProModal());
             }
@@ -192,7 +191,7 @@
             if (this.elements.upgradeBtn) {
                 this.elements.upgradeBtn.addEventListener('click', () => this.upgradeToPro());
             }
-            
+
             if (this.elements.activateKeyBtn) {
                 this.elements.activateKeyBtn.addEventListener('click', () => this.activateProKey());
             }
@@ -202,7 +201,7 @@
                 if (e.target.classList.contains('modal-overlay')) {
                     this.closeAllModals();
                 }
-                
+
                 if (e.target.classList.contains('close-btn')) {
                     this.closeAllModals();
                 }
@@ -212,11 +211,11 @@
             if (document.getElementById('copyLinkBtn')) {
                 document.getElementById('copyLinkBtn').addEventListener('click', () => this.copyShareLink());
             }
-            
+
             if (document.getElementById('downloadShareBtn')) {
                 document.getElementById('downloadShareBtn').addEventListener('click', () => this.downloadSigil());
             }
-            
+
             if (document.getElementById('socialShareBtn')) {
                 document.getElementById('socialShareBtn').addEventListener('click', () => this.shareOnSocial());
             }
@@ -226,13 +225,13 @@
                 if (e.key === 'Escape') {
                     this.closeAllModals();
                 }
-                
+
                 if (e.ctrlKey || e.metaKey) {
                     if (e.key === 'Enter') {
                         e.preventDefault();
                         this.generateSigil();
                     }
-                    
+
                     if (e.key === 'g') {
                         e.preventDefault();
                         this.openGallery();
@@ -247,7 +246,7 @@
             if (!floatingContainer) return;
 
             const mysticalSymbols = ['🔮', '✨', '🌟', '⚡', '🌙', '💎', '🔥', '💫'];
-            
+
             for (let i = 0; i < 12; i++) {
                 const element = document.createElement('div');
                 element.textContent = mysticalSymbols[Math.floor(Math.random() * mysticalSymbols.length)];
@@ -270,7 +269,7 @@
             try {
                 const response = await fetch('/api/vibes');
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                
+
                 const data = await response.json();
                 if (data.success && data.vibes) {
                     this.populateVibes(data.vibes, data.descriptions);
@@ -298,19 +297,19 @@
         // Populate vibe options
         populateVibes(vibes, descriptions = {}) {
             this.elements.vibeSelect.innerHTML = '';
-            
+
             vibes.forEach((vibe, index) => {
                 const option = document.createElement('option');
                 option.value = vibe;
                 option.textContent = descriptions[vibe] || this.capitalizeFirst(vibe);
                 option.title = descriptions[vibe] || '';
-                
+
                 // Restrict free users to first 3 vibes
                 if (!this.isPro && index >= 3) {
                     option.disabled = true;
                     option.textContent += ' - Pro Only';
                 }
-                
+
                 this.elements.vibeSelect.appendChild(option);
             });
 
@@ -338,7 +337,7 @@
             if (this.elements.charCounter) {
                 const length = this.elements.phraseInput.value.length;
                 this.elements.charCounter.textContent = `${length}/500`;
-                
+
                 if (length > 450) {
                     this.elements.charCounter.style.color = '#EF4444';
                 } else if (length > 400) {
@@ -353,9 +352,9 @@
         validateInput() {
             const phrase = this.elements.phraseInput.value.trim();
             const isValid = phrase.length >= 2 && phrase.length <= 500;
-            
+
             this.elements.generateBtn.disabled = !isValid || this.isGenerating;
-            
+
             return isValid;
         },
 
@@ -401,7 +400,7 @@
                 examplesContainer = document.createElement('div');
                 examplesContainer.id = 'phraseExamples';
                 examplesContainer.className = 'phrase-examples';
-                
+
                 const title = document.createElement('p');
                 title.textContent = '✨ Sacred Intentions:';
                 title.style.fontWeight = 'bold';
@@ -411,7 +410,7 @@
 
                 const examplesList = document.createElement('div');
                 examplesList.className = 'examples-list';
-                
+
                 examples.forEach(example => {
                     const exampleElement = document.createElement('button');
                     exampleElement.textContent = example;
@@ -523,7 +522,7 @@
                     } else {
                         this.displaySigil(results[0]);
                     }
-                    
+
                     // Save to gallery if enabled
                     if (this.elements.saveToGallery && this.elements.saveToGallery.checked) {
                         results.forEach(result => this.saveToGallery(result));
@@ -537,7 +536,7 @@
 
             } catch (error) {
                 console.error('❌ Generation failed:', error);
-                
+
                 if (error.name === 'AbortError') {
                     this.showToast('Request timed out. Please try again.', 'warning');
                 } else {
@@ -553,7 +552,7 @@
         // Display single sigil
         displaySigil(data) {
             this.currentSigil = data;
-            
+
             if (this.elements.sigilImage) {
                 this.elements.sigilImage.src = data.image; // data.image already contains the full data URL
                 this.elements.sigilImage.alt = `Sigil for: ${data.phrase}`;
@@ -562,7 +561,7 @@
             if (this.elements.resultPhrase) {
                 this.elements.resultPhrase.textContent = data.phrase;
             }
-            
+
             if (this.elements.resultVibe) {
                 this.elements.resultVibe.textContent = this.capitalizeFirst(data.vibe);
             }
@@ -586,23 +585,23 @@
             if (!this.elements.batchGrid || !this.elements.batchResults) return;
 
             this.elements.batchGrid.innerHTML = '';
-            
+
             results.forEach((result, index) => {
                 const item = document.createElement('div');
                 item.className = 'batch-item';
                 item.innerHTML = `
                     <img src="${result.image}" alt="Sigil ${index + 1}">
                 `;
-                
+
                 item.addEventListener('click', () => {
                     this.displaySigil(result);
                 });
-                
+
                 this.elements.batchGrid.appendChild(item);
             });
 
             this.elements.batchResults.style.display = 'block';
-            
+
             // Display first result as main
             this.displaySigil(results[0]);
         },
@@ -610,13 +609,13 @@
         // Regenerate current sigil
         async regenerateSigil() {
             if (!this.currentSigil) return;
-            
+
             const oldPhrase = this.elements.phraseInput.value;
             this.elements.phraseInput.value = this.currentSigil.phrase;
             this.elements.vibeSelect.value = this.currentSigil.vibe;
-            
+
             await this.generateSigil();
-            
+
             if (oldPhrase !== this.currentSigil.phrase) {
                 this.elements.phraseInput.value = oldPhrase;
             }
@@ -628,7 +627,7 @@
             this.elements.phraseInput.focus();
             this.updateCharacterCounter();
             this.validateInput();
-            
+
             if (this.elements.resultContainer) {
                 this.elements.resultContainer.style.display = 'none';
             }
@@ -644,12 +643,12 @@
         setGeneratingState(generating) {
             this.isGenerating = generating;
             this.elements.generateBtn.disabled = generating;
-            
+
             const btnText = this.elements.generateBtn.querySelector('.btn-text');
             if (btnText) {
                 btnText.textContent = generating ? 'Manifesting...' : 'Manifest Sigil';
             }
-            
+
             this.validateInput();
         },
 
@@ -677,7 +676,7 @@
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                
+
                 this.showToast('✨ Sigil downloaded to your device!', 'success');
             } catch (error) {
                 console.error('❌ Download failed:', error);
@@ -688,15 +687,15 @@
         // Modal controls
         openShareModal() {
             if (!this.currentSigil) return;
-            
+
             if (this.elements.sharePreviewImage) {
                 this.elements.sharePreviewImage.src = this.currentSigil.image;
             }
-            
+
             if (this.elements.sharePreviewText) {
                 this.elements.sharePreviewText.textContent = `"${this.currentSigil.phrase}" - ${this.capitalizeFirst(this.currentSigil.vibe)} energy`;
             }
-            
+
             if (this.elements.shareModal) {
                 this.elements.shareModal.style.display = 'flex';
             }
@@ -816,10 +815,20 @@
                         <div class="gallery-item-phrase">${item.phrase}</div>
                         <div class="gallery-item-vibe">${this.capitalizeFirst(item.vibe)} Energy</div>
                         <div class="gallery-item-date">${this.formatDate(item.createdAt)}</div>
+                        <button class="delete-sigil-btn" data-id="${item.id}">Delete</button>
                     </div>
                 `;
 
-                galleryItem.addEventListener('click', () => {
+                galleryItem.querySelector('.delete-sigil-btn').addEventListener('click', (e) => {
+                    const sigilId = parseFloat(e.target.dataset.id);
+                    this.deleteSigilFromGallery(sigilId);
+                });
+
+                galleryItem.addEventListener('click', (e) => {
+                    // Prevent opening sigil details if delete button was clicked
+                    if (e.target.classList.contains('delete-sigil-btn')) {
+                        return;
+                    }
                     this.currentSigil = item;
                     this.displaySigil(item);
                     this.closeAllModals();
@@ -828,6 +837,21 @@
                 this.elements.galleryContent.appendChild(galleryItem);
             });
         },
+
+        deleteSigilFromGallery(id) {
+            this.gallery = this.gallery.filter(item => item.id !== id);
+            this.saveGalleryToStorage();
+            this.populateGallery(); // Re-render the gallery
+            this.showToast('Sigil removed from gallery.', 'success');
+        },
+
+        clearGallery() {
+            this.gallery = [];
+            this.saveGalleryToStorage();
+            this.populateGallery(); // Re-render the gallery
+            this.showToast('Gallery cleared.', 'success');
+        },
+
 
         // Pro functionality
         checkProStatus() {
@@ -840,7 +864,7 @@
         async upgradeToPro() {
             // In a real implementation, this would redirect to Stripe
             this.showToast('🚀 Redirecting to secure checkout...', 'info');
-            
+
             // Simulate checkout process
             setTimeout(() => {
                 this.showToast('Thank you for upgrading! Check your email for your Pro key.', 'success');
@@ -866,10 +890,10 @@
         activateProWithKey(key) {
             this.isPro = true;
             this.config.proKey = key;
-            
+
             // Save to storage
             localStorage.setItem('sigilcraft_pro_key', key);
-            
+
             // Update UI
             this.updateProFeatures();
             this.closeAllModals();
@@ -920,9 +944,9 @@
             const toast = document.createElement('div');
             toast.className = `toast toast-${type}`;
             toast.textContent = message;
-            
+
             this.elements.toastContainer.appendChild(toast);
-            
+
             // Auto remove after 4 seconds
             setTimeout(() => {
                 if (toast.parentNode) {
