@@ -4,38 +4,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sigilcraft Ultra - Revolutionary AI Sigil Generator</title>
-    <meta name="description" content="Create unique, mystical sigils with ultra-revolutionary AI technology. Transform your intentions into powerful visual symbols.">
+    <title>🔮 Sigilcraft Nexus - Ultimate Spiritual Sigil Generator</title>
+    <meta name="description" content="Unlock the universe's power through revolutionary AI sigil creation. Experience mystical transformation.">
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/png" href="generated-icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Mystical Background -->
+    <div class="mystical-background">
+        <div class="floating-sigils"></div>
+        <div class="energy-particles"></div>
+    </div>
+
     <!-- Loading Overlay -->
     <div id="loadingOverlay" class="loading-overlay" style="display: none;">
         <div class="loading-spinner">
-            <div class="spinner"></div>
-            <p>Manifesting your sigil...</p>
+            <div class="mystical-spinner">
+                <div class="spinner-ring"></div>
+                <div class="spinner-core">🔮</div>
+            </div>
+            <p class="loading-text">Channeling cosmic energies...</p>
+        </div>
+    </div>
+
+    <!-- Pro Unlock Modal -->
+    <div id="proModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✨ Unlock Sigilcraft Pro</h2>
+                <button id="closeProModal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="pro-benefits">
+                    <h3>🌟 Transform Your Spiritual Practice</h3>
+                    <ul class="benefits-list">
+                        <li>🎭 Access ALL 12 mystical energy vibes</li>
+                        <li>🖼️ Ultra-HD 4K sigil generation</li>
+                        <li>📁 Personal mystical gallery (unlimited)</li>
+                        <li>🔄 Batch generation (up to 10 sigils)</li>
+                        <li>🎨 SVG export for infinite scaling</li>
+                        <li>🌙 Dark ritual mode & themes</li>
+                        <li>🔮 Sacred geometry overlays</li>
+                        <li>⚡ Priority manifestation (no cooldowns)</li>
+                    </ul>
+                </div>
+                <div class="pro-pricing">
+                    <div class="price-display">$7.77 <span class="price-period">one-time</span></div>
+                    <p class="price-subtitle">Sacred number activation</p>
+                </div>
+                <div class="pro-actions">
+                    <button id="upgradeBtn" class="upgrade-btn">🚀 Ascend to Pro</button>
+                    <div class="pro-key-section">
+                        <p>Already have a Pro Key?</p>
+                        <input type="text" id="proKeyInput" placeholder="Enter your mystical key..." class="pro-key-input">
+                        <button id="activateKeyBtn" class="activate-key-btn">Activate</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="shareModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🌟 Share Your Creation</h2>
+                <button id="closeShareModal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="share-preview">
+                    <img id="sharePreviewImage" class="share-image" alt="Sigil to share">
+                    <p id="sharePreviewText" class="share-text"></p>
+                </div>
+                <div class="share-options">
+                    <button id="copyLinkBtn" class="share-option-btn">🔗 Copy Link</button>
+                    <button id="downloadShareBtn" class="share-option-btn">💾 Download</button>
+                    <button id="socialShareBtn" class="share-option-btn">📱 Share</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gallery Modal -->
+    <div id="galleryModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content gallery-modal">
+            <div class="modal-header">
+                <h2>🖼️ Mystical Gallery</h2>
+                <button id="closeGalleryModal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="galleryContent" class="gallery-grid">
+                    <!-- Gallery items will be populated here -->
+                </div>
+                <div class="gallery-empty" id="galleryEmpty" style="display: none;">
+                    <div class="empty-icon">🎨</div>
+                    <p>Your mystical gallery awaits...</p>
+                    <p class="empty-subtitle">Create your first sigil to begin your collection</p>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Main Container -->
     <div class="container">
+        <!-- Navigation -->
+        <nav class="nav-bar">
+            <div class="nav-brand">
+                <span class="brand-icon">🔮</span>
+                <span class="brand-text">Sigilcraft Nexus</span>
+            </div>
+            <div class="nav-actions">
+                <button id="galleryBtn" class="nav-btn">🖼️ Gallery</button>
+                <button id="proBtn" class="nav-btn pro-btn">✨ Pro</button>
+            </div>
+        </nav>
+
         <!-- Header -->
         <header class="header">
-            <h1 class="title">🔮 Sigilcraft Ultra</h1>
-            <p class="subtitle">Revolutionary AI-Powered Sigil Generator</p>
-            <p class="description">Transform your intentions into powerful mystical symbols</p>
+            <h1 class="title">
+                <span class="title-main">SIGILCRAFT</span>
+                <span class="title-sub">NEXUS</span>
+            </h1>
+            <p class="subtitle">The Universe's Most Powerful Sigil Generator</p>
+            <p class="description">Channel cosmic forces into mystical symbols that manifest your deepest intentions</p>
+            
+            <!-- Pro Status -->
+            <div id="proStatus" class="pro-status" style="display: none;">
+                <span class="pro-badge">✨ PRO ACTIVATED</span>
+            </div>
         </header>
 
-        <!-- Generation Form -->
+        <!-- Generation Panel -->
         <main class="main-content">
             <div class="generation-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">🌟 Manifest Your Vision</h2>
+                </div>
+                
                 <div class="input-group">
-                    <label for="phraseInput" class="input-label">Your Intention or Phrase</label>
+                    <label for="phraseInput" class="input-label">Sacred Intention</label>
                     <textarea
                         id="phraseInput"
                         class="phrase-input"
-                        placeholder="Enter your intention, desire, or phrase to transform into a sigil..."
+                        placeholder="Speak your intention into existence... (e.g., 'Abundance flows to me', 'I am protected by light')"
                         maxlength="500"
                         rows="3"
                     ></textarea>
@@ -44,42 +156,97 @@
                     </div>
                 </div>
 
-                <div class="controls-row">
+                <div class="controls-grid">
                     <div class="input-group">
-                        <label for="vibeSelect" class="input-label">Energy Vibe</label>
+                        <label for="vibeSelect" class="input-label">Mystical Energy</label>
                         <select id="vibeSelect" class="vibe-select">
-                            <option value="mystical">Mystical</option>
+                            <option value="mystical">🔮 Mystical</option>
+                        </select>
+                        <div id="vibeDescription" class="vibe-description"></div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="qualitySelect" class="input-label">Manifestation Power</label>
+                        <select id="qualitySelect" class="quality-select">
+                            <option value="standard">🌙 Standard (1024px)</option>
+                            <option value="hd" data-pro="true">🌟 HD (2048px) - Pro</option>
+                            <option value="ultra" data-pro="true">⚡ Ultra-HD (4096px) - Pro</option>
                         </select>
                     </div>
 
                     <div class="input-group">
                         <label class="checkbox-label">
-                            <input type="checkbox" id="advancedToggle" class="advanced-toggle">
+                            <input type="checkbox" id="saveToGallery" class="gallery-toggle" checked>
                             <span class="checkmark"></span>
-                            Ultra-High Quality
+                            Save to Gallery
+                        </label>
+                    </div>
+
+                    <div class="input-group pro-feature" data-pro="true">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="batchMode" class="batch-toggle">
+                            <span class="checkmark"></span>
+                            Batch Mode (10x) - Pro
                         </label>
                     </div>
                 </div>
 
                 <button id="generateBtn" class="generate-btn" disabled>
-                    Generate Sigil
+                    <span class="btn-icon">🌟</span>
+                    <span class="btn-text">Manifest Sigil</span>
                 </button>
+
+                <!-- Batch Controls -->
+                <div id="batchControls" class="batch-controls" style="display: none;">
+                    <div class="batch-info">
+                        <p>Generating <span id="batchCount">10</span> variations of your sigil...</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Result Container -->
             <div id="resultContainer" class="result-container" style="display: none;">
-                <h2 class="result-title">Your Revolutionary Sigil</h2>
+                <div class="result-header">
+                    <h2 class="result-title">✨ Your Mystical Creation</h2>
+                    <div class="result-info">
+                        <span id="resultPhrase" class="result-phrase"></span>
+                        <span id="resultVibe" class="result-vibe"></span>
+                    </div>
+                </div>
                 
                 <div class="sigil-display">
-                    <img id="sigilImage" class="sigil-image" alt="Generated Sigil" />
+                    <div class="sigil-container">
+                        <img id="sigilImage" class="sigil-image" alt="Generated Sigil" />
+                        <div class="sigil-overlay">
+                            <div class="sigil-actions">
+                                <button id="downloadBtn" class="sigil-action-btn" disabled>
+                                    <span>💾</span>
+                                </button>
+                                <button id="shareBtn" class="sigil-action-btn" disabled>
+                                    <span>🌟</span>
+                                </button>
+                                <button id="regenerateBtn" class="sigil-action-btn">
+                                    <span>🔄</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Batch Results -->
+                <div id="batchResults" class="batch-results" style="display: none;">
+                    <h3 class="batch-title">🌟 Your Sigil Collection</h3>
+                    <div id="batchGrid" class="batch-grid">
+                        <!-- Batch results will be populated here -->
+                    </div>
                 </div>
 
                 <div class="result-actions">
-                    <button id="downloadBtn" class="action-btn download-btn" disabled>
-                        📥 Download
+                    <button id="newSigilBtn" class="action-btn secondary">
+                        🎨 Create Another
                     </button>
-                    <button id="shareBtn" class="action-btn share-btn" disabled>
-                        📤 Share
+                    <button id="viewGalleryBtn" class="action-btn primary">
+                        🖼️ View Gallery
                     </button>
                 </div>
             </div>
@@ -87,9 +254,19 @@
 
         <!-- Footer -->
         <footer class="footer">
-            <p>&copy; 2024 Sigilcraft Ultra - Revolutionary Sigil Generation Technology</p>
+            <div class="footer-content">
+                <p>&copy; 2024 Sigilcraft Nexus - Channeling the Universe's Creative Force</p>
+                <div class="footer-links">
+                    <a href="#" class="footer-link">Sacred Wisdom</a>
+                    <a href="#" class="footer-link">Energy Guide</a>
+                    <a href="#" class="footer-link">Mystical Community</a>
+                </div>
+            </div>
         </footer>
     </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
 
     <!-- Load JavaScript -->
     <script src="main.js"></script>
