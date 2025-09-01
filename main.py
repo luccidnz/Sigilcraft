@@ -9,9 +9,10 @@ import os
 import json
 import base64
 from io import BytesIO
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import logging
+import numpy as np
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -28,7 +29,6 @@ def generate_sigil_image(phrase, vibe="mystical", advanced=False):
     try:
         # Import here to avoid issues if packages aren't available
         from PIL import Image, ImageDraw, ImageFont
-        import numpy as np
         
         # Create base image
         size = 512 if advanced else 256
@@ -142,6 +142,33 @@ def generate_fallback_sigil(phrase, vibe):
     return f"data:image/svg+xml;base64,{svg_b64}"
 
 @app.route('/')
+def serve_index():
+    """Serve the main index.html"""
+    try:
+        from flask import send_from_directory
+        return send_from_directory('public', 'index.html')
+    except Exception as e:
+        logger.error(f"Error serving index.html: {e}")
+        return f"Error: {e}", 500
+
+@app.route('/<path:filename>')
+def serve_static(filename):
+    """Serve static files from public directory"""
+    try:
+        from flask import send_from_directory
+        import os
+        # Check if file exists in public directory
+        file_path = os.path.join('public', filename)
+        if os.path.exists(file_path):
+            return send_from_directory('public', filename)
+        else:
+            # If file not found, serve index.html for client-side routing
+            return send_from_directory('public', 'index.html')
+    except Exception as e:
+        logger.error(f"Error serving {filename}: {e}")
+        return send_from_directory('public', 'index.html')
+
+@app.route('/health')
 def health():
     """Health check endpoint"""
     return "OK"
