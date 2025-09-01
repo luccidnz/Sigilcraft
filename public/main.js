@@ -187,6 +187,11 @@
                 this.elements.proBtn.addEventListener('click', () => this.openProModal());
             }
 
+            // Clear gallery button
+            if (document.getElementById('clearGalleryBtn')) {
+                document.getElementById('clearGalleryBtn').addEventListener('click', () => this.clearGallery());
+            }
+
             // Pro modal events
             if (this.elements.upgradeBtn) {
                 this.elements.upgradeBtn.addEventListener('click', () => this.upgradeToPro());
