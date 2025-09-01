@@ -8,7 +8,6 @@ Production-ready Flask backend with WSGI server
 import os
 import sys
 import signal
-from flask import send_from_directory
 
 # Import the Flask app
 try:
@@ -22,32 +21,6 @@ def signal_handler(signum, frame):
     """Handle graceful shutdown"""
     print(f"\n🛑 Received signal {signum}. Shutting down gracefully...")
     sys.exit(0)
-
-# Add static file serving routes
-@flask_app.route('/')
-def serve_index():
-    """Serve the main index.html"""
-    try:
-        return send_from_directory('public', 'index.html')
-    except Exception as e:
-        print(f"Error serving index.html: {e}")
-        return f"Error: {e}", 500
-
-@flask_app.route('/<path:filename>')
-def serve_static(filename):
-    """Serve static files from public directory"""
-    try:
-        # Check if file exists in public directory
-        import os
-        file_path = os.path.join('public', filename)
-        if os.path.exists(file_path):
-            return send_from_directory('public', filename)
-        else:
-            # If file not found, serve index.html for client-side routing
-            return send_from_directory('public', 'index.html')
-    except Exception as e:
-        print(f"Error serving {filename}: {e}")
-        return send_from_directory('public', 'index.html')
 
 if __name__ == '__main__':
     # Register signal handlers

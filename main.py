@@ -170,11 +170,6 @@ def serve_static(filename):
 
 @app.route('/health')
 def health():
-    """Health check endpoint"""
-    return "OK"
-
-@app.route('/health')
-def detailed_health():
     """Detailed health check"""
     return jsonify({
         'status': 'healthy',
