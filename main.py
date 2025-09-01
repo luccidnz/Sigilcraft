@@ -53,47 +53,180 @@ def generate_sigil_image(phrase, vibe="mystical", advanced=False):
         
         colors = vibe_colors.get(vibe, vibe_colors['mystical'])
         
-        # Generate sigil based on phrase
+        # Generate sigil based on phrase and vibe
         center_x, center_y = size // 2, size // 2
         
         # Create sacred geometry based on phrase
         char_values = [ord(c) for c in phrase.lower() if c.isalpha()]
         if not char_values:
             char_values = [97]  # Default to 'a'
-            
-        # Draw base circle
-        radius = size // 3
-        draw.ellipse([center_x - radius, center_y - radius, 
-                     center_x + radius, center_y + radius], 
-                    outline=colors[0], width=3)
         
-        # Generate mystical patterns
-        for i, char_val in enumerate(char_values[:8]):  # Limit to 8 characters
-            angle = (char_val * 7 + i * 45) % 360
-            rad = math.radians(angle)
+        # Vibe-specific pattern generation
+        if vibe == 'mystical':
+            # Traditional circular patterns with sacred geometry
+            radius = size // 3
+            draw.ellipse([center_x - radius, center_y - radius, 
+                         center_x + radius, center_y + radius], 
+                        outline=colors[0], width=3)
             
-            # Calculate points
-            x1 = center_x + int(radius * 0.7 * math.cos(rad))
-            y1 = center_y + int(radius * 0.7 * math.sin(rad))
-            x2 = center_x + int(radius * 1.2 * math.cos(rad + math.pi/4))
-            y2 = center_y + int(radius * 1.2 * math.sin(rad + math.pi/4))
-            
-            # Draw mystical lines
-            color_idx = i % len(colors)
-            draw.line([center_x, center_y, x1, y1], fill=colors[color_idx], width=2)
-            
-            if advanced:
-                # Add sacred symbols
-                symbol_size = 20
-                draw.ellipse([x1-symbol_size//2, y1-symbol_size//2, 
-                            x1+symbol_size//2, y1+symbol_size//2], 
-                           fill=colors[color_idx])
+            for i, char_val in enumerate(char_values[:8]):
+                angle = (char_val * 7 + i * 45) % 360
+                rad = math.radians(angle)
+                x1 = center_x + int(radius * 0.7 * math.cos(rad))
+                y1 = center_y + int(radius * 0.7 * math.sin(rad))
+                color_idx = i % len(colors)
+                draw.line([center_x, center_y, x1, y1], fill=colors[color_idx], width=2)
+                
+        elif vibe == 'cosmic':
+            # Spiral galaxy patterns
+            for i, char_val in enumerate(char_values[:12]):
+                spiral_turns = 3
+                t = i / len(char_values) * spiral_turns * 2 * math.pi
+                r = (char_val % 100) + i * 15
+                x = center_x + int(r * math.cos(t + char_val * 0.1))
+                y = center_y + int(r * math.sin(t + char_val * 0.1))
+                color_idx = i % len(colors)
+                draw.ellipse([x-8, y-8, x+8, y+8], fill=colors[color_idx])
+                if i > 0:
+                    prev_t = (i-1) / len(char_values) * spiral_turns * 2 * math.pi
+                    prev_r = (char_values[i-1] % 100) + (i-1) * 15
+                    prev_x = center_x + int(prev_r * math.cos(prev_t + char_values[i-1] * 0.1))
+                    prev_y = center_y + int(prev_r * math.sin(prev_t + char_values[i-1] * 0.1))
+                    draw.line([prev_x, prev_y, x, y], fill=colors[color_idx], width=1)
+                    
+        elif vibe == 'elemental':
+            # Organic branch-like patterns
+            for i, char_val in enumerate(char_values[:6]):
+                base_angle = (char_val * 11 + i * 60) % 360
+                for branch in range(3):
+                    angle = base_angle + branch * 15 - 15
+                    rad = math.radians(angle)
+                    length = (char_val % 80) + 40
+                    x1 = center_x + int(length * 0.3 * math.cos(rad))
+                    y1 = center_y + int(length * 0.3 * math.sin(rad))
+                    x2 = center_x + int(length * math.cos(rad))
+                    y2 = center_y + int(length * math.sin(rad))
+                    color_idx = (i + branch) % len(colors)
+                    draw.line([x1, y1, x2, y2], fill=colors[color_idx], width=3)
+                    
+        elif vibe == 'crystal':
+            # Sharp geometric crystal patterns
+            num_sides = 6 + (sum(char_values) % 6)
+            for layer in range(3):
+                radius = (layer + 1) * (size // 6)
+                for i in range(num_sides):
+                    angle1 = (i * 360 / num_sides + sum(char_values[:i+1]) % 90) % 360
+                    angle2 = ((i + 1) * 360 / num_sides + sum(char_values[:i+1]) % 90) % 360
+                    rad1, rad2 = math.radians(angle1), math.radians(angle2)
+                    x1 = center_x + int(radius * math.cos(rad1))
+                    y1 = center_y + int(radius * math.sin(rad1))
+                    x2 = center_x + int(radius * math.cos(rad2))
+                    y2 = center_y + int(radius * math.sin(rad2))
+                    color_idx = (layer + i) % len(colors)
+                    draw.line([x1, y1, x2, y2], fill=colors[color_idx], width=2)
+                    draw.line([center_x, center_y, x1, y1], fill=colors[color_idx], width=1)
+                    
+        elif vibe == 'shadow':
+            # Jagged, asymmetric dark patterns
+            for i, char_val in enumerate(char_values[:10]):
+                angle = (char_val * 13 + i * 37) % 360
+                rad = math.radians(angle)
+                distance = (char_val % 120) + 30
+                x1 = center_x + int(distance * math.cos(rad))
+                y1 = center_y + int(distance * math.sin(rad))
+                # Create jagged lines
+                for step in range(3):
+                    offset = (char_val * step) % 40 - 20
+                    x2 = x1 + offset
+                    y2 = y1 + offset
+                    color_idx = i % len(colors)
+                    draw.line([center_x + step*10, center_y + step*10, x2, y2], fill=colors[color_idx], width=2)
+                    
+        elif vibe == 'light':
+            # Radiant sun-like patterns
+            for i, char_val in enumerate(char_values[:16]):
+                angle = (char_val * 5 + i * 22.5) % 360
+                rad = math.radians(angle)
+                inner_radius = 40
+                outer_radius = (char_val % 80) + 80
+                x1 = center_x + int(inner_radius * math.cos(rad))
+                y1 = center_y + int(inner_radius * math.sin(rad))
+                x2 = center_x + int(outer_radius * math.cos(rad))
+                y2 = center_y + int(outer_radius * math.sin(rad))
+                color_idx = i % len(colors)
+                draw.line([x1, y1, x2, y2], fill=colors[color_idx], width=3)
+                # Add light bursts
+                if i % 3 == 0:
+                    draw.ellipse([x2-5, y2-5, x2+5, y2+5], fill=colors[color_idx])
+                    
+        elif vibe == 'storm':
+            # Chaotic lightning-like patterns
+            for i, char_val in enumerate(char_values[:8]):
+                start_angle = (char_val * 23 + i * 45) % 360
+                start_rad = math.radians(start_angle)
+                start_x = center_x + int(50 * math.cos(start_rad))
+                start_y = center_y + int(50 * math.sin(start_rad))
+                
+                # Create lightning bolt
+                current_x, current_y = start_x, start_y
+                for segment in range(5):
+                    next_angle = start_angle + (char_val * segment) % 120 - 60
+                    next_rad = math.radians(next_angle)
+                    length = 30 + (char_val % 40)
+                    next_x = current_x + int(length * math.cos(next_rad))
+                    next_y = current_y + int(length * math.sin(next_rad))
+                    color_idx = (i + segment) % len(colors)
+                    draw.line([current_x, current_y, next_x, next_y], fill=colors[color_idx], width=3)
+                    current_x, current_y = next_x, next_y
+                    
+        else:  # void
+            # Recursive spiral vortex patterns
+            for i, char_val in enumerate(char_values[:20]):
+                layer = i // 4
+                angle_in_layer = (i % 4) * 90 + (char_val * 3) % 90
+                radius = 30 + layer * 25
+                rad = math.radians(angle_in_layer)
+                x = center_x + int(radius * math.cos(rad))
+                y = center_y + int(radius * math.sin(rad))
+                
+                # Draw connecting spirals
+                for spiral in range(3):
+                    spiral_angle = angle_in_layer + spiral * 120
+                    spiral_rad = math.radians(spiral_angle)
+                    spiral_x = x + int(15 * math.cos(spiral_rad))
+                    spiral_y = y + int(15 * math.sin(spiral_rad))
+                    color_idx = (i + spiral) % len(colors)
+                    draw.line([x, y, spiral_x, spiral_y], fill=colors[color_idx], width=2)
+                    draw.ellipse([spiral_x-3, spiral_y-3, spiral_x+3, spiral_y+3], fill=colors[color_idx])
         
-        # Add central power symbol
+        # Add central power symbol (different for each vibe)
         center_size = 15 if advanced else 10
-        draw.ellipse([center_x-center_size, center_y-center_size, 
-                     center_x+center_size, center_y+center_size], 
-                    fill=colors[1])
+        if vibe in ['mystical', 'crystal']:
+            draw.ellipse([center_x-center_size, center_y-center_size, 
+                         center_x+center_size, center_y+center_size], 
+                        fill=colors[1])
+        elif vibe in ['cosmic', 'void']:
+            # Star pattern
+            for i in range(8):
+                angle = i * 45
+                rad = math.radians(angle)
+                x = center_x + int(center_size * math.cos(rad))
+                y = center_y + int(center_size * math.sin(rad))
+                draw.line([center_x, center_y, x, y], fill=colors[1], width=2)
+        elif vibe in ['elemental', 'storm']:
+            # Square pattern
+            draw.rectangle([center_x-center_size//2, center_y-center_size//2,
+                          center_x+center_size//2, center_y+center_size//2],
+                         fill=colors[1])
+        else:  # light, shadow
+            # Diamond pattern
+            points = [
+                (center_x, center_y-center_size),
+                (center_x+center_size, center_y),
+                (center_x, center_y+center_size),
+                (center_x-center_size, center_y)
+            ]
+            draw.polygon(points, fill=colors[1])
         
         # Convert to base64
         buffer = BytesIO()
@@ -110,7 +243,7 @@ def generate_sigil_image(phrase, vibe="mystical", advanced=False):
         return generate_fallback_sigil(phrase, vibe)
 
 def generate_fallback_sigil(phrase, vibe):
-    """Generate a simple SVG sigil as fallback"""
+    """Generate a simple SVG sigil as fallback with unique patterns per vibe"""
     colors = {
         'mystical': '#8B5CF6',
         'cosmic': '#3B82F6',
@@ -124,23 +257,105 @@ def generate_fallback_sigil(phrase, vibe):
     
     color = colors.get(vibe, '#8B5CF6')
     
-    # Generate pattern based on phrase
+    # Generate pattern based on phrase and vibe
     char_values = [ord(c) for c in phrase.lower() if c.isalpha()]
     if not char_values:
         char_values = [97]
     
-    svg_paths = []
-    for i, char_val in enumerate(char_values[:6]):
-        angle = (char_val * 7 + i * 60) % 360
-        rad = math.radians(angle)
-        x = 128 + int(80 * math.cos(rad))
-        y = 128 + int(80 * math.sin(rad))
-        svg_paths.append(f"M128,128 L{x},{y}")
+    svg_elements = []
+    
+    if vibe == 'mystical':
+        # Traditional radial pattern
+        for i, char_val in enumerate(char_values[:6]):
+            angle = (char_val * 7 + i * 60) % 360
+            rad = math.radians(angle)
+            x = 128 + int(80 * math.cos(rad))
+            y = 128 + int(80 * math.sin(rad))
+            svg_elements.append(f'<line x1="128" y1="128" x2="{x}" y2="{y}" stroke="{color}" stroke-width="2"/>')
+        svg_elements.append(f'<circle cx="128" cy="128" r="100" fill="none" stroke="{color}" stroke-width="3"/>')
+        
+    elif vibe == 'cosmic':
+        # Spiral pattern
+        for i, char_val in enumerate(char_values[:8]):
+            t = i / len(char_values) * 4 * math.pi
+            r = 30 + i * 8
+            x = 128 + int(r * math.cos(t))
+            y = 128 + int(r * math.sin(t))
+            svg_elements.append(f'<circle cx="{x}" cy="{y}" r="4" fill="{color}"/>')
+            
+    elif vibe == 'elemental':
+        # Branch-like organic pattern
+        for i, char_val in enumerate(char_values[:4]):
+            angle = (char_val * 11 + i * 90) % 360
+            rad = math.radians(angle)
+            x1 = 128 + int(40 * math.cos(rad))
+            y1 = 128 + int(40 * math.sin(rad))
+            x2 = 128 + int(90 * math.cos(rad))
+            y2 = 128 + int(90 * math.sin(rad))
+            svg_elements.append(f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{color}" stroke-width="4"/>')
+            
+    elif vibe == 'crystal':
+        # Geometric polygon
+        points = []
+        for i in range(6):
+            angle = i * 60 + (sum(char_values) % 60)
+            rad = math.radians(angle)
+            x = 128 + int(80 * math.cos(rad))
+            y = 128 + int(80 * math.sin(rad))
+            points.append(f"{x},{y}")
+            svg_elements.append(f'<line x1="128" y1="128" x2="{x}" y2="{y}" stroke="{color}" stroke-width="2"/>')
+        svg_elements.append(f'<polygon points="{" ".join(points)}" fill="none" stroke="{color}" stroke-width="2"/>')
+        
+    elif vibe == 'shadow':
+        # Jagged asymmetric pattern
+        for i, char_val in enumerate(char_values[:5]):
+            angle = (char_val * 13 + i * 72) % 360
+            rad = math.radians(angle)
+            x = 128 + int((60 + char_val % 40) * math.cos(rad))
+            y = 128 + int((60 + char_val % 40) * math.sin(rad))
+            offset_x = x + (char_val % 20) - 10
+            offset_y = y + (char_val % 20) - 10
+            svg_elements.append(f'<line x1="128" y1="128" x2="{offset_x}" y2="{offset_y}" stroke="{color}" stroke-width="3"/>')
+            
+    elif vibe == 'light':
+        # Radiant star pattern
+        for i in range(12):
+            angle = i * 30 + (sum(char_values) % 30)
+            rad = math.radians(angle)
+            x = 128 + int(90 * math.cos(rad))
+            y = 128 + int(90 * math.sin(rad))
+            svg_elements.append(f'<line x1="128" y1="128" x2="{x}" y2="{y}" stroke="{color}" stroke-width="2"/>')
+            if i % 2 == 0:
+                svg_elements.append(f'<circle cx="{x}" cy="{y}" r="3" fill="{color}"/>')
+                
+    elif vibe == 'storm':
+        # Lightning-like zigzag pattern
+        for i, char_val in enumerate(char_values[:4]):
+            start_angle = i * 90 + (char_val % 45)
+            rad = math.radians(start_angle)
+            x1 = 128 + int(40 * math.cos(rad))
+            y1 = 128 + int(40 * math.sin(rad))
+            x2 = 128 + int(80 * math.cos(rad + 0.5))
+            y2 = 128 + int(80 * math.sin(rad + 0.5))
+            x3 = 128 + int(100 * math.cos(rad))
+            y3 = 128 + int(100 * math.sin(rad))
+            svg_elements.append(f'<path d="M128,128 L{x1},{y1} L{x2},{y2} L{x3},{y3}" stroke="{color}" stroke-width="3" fill="none"/>')
+            
+    else:  # void
+        # Spiral vortex
+        for i in range(16):
+            angle = i * 22.5 + (sum(char_values) % 22)
+            rad = math.radians(angle)
+            r = 20 + (i * 4)
+            x = 128 + int(r * math.cos(rad))
+            y = 128 + int(r * math.sin(rad))
+            svg_elements.append(f'<circle cx="{x}" cy="{y}" r="2" fill="{color}"/>')
+    
+    # Add center symbol
+    svg_elements.append(f'<circle cx="128" cy="128" r="8" fill="{color}"/>')
     
     svg = f'''<svg width="256" height="256" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="128" cy="128" r="100" fill="none" stroke="{color}" stroke-width="3"/>
-        <path d="{' '.join(svg_paths)}" stroke="{color}" stroke-width="2" fill="none"/>
-        <circle cx="128" cy="128" r="8" fill="{color}"/>
+        {"".join(svg_elements)}
     </svg>'''
     
     svg_b64 = base64.b64encode(svg.encode()).decode()
