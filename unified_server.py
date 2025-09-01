@@ -8,8 +8,15 @@ Production-ready Flask backend with WSGI server
 import os
 import sys
 import signal
-from main import app as flask_app
 from flask import send_from_directory
+
+# Import the Flask app
+try:
+    from main import app as flask_app
+    print("✅ Flask app imported successfully")
+except ImportError as e:
+    print(f"❌ Failed to import Flask app: {e}")
+    sys.exit(1)
 
 def signal_handler(signum, frame):
     """Handle graceful shutdown"""
