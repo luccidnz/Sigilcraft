@@ -2,20 +2,23 @@
 #!/usr/bin/env python3
 """
 SIGILCRAFT FLASK BACKEND
-Revolutionary sigil generation API
+Revolutionary sigil generation API - ULTRA STABLE VERSION
 """
 
 import os
 import json
 import base64
+import math
 from io import BytesIO
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import logging
-import numpy as np
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Configure robust logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
@@ -23,6 +26,7 @@ CORS(app, origins="*")
 
 # Configuration
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
+app.config['JSON_SORT_KEYS'] = False
 
 def generate_sigil_image(phrase, vibe="mystical", advanced=False):
     """Generate a revolutionary sigil image"""
@@ -66,13 +70,13 @@ def generate_sigil_image(phrase, vibe="mystical", advanced=False):
         # Generate mystical patterns
         for i, char_val in enumerate(char_values[:8]):  # Limit to 8 characters
             angle = (char_val * 7 + i * 45) % 360
-            rad = np.radians(angle)
+            rad = math.radians(angle)
             
             # Calculate points
-            x1 = center_x + int(radius * 0.7 * np.cos(rad))
-            y1 = center_y + int(radius * 0.7 * np.sin(rad))
-            x2 = center_x + int(radius * 1.2 * np.cos(rad + np.pi/4))
-            y2 = center_y + int(radius * 1.2 * np.sin(rad + np.pi/4))
+            x1 = center_x + int(radius * 0.7 * math.cos(rad))
+            y1 = center_y + int(radius * 0.7 * math.sin(rad))
+            x2 = center_x + int(radius * 1.2 * math.cos(rad + math.pi/4))
+            y2 = center_y + int(radius * 1.2 * math.sin(rad + math.pi/4))
             
             # Draw mystical lines
             color_idx = i % len(colors)
@@ -128,8 +132,9 @@ def generate_fallback_sigil(phrase, vibe):
     svg_paths = []
     for i, char_val in enumerate(char_values[:6]):
         angle = (char_val * 7 + i * 60) % 360
-        x = 128 + int(80 * np.cos(np.radians(angle)))
-        y = 128 + int(80 * np.sin(np.radians(angle)))
+        rad = math.radians(angle)
+        x = 128 + int(80 * math.cos(rad))
+        y = 128 + int(80 * math.sin(rad))
         svg_paths.append(f"M128,128 L{x},{y}")
     
     svg = f'''<svg width="256" height="256" xmlns="http://www.w3.org/2000/svg">
@@ -145,28 +150,52 @@ def generate_fallback_sigil(phrase, vibe):
 def serve_index():
     """Serve the main index.html"""
     try:
-        from flask import send_from_directory
         return send_from_directory('public', 'index.html')
+    except FileNotFoundError:
+        logger.error("index.html not found in public directory")
+        return jsonify({'success': False, 'error': 'Application files missing'}), 404
     except Exception as e:
         logger.error(f"Error serving index.html: {e}")
-        return f"Error: {e}", 500
+        return jsonify({'success': False, 'error': 'Server error'}), 500
+
+@app.route('/api/status')
+def api_status():
+    """Enhanced API status endpoint"""
+    return jsonify({
+        'success': True,
+        'status': 'operational',
+        'service': 'sigilcraft-api',
+        'version': '2.0.1',
+        'endpoints': {
+            'generate': '/api/generate',
+            'vibes': '/api/vibes',
+            'health': '/health'
+        }
+    })
 
 @app.route('/<path:filename>')
 def serve_static(filename):
-    """Serve static files from public directory"""
+    """Serve static files from public directory with robust error handling"""
     try:
-        from flask import send_from_directory
-        import os
+        # Security check - prevent directory traversal
+        if '..' in filename or filename.startswith('/'):
+            logger.warning(f"Blocked potentially malicious path: {filename}")
+            return send_from_directory('public', 'index.html')
+            
         # Check if file exists in public directory
         file_path = os.path.join('public', filename)
-        if os.path.exists(file_path):
+        if os.path.exists(file_path) and os.path.isfile(file_path):
             return send_from_directory('public', filename)
         else:
             # If file not found, serve index.html for client-side routing
+            logger.info(f"File not found, serving index.html for: {filename}")
             return send_from_directory('public', 'index.html')
     except Exception as e:
         logger.error(f"Error serving {filename}: {e}")
-        return send_from_directory('public', 'index.html')
+        try:
+            return send_from_directory('public', 'index.html')
+        except:
+            return jsonify({'success': False, 'error': 'Static file error'}), 500
 
 @app.route('/health')
 def health():
@@ -179,37 +208,74 @@ def health():
 
 @app.route('/api/generate', methods=['POST'])
 def generate_sigil():
-    """Generate a revolutionary sigil"""
+    """Generate a revolutionary sigil with bulletproof error handling"""
     try:
+        # Validate request data
+        if not request.is_json:
+            return jsonify({'success': False, 'error': 'Content-Type must be application/json'}), 400
+            
         data = request.get_json()
         if not data:
-            return jsonify({'success': False, 'error': 'No data provided'}), 400
+            return jsonify({'success': False, 'error': 'No JSON data provided'}), 400
         
+        # Validate phrase
         phrase = data.get('phrase', '').strip()
-        if not phrase or len(phrase) < 2:
+        if not phrase:
+            return jsonify({'success': False, 'error': 'Phrase is required'}), 400
+            
+        if len(phrase) < 2:
             return jsonify({'success': False, 'error': 'Phrase must be at least 2 characters'}), 400
         
         if len(phrase) > 500:
             return jsonify({'success': False, 'error': 'Phrase too long (max 500 characters)'}), 400
         
+        # Validate vibe
         vibe = data.get('vibe', 'mystical')
-        advanced = data.get('advanced', False)
+        valid_vibes = ['mystical', 'cosmic', 'elemental', 'crystal', 'shadow', 'light', 'storm', 'void']
+        if vibe not in valid_vibes:
+            vibe = 'mystical'  # Default fallback
         
-        # Generate the sigil
-        logger.info(f"Generating sigil for: '{phrase}' ({vibe})")
-        image_data = generate_sigil_image(phrase, vibe, advanced)
+        advanced = bool(data.get('advanced', False))
         
-        return jsonify({
+        # Generate the sigil with comprehensive error handling
+        logger.info(f"🔮 Generating sigil for: '{phrase[:50]}{'...' if len(phrase) > 50 else ''}' (vibe: {vibe}, advanced: {advanced})")
+        
+        try:
+            image_data = generate_sigil_image(phrase, vibe, advanced)
+            if not image_data:
+                raise ValueError("Image generation returned empty result")
+                
+        except Exception as gen_error:
+            logger.error(f"Image generation failed: {gen_error}")
+            # Try fallback generation
+            try:
+                image_data = generate_fallback_sigil(phrase, vibe)
+                logger.info("Successfully generated fallback sigil")
+            except Exception as fallback_error:
+                logger.error(f"Fallback generation also failed: {fallback_error}")
+                return jsonify({
+                    'success': False, 
+                    'error': 'Sigil generation temporarily unavailable'
+                }), 500
+        
+        response_data = {
             'success': True,
             'image': image_data,
             'phrase': phrase,
             'vibe': vibe,
-            'advanced': advanced
-        })
+            'advanced': advanced,
+            'timestamp': int(__import__('time').time())
+        }
+        
+        logger.info(f"✨ Successfully generated sigil (length: {len(image_data)} chars)")
+        return jsonify(response_data)
         
     except Exception as e:
-        logger.error(f"Generation error: {e}")
-        return jsonify({'success': False, 'error': 'Generation failed'}), 500
+        logger.error(f"❌ Critical generation error: {e}", exc_info=True)
+        return jsonify({
+            'success': False, 
+            'error': 'Internal server error during generation'
+        }), 500
 
 @app.route('/api/vibes')
 def get_vibes():
@@ -229,13 +295,31 @@ def get_vibes():
         }
     })
 
+@app.errorhandler(400)
+def bad_request(error):
+    return jsonify({'success': False, 'error': 'Bad request', 'code': 400}), 400
+
 @app.errorhandler(404)
 def not_found(error):
-    return jsonify({'success': False, 'error': 'Not found', 'code': 404}), 404
+    return jsonify({'success': False, 'error': 'Endpoint not found', 'code': 404}), 404
+
+@app.errorhandler(405)
+def method_not_allowed(error):
+    return jsonify({'success': False, 'error': 'Method not allowed', 'code': 405}), 405
+
+@app.errorhandler(413)
+def request_entity_too_large(error):
+    return jsonify({'success': False, 'error': 'Request too large', 'code': 413}), 413
 
 @app.errorhandler(500)
 def internal_error(error):
+    logger.error(f"Internal server error: {error}")
     return jsonify({'success': False, 'error': 'Internal server error', 'code': 500}), 500
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    logger.error(f"Unhandled exception: {e}", exc_info=True)
+    return jsonify({'success': False, 'error': 'Unexpected error occurred', 'code': 500}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

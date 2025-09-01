@@ -28,11 +28,22 @@ if __name__ == '__main__':
     signal.signal(signal.SIGTERM, signal_handler)
 
     print("🔮 Starting Unified Sigilcraft Server for Replit...")
+    
+    # Run startup validation
+    try:
+        from startup_validator import main as validate
+        if not validate():
+            print("❌ Startup validation failed!")
+            sys.exit(1)
+    except ImportError:
+        print("⚠️  Startup validator not found, continuing without validation...")
+    except Exception as e:
+        print(f"⚠️  Validation error: {e}, continuing anyway...")
 
     # Get port from Replit environment - this is critical for deployment
     port = int(os.environ.get('PORT', 5000))
     
-    # Ensure public directory exists
+    # Ensure public directory exists (backup check)
     if not os.path.exists('public'):
         print("❌ Public directory not found!")
         sys.exit(1)
