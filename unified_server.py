@@ -160,19 +160,17 @@ class UltraServerManager:
             gunicorn_config = [
                 'gunicorn',
                 '--bind', f'0.0.0.0:{port}',
-                '--workers', '2',  # Optimized for Replit
+                '--workers', '2',
                 '--worker-class', 'sync',
                 '--worker-connections', '1000',
                 '--timeout', '30',
-                '--keepalive', '5',
+                '--keep-alive', '5',
                 '--max-requests', '2000',
                 '--max-requests-jitter', '200',
                 '--preload',
                 '--log-level', 'info',
                 '--access-logfile', '-',
                 '--error-logfile', '-',
-                '--capture-output',
-                '--enable-stdio-inheritance',
                 'main:app'
             ]
             
