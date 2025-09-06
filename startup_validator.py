@@ -92,5 +92,5 @@ def main():
     print("🎉 All validations passed! Sigilcraft is ready to launch!")
     return True
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
