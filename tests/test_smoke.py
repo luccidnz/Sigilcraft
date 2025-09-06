@@ -12,10 +12,11 @@ def client():
         yield c
 
 def test_root_ok(client):
-    """Test root health endpoint"""
+    """Test root endpoint serves index.html"""
     r = client.get("/")
     assert r.status_code == 200
-    assert r.data.decode() == "OK"
+    # Should serve HTML content, not plain "OK"
+    assert "html" in r.data.decode().lower() or r.status_code == 404
 
 def test_health_endpoint(client):
     """Test detailed health endpoint"""

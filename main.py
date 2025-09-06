@@ -381,6 +381,7 @@ def api_status():
         'status': 'operational',
         'service': 'sigilcraft-api',
         'version': '2.0.1',
+        'timestamp': int(__import__('time').time()),
         'endpoints': {
             'generate': '/api/generate',
             'vibes': '/api/vibes',
