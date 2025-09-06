@@ -733,9 +733,9 @@ def after_request(response):
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['X-XSS-Protection'] = '1; mode=block'
     
-    # Cache control
-    if request.endpoint in ['serve_static', 'serve_index']:
-        response.headers['Cache-Control'] = 'public, max-age=3600'
+    # Cache control for API endpoints
+    if request.endpoint and request.endpoint.startswith('api_'):
+        response.cache_control.no_cache = True
     
     return response
 
@@ -744,7 +744,6 @@ def serve_index():
     """Ultra-optimized index serving"""
     try:
         return send_from_directory('public', 'index.html', 
-                                 cache_timeout=3600,
                                  conditional=True)
     except FileNotFoundError:
         logger.error("index.html missing from public directory")
@@ -769,18 +768,20 @@ def serve_static(filename):
         
         file_path = os.path.join('public', filename)
         if os.path.exists(file_path) and os.path.isfile(file_path):
-            # Ultra-advanced caching based on file type
-            if file_ext in {'.css', '.js'}:
-                cache_timeout = 86400  # 24 hours for CSS/JS
-            elif file_ext in {'.png', '.jpg', '.jpeg', '.svg', '.ico'}:
-                cache_timeout = 604800  # 1 week for images
-            else:
-                cache_timeout = 3600  # 1 hour for everything else
+            response = send_from_directory('public', filename,
+                                         conditional=True,
+                                         etag=True)
             
-            return send_from_directory('public', filename,
-                                     cache_timeout=cache_timeout,
-                                     conditional=True,
-                                     add_etags=True)
+            # Set cache headers manually based on file type
+            if file_ext in {'.css', '.js'}:
+                response.cache_control.max_age = 86400  # 24 hours for CSS/JS
+            elif file_ext in {'.png', '.jpg', '.jpeg', '.svg', '.ico'}:
+                response.cache_control.max_age = 604800  # 1 week for images
+            else:
+                response.cache_control.max_age = 3600  # 1 hour for everything else
+            
+            response.cache_control.public = True
+            return response
         else:
             # Fallback to SPA routing
             return serve_index()
