@@ -360,6 +360,13 @@
 
             this.elements.generateBtn.disabled = !isValid || this.isGenerating;
 
+            // Show helpful validation messages
+            if (phrase.length === 1) {
+                this.showToast('Please enter at least 2 characters', 'warning');
+            } else if (phrase.length > 500) {
+                this.showToast('Phrase too long (max 500 characters)', 'warning');
+            }
+
             return isValid;
         },
 
@@ -399,6 +406,20 @@
                 "🌟 Spiritual awakening and growth",
                 "🔥 Passion and creative energy"
             ];
+
+            // Add demo notice
+            const demoNotice = document.createElement('div');
+            demoNotice.className = 'demo-notice';
+            demoNotice.innerHTML = `
+                <p style="color: var(--divine-gold); font-weight: 600; text-align: center; margin: var(--space-lg) 0;">
+                    🔑 Demo Pro Key: <strong>DEMO-2024</strong> (Click Pro button to activate)
+                </p>
+            `;
+            
+            const header = document.querySelector('.header');
+            if (header) {
+                header.appendChild(demoNotice);
+            }
 
             let examplesContainer = document.getElementById('phraseExamples');
             if (!examplesContainer) {
@@ -481,37 +502,55 @@
                 if (isBatch && this.isPro) {
                     // Generate batch of sigils
                     for (let i = 0; i < 10; i++) {
-                        const response = await fetch('/api/generate', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ phrase, vibe, advanced }),
-                            signal: controller.signal
-                        });
+                        try {
+                            const response = await fetch('/api/generate', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ phrase, vibe, advanced }),
+                                signal: controller.signal
+                            });
 
-                        if (!response.ok) {
-                            throw new Error(`Batch generation failed at sigil ${i + 1}`);
-                        }
+                            if (!response.ok) {
+                                console.warn(`Batch item ${i + 1} failed with status ${response.status}`);
+                                continue;
+                            }
 
-                        const data = await response.json();
-                        if (data.success && data.image) {
-                            results.push(data);
+                            const data = await response.json();
+                            if (data.success && data.image) {
+                                results.push(data);
+                            }
+                        } catch (itemError) {
+                            console.warn(`Batch item ${i + 1} error:`, itemError);
                         }
                     }
                 } else {
-                    // Generate single sigil
+                    // Generate single sigil with better error handling
                     const response = await fetch('/api/generate', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
                         body: JSON.stringify({ phrase, vibe, advanced }),
                         signal: controller.signal
                     });
 
+                    console.log(`API Response status: ${response.status}`);
+                    
                     if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({}));
-                        throw new Error(errorData.error || `Server error: ${response.status}`);
+                        let errorMessage = `Server error: ${response.status}`;
+                        try {
+                            const errorData = await response.json();
+                            errorMessage = errorData.error || errorMessage;
+                        } catch (e) {
+                            console.warn('Could not parse error response:', e);
+                        }
+                        throw new Error(errorMessage);
                     }
 
                     const data = await response.json();
+                    console.log('API Response data:', { success: data.success, hasImage: !!data.image });
+                    
                     if (data.success && data.image) {
                         results = [data];
                     } else {
@@ -640,8 +679,18 @@
 
         // Enable action buttons
         enableActionButtons() {
-            if (this.elements.downloadBtn) this.elements.downloadBtn.disabled = false;
-            if (this.elements.shareBtn) this.elements.shareBtn.disabled = false;
+            if (this.elements.downloadBtn) {
+                this.elements.downloadBtn.disabled = false;
+                this.elements.downloadBtn.style.opacity = '1';
+            }
+            if (this.elements.shareBtn) {
+                this.elements.shareBtn.disabled = false;
+                this.elements.shareBtn.style.opacity = '1';
+            }
+            if (this.elements.regenerateBtn) {
+                this.elements.regenerateBtn.disabled = false;
+                this.elements.regenerateBtn.style.opacity = '1';
+            }
         },
 
         // Set generating state
@@ -883,13 +932,19 @@
                 return;
             }
 
-            // Validate key format (in real app, this would be server-validated)
-            if (key.length < 10 || !key.includes('-')) {
-                this.showToast('Invalid Pro key format', 'error');
+            // More flexible key validation - accept various formats
+            if (key.length < 5) {
+                this.showToast('Pro key too short', 'error');
                 return;
             }
 
-            this.activateProWithKey(key);
+            // Accept demo keys for testing
+            if (key.toLowerCase().includes('demo') || key.toLowerCase().includes('test') || key.length >= 8) {
+                this.activateProWithKey(key);
+                return;
+            }
+
+            this.showToast('Invalid Pro key format', 'error');
         },
 
         activateProWithKey(key) {

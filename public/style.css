@@ -1186,11 +1186,13 @@ body {
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
   .title-main {
-    font-size: 3rem;
+    font-size: 2.5rem;
+    line-height: 1.2;
   }
 
   .title-sub {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
+    letter-spacing: 0.2em;
   }
 
   .container {
@@ -1199,24 +1201,33 @@ body {
 
   .controls-grid {
     grid-template-columns: 1fr;
+    gap: var(--space-md);
   }
 
   .nav-bar {
     padding: var(--space-md);
+    flex-wrap: wrap;
   }
 
   .nav-actions {
-    flex-direction: column;
+    flex-direction: row;
     gap: var(--space-sm);
+  }
+
+  .nav-btn {
+    padding: var(--space-sm) var(--space-md);
+    font-size: 0.9rem;
   }
 
   .result-actions {
     flex-direction: column;
+    gap: var(--space-md);
   }
 
   .action-btn {
     width: 100%;
     justify-content: center;
+    padding: var(--space-lg);
   }
 
   .footer-links {
@@ -1226,7 +1237,22 @@ body {
 
   .batch-grid,
   .gallery-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--space-md);
+  }
+
+  .sigil-image {
+    max-width: 90vw;
+    height: auto;
+  }
+
+  .generation-panel,
+  .result-container {
+    margin-left: calc(-1 * var(--space-md));
+    margin-right: calc(-1 * var(--space-md));
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
   }
 }
 
