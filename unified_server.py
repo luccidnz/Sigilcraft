@@ -62,6 +62,12 @@ class UltraServerManager:
         """Run comprehensive startup validation"""
         try:
             logger.info("🚀 Running ultra-startup validation...")
+            
+            # Check if startup_validator exists
+            if not os.path.exists('startup_validator.py'):
+                logger.warning("⚠️  startup_validator.py not found, skipping validation...")
+                return True
+            
             from startup_validator import main as validate
             
             validation_start = time.time()
@@ -75,8 +81,8 @@ class UltraServerManager:
                 logger.error("❌ Ultra-validation failed - critical issues detected")
                 return False
                 
-        except ImportError:
-            logger.warning("⚠️  Startup validator not found, proceeding without validation...")
+        except ImportError as e:
+            logger.warning(f"⚠️  Startup validator import failed: {e}, proceeding without validation...")
             return True
         except Exception as e:
             logger.warning(f"⚠️  Validation error: {e}, continuing with caution...")

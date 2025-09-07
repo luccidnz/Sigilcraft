@@ -495,6 +495,188 @@
                 const controller = new AbortController();
                 this.currentRequest = controller;
 
+                let url, requestData;
+
+                if (isBatch) {
+                    // Batch mode processing
+                    const phrases = phrase.split('\n')
+                        .map(p => p.trim())
+                        .filter(p => p.length > 0);
+
+                    if (phrases.length === 0) {
+                        this.showNotification('Please enter at least one phrase for batch mode', 'error');
+                        return;
+                    }
+
+                    if (phrases.length > 10) {
+                        this.showNotification('Batch mode supports maximum 10 phrases', 'error');
+                        return;
+                    }
+
+                    url = '/api/batch';
+                    requestData = {
+                        phrases: phrases,
+                        vibe: vibe,
+                        quality: quality,
+                        advanced: advanced
+                    };
+                } else {
+                    // Single sigil mode
+                    if (!phrase) {
+                        this.showNotification('Please enter a phrase to manifest', 'error');
+                        return;
+                    }
+
+                    url = '/api/generate';
+                    requestData = {
+                        phrase: phrase,
+                        vibe: vibe,
+                        quality: quality,
+                        advanced: advanced
+                    };
+                }
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData),
+                    signal: controller.signal
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    if (isBatch) {
+                        this.handleBatchResult(data);
+                    } else {
+                        this.handleSingleResult(data);
+                    }
+                } else {
+                    throw new Error(data.error || 'Generation failed');
+                }
+
+            } catch (error) {
+                console.error('Generation error:', error);
+                
+                if (error.name === 'AbortError') {
+                    this.showNotification('Generation cancelled', 'warning');
+                } else if (error.message.includes('429')) {
+                    this.showNotification('Please wait before generating another sigil', 'warning');
+                } else if (error.message.includes('network')) {
+                    this.showNotification('Network error - please check your connection', 'error');
+                } else {
+                    this.showNotification(error.message || 'Failed to generate sigil', 'error');
+                }
+            } finally {
+                this.setGeneratingState(false);
+                this.hideLoadingOverlay();
+                this.currentRequest = null;
+                this.lastGenerationTime = Date.now();
+            }
+        }
+
+        handleSingleResult(data) {
+            const imageElement = this.elements.sigilImage;
+            const downloadBtn = this.elements.downloadBtn;
+            const metadataElement = this.elements.metadata;
+
+            // Display the generated sigil
+            imageElement.src = data.image;
+            imageElement.style.display = 'block';
+            imageElement.classList.add('fade-in');
+
+            // Enable download
+            if (downloadBtn) {
+                downloadBtn.style.display = 'inline-block';
+                downloadBtn.onclick = () => this.downloadSigil(data.image, data.metadata);
+            }
+
+            // Update metadata
+            if (metadataElement && data.metadata) {
+                metadataElement.innerHTML = `
+                    <div class="metadata-grid">
+                        <div class="metadata-item">
+                            <span class="metadata-label">Phrase:</span>
+                            <span class="metadata-value">${data.metadata.phrase}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Vibe:</span>
+                            <span class="metadata-value">${data.metadata.vibe}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Quality:</span>
+                            <span class="metadata-value">${data.metadata.quality}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Generation Time:</span>
+                            <span class="metadata-value">${data.metadata.generation_time}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Power Level:</span>
+                            <span class="metadata-value">${data.metadata.power_level}</span>
+                        </div>
+                    </div>
+                `;
+                metadataElement.style.display = 'block';
+            }
+
+            this.showNotification('✨ Sigil manifested successfully!', 'success');
+        }
+
+        handleBatchResult(data) {
+            const batchContainer = document.getElementById('batchResults');
+            if (!batchContainer) return;
+
+            batchContainer.innerHTML = '';
+            batchContainer.style.display = 'block';
+
+            const successful = data.results.filter(r => r.success);
+            const failed = data.results.filter(r => !r.success);
+
+            // Show batch summary
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = 'batch-summary';
+            summaryDiv.innerHTML = `
+                <h3>Batch Generation Complete</h3>
+                <p>✅ Successful: ${successful.length} | ❌ Failed: ${failed.length}</p>
+                <p>⏱️ Total Time: ${data.stats.total_time}</p>
+            `;
+            batchContainer.appendChild(summaryDiv);
+
+            // Display successful results
+            successful.forEach((result, index) => {
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'batch-result-item';
+                resultDiv.innerHTML = `
+                    <div class="batch-phrase">"${result.phrase}"</div>
+                    <img src="${result.image}" alt="Generated Sigil" class="batch-sigil-image">
+                    <button onclick="sigilcraft.downloadSigil('${result.image}', {phrase: '${result.phrase}'})" 
+                            class="btn btn-secondary">Download</button>
+                `;
+                batchContainer.appendChild(resultDiv);
+            });
+
+            // Show failed results if any
+            if (failed.length > 0) {
+                const failedDiv = document.createElement('div');
+                failedDiv.className = 'batch-failed';
+                failedDiv.innerHTML = `
+                    <h4>Failed Generations:</h4>
+                    ${failed.map(f => `<p>• "${f.phrase}": ${f.error}</p>`).join('')}
+                `;
+                batchContainer.appendChild(failedDiv);
+            }
+
+            this.showNotification(`Batch complete: ${successful.length}/${data.results.length} successful`, 'success');
+        }r;
+
                 const timeoutId = setTimeout(() => controller.abort(), 60000);
 
                 let results = [];
