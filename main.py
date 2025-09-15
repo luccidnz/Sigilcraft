@@ -79,79 +79,127 @@ def rate_limit(max_requests=60):
 
 @lru_cache(maxsize=256)
 def get_vibe_config(vibe):
-    """Cached vibe configurations for ultra-fast access"""
+    """Enhanced vibe configurations with ultra-distinct visual patterns"""
     configs = {
         'mystical': {
             'colors': [(139, 92, 246), (168, 85, 247), (147, 51, 234), (126, 34, 206)],
             'pattern_type': 'sacred_geometry',
             'complexity': 8,
-            'power_level': 'ancient'
+            'power_level': 'ancient',
+            'symbols': ['⭐', '🌙', '✦', '◆', '▲'],
+            'geometry': 'pentagram',
+            'energy_flow': 'circular',
+            'special_effects': ['moon_phases', 'star_field', 'pentagram_overlay']
         },
         'cosmic': {
             'colors': [(59, 130, 246), (99, 102, 241), (139, 92, 246), (168, 85, 247)],
             'pattern_type': 'spiral_galaxy',
             'complexity': 12,
-            'power_level': 'stellar'
+            'power_level': 'stellar',
+            'symbols': ['✧', '☆', '✦', '⊹', '⋆'],
+            'geometry': 'spiral',
+            'energy_flow': 'expansive',
+            'special_effects': ['nebula_clouds', 'starfield', 'galaxy_arms']
         },
         'elemental': {
-            'colors': [(34, 197, 94), (59, 130, 246), (168, 85, 247), (34, 197, 94)],
+            'colors': [(34, 197, 94), (59, 130, 246), (239, 68, 68), (245, 158, 11)],
             'pattern_type': 'organic_growth',
             'complexity': 10,
-            'power_level': 'natural'
+            'power_level': 'natural',
+            'symbols': ['🔥', '💧', '🌍', '💨'],
+            'geometry': 'triangular',
+            'energy_flow': 'elemental_cross',
+            'special_effects': ['fire_tongues', 'water_waves', 'earth_crystals', 'air_swirls']
         },
         'crystal': {
             'colors': [(236, 72, 153), (219, 39, 119), (147, 51, 234), (168, 85, 247)],
             'pattern_type': 'geometric_crystal',
             'complexity': 14,
-            'power_level': 'prismatic'
+            'power_level': 'prismatic',
+            'symbols': ['◇', '◈', '⬡', '⬢', '⬣'],
+            'geometry': 'hexagonal',
+            'energy_flow': 'crystalline',
+            'special_effects': ['crystal_facets', 'prismatic_refraction', 'geometric_lattice']
         },
         'shadow': {
             'colors': [(75, 85, 99), (55, 65, 81), (31, 41, 55), (17, 24, 39)],
             'pattern_type': 'chaos_fractal',
             'complexity': 16,
-            'power_level': 'void'
+            'power_level': 'void',
+            'symbols': ['●', '◉', '◎', '⊕', '⊗'],
+            'geometry': 'vortex',
+            'energy_flow': 'absorbing',
+            'special_effects': ['dark_vortex', 'shadow_tendrils', 'void_spirals']
         },
         'light': {
-            'colors': [(251, 191, 36), (245, 158, 11), (217, 119, 6), (180, 83, 9)],
+            'colors': [(251, 191, 36), (245, 158, 11), (217, 119, 6), (255, 255, 200)],
             'pattern_type': 'radiant_burst',
             'complexity': 18,
-            'power_level': 'divine'
+            'power_level': 'divine',
+            'symbols': ['☀', '✨', '💫', '⚡', '✦'],
+            'geometry': 'radial',
+            'energy_flow': 'emanating',
+            'special_effects': ['light_rays', 'divine_halo', 'radiant_burst']
         },
         'storm': {
-            'colors': [(220, 38, 127), (239, 68, 68), (248, 113, 113), (252, 165, 165)],
+            'colors': [(220, 38, 127), (239, 68, 68), (148, 113, 213), (252, 165, 165)],
             'pattern_type': 'lightning_chaos',
             'complexity': 20,
-            'power_level': 'tempest'
+            'power_level': 'tempest',
+            'symbols': ['⚡', '☈', '⛈', '⛆', '⛇'],
+            'geometry': 'zigzag',
+            'energy_flow': 'chaotic',
+            'special_effects': ['lightning_bolts', 'thunder_waves', 'storm_clouds']
         },
         'void': {
-            'colors': [(17, 24, 39), (55, 65, 81), (99, 102, 241), (139, 92, 246)],
+            'colors': [(17, 24, 39), (55, 65, 81), (99, 102, 241), (30, 30, 60)],
             'pattern_type': 'recursive_spiral',
             'complexity': 24,
-            'power_level': 'infinite'
+            'power_level': 'infinite',
+            'symbols': ['⊝', '○', '○', '◉', '◈'],
+            'geometry': 'black_hole',
+            'energy_flow': 'singularity',
+            'special_effects': ['event_horizon', 'gravity_well', 'space_distortion']
         },
         'quantum': {
             'colors': [(16, 185, 129), (59, 130, 246), (168, 85, 247), (236, 72, 153)],
             'pattern_type': 'quantum_field',
             'complexity': 32,
-            'power_level': 'transcendent'
+            'power_level': 'transcendent',
+            'symbols': ['∞', '∿', '≈', '∂', '∇'],
+            'geometry': 'wave_particle',
+            'energy_flow': 'probability_field',
+            'special_effects': ['particle_waves', 'quantum_entanglement', 'probability_clouds']
         },
         'aurora': {
             'colors': [(16, 185, 129), (34, 197, 94), (59, 130, 246), (168, 85, 247)],
             'pattern_type': 'aurora_waves',
             'complexity': 28,
-            'power_level': 'ethereal'
+            'power_level': 'ethereal',
+            'symbols': ['〜', '≈', '∿', '⌇', '⌒'],
+            'geometry': 'flowing_ribbons',
+            'energy_flow': 'northern_lights',
+            'special_effects': ['aurora_curtains', 'light_ribbons', 'polar_glow']
         },
         'phoenix': {
             'colors': [(239, 68, 68), (245, 158, 11), (251, 191, 36), (252, 211, 77)],
             'pattern_type': 'phoenix_rise',
             'complexity': 26,
-            'power_level': 'rebirth'
+            'power_level': 'rebirth',
+            'symbols': ['🔥', '⟟', '↟', '⇈', '⇡'],
+            'geometry': 'rising_flames',
+            'energy_flow': 'ascending',
+            'special_effects': ['flame_wings', 'rebirth_spiral', 'fire_feathers']
         },
         'dragon': {
             'colors': [(220, 38, 127), (147, 51, 234), (55, 65, 81), (239, 68, 68)],
             'pattern_type': 'dragon_spiral',
             'complexity': 30,
-            'power_level': 'legendary'
+            'power_level': 'legendary',
+            'symbols': ['🐉', '§', '⟿', '⤿', '⥿'],
+            'geometry': 'serpentine',
+            'energy_flow': 'coiling',
+            'special_effects': ['dragon_scales', 'fire_breath', 'serpent_coil']
         }
     }
     return configs.get(vibe, configs['mystical'])
@@ -891,6 +939,218 @@ def get_vibe_recommendations(vibe):
         'dragon': ['power', 'wisdom', 'ancient_knowledge']
     }
     return recommendations.get(vibe, ['general_purpose'])
+
+# New spiritual and mystical feature functions
+def get_chakra_influence(chakra):
+    """Get chakra-specific energy enhancements"""
+    chakras = {
+        'root': {'color': (255, 0, 0), 'energy': 'grounding', 'boost': 1.2, 'symbol': '🔴'},
+        'sacral': {'color': (255, 127, 0), 'energy': 'creative', 'boost': 1.3, 'symbol': '🟠'},
+        'solar': {'color': (255, 255, 0), 'energy': 'power', 'boost': 1.4, 'symbol': '🟡'},
+        'heart': {'color': (0, 255, 0), 'energy': 'love', 'boost': 1.5, 'symbol': '💚'},
+        'throat': {'color': (0, 127, 255), 'energy': 'expression', 'boost': 1.3, 'symbol': '🔵'},
+        'third_eye': {'color': (75, 0, 130), 'energy': 'intuition', 'boost': 1.6, 'symbol': '🟣'},
+        'crown': {'color': (143, 0, 255), 'energy': 'spiritual', 'boost': 1.8, 'symbol': '👑'}
+    }
+    return chakras.get(chakra, chakras['heart'])
+
+def get_lunar_phase():
+    """Calculate current lunar phase and its mystical influence"""
+    import math
+    from datetime import datetime
+    
+    # Simplified lunar phase calculation
+    year = datetime.now().year
+    month = datetime.now().month
+    day = datetime.now().day
+    
+    if month < 3:
+        year -= 1
+        month += 12
+    
+    a = year // 100
+    b = a // 4
+    c = 2 - a + b
+    e = int(365.25 * (year + 4716))
+    f = int(30.6001 * (month + 1))
+    jd = c + day + e + f - 1524.5
+    
+    days_since_new = (jd - 2451549.5) % 29.53
+    phase = days_since_new / 29.53
+    
+    if phase < 0.125:
+        return {'phase': 'new_moon', 'power': 2.0, 'description': 'New beginnings, maximum manifestation power', 'symbol': '🌑'}
+    elif phase < 0.25:
+        return {'phase': 'waxing_crescent', 'power': 1.5, 'description': 'Growth and attraction energy', 'symbol': '🌒'}
+    elif phase < 0.375:
+        return {'phase': 'first_quarter', 'power': 1.3, 'description': 'Decision and action energy', 'symbol': '🌓'}
+    elif phase < 0.5:
+        return {'phase': 'waxing_gibbous', 'power': 1.4, 'description': 'Refinement and adjustment energy', 'symbol': '🌔'}
+    elif phase < 0.625:
+        return {'phase': 'full_moon', 'power': 1.8, 'description': 'Peak power and illumination', 'symbol': '🌕'}
+    elif phase < 0.75:
+        return {'phase': 'waning_gibbous', 'power': 1.2, 'description': 'Gratitude and sharing energy', 'symbol': '🌖'}
+    elif phase < 0.875:
+        return {'phase': 'last_quarter', 'power': 1.1, 'description': 'Release and forgiveness energy', 'symbol': '🌗'}
+    else:
+        return {'phase': 'waning_crescent', 'power': 1.3, 'description': 'Rest and reflection energy', 'symbol': '🌘'}
+
+def analyze_energy_signature(phrase, vibe):
+    """Analyze the energy signature of a phrase and vibe combination"""
+    # Calculate various mystical metrics
+    char_sum = sum(ord(c) for c in phrase.lower() if c.isalnum())
+    numerology = char_sum % 9 + 1
+    
+    # Energy frequency analysis
+    vowels = sum(1 for c in phrase.lower() if c in 'aeiou')
+    consonants = sum(1 for c in phrase.lower() if c.isalpha() and c not in 'aeiou')
+    
+    # Sacred ratio calculations
+    golden_ratio = 1.618
+    energy_ratio = (vowels + 1) / (consonants + 1)
+    harmonic_resonance = abs(energy_ratio - golden_ratio) < 0.3
+    
+    # Vibe-specific energy modifiers
+    vibe_energies = {
+        'mystical': 1.2, 'cosmic': 1.5, 'elemental': 1.3, 'crystal': 1.4,
+        'shadow': 0.9, 'light': 1.6, 'storm': 1.7, 'void': 0.8,
+        'quantum': 2.0, 'aurora': 1.4, 'phoenix': 1.8, 'dragon': 1.9
+    }
+    
+    vibe_power = vibe_energies.get(vibe, 1.0)
+    total_energy = (numerology / 9) * vibe_power * (1.2 if harmonic_resonance else 1.0)
+    
+    # Determine chakra alignment
+    chakras = ['root', 'sacral', 'solar', 'heart', 'throat', 'third_eye', 'crown', 'soul_star', 'earth_star']
+    aligned_chakra = chakras[numerology - 1] if numerology <= len(chakras) else 'crown'
+    
+    # Elemental affinity
+    elements = ['Fire 🔥', 'Water 💧', 'Earth 🌍', 'Air 💨', 'Spirit ✨']
+    elemental_affinity = elements[char_sum % 5]
+    
+    return {
+        'numerology': numerology,
+        'energy_level': min(100, int(total_energy * 100)),
+        'harmonic_resonance': harmonic_resonance,
+        'dominant_frequency': 'high' if vowels > consonants else 'low',
+        'chakra_alignment': aligned_chakra,
+        'elemental_affinity': elemental_affinity,
+        'power_rating': f"{min(10, int(total_energy * 10))}/10",
+        'manifestation_potential': 'Very High' if total_energy > 1.5 else 'High' if total_energy > 1.0 else 'Moderate'
+    }
+
+def suggest_best_vibe(phrase):
+    """AI-powered vibe suggestion based on phrase analysis"""
+    phrase_lower = phrase.lower()
+    
+    # Keyword-based vibe matching with weighted scoring
+    vibe_keywords = {
+        'mystical': ['magic', 'mystic', 'spiritual', 'sacred', 'divine', 'soul', 'ritual', 'spell'],
+        'cosmic': ['universe', 'star', 'galaxy', 'cosmos', 'space', 'celestial', 'astral', 'stellar'],
+        'elemental': ['nature', 'earth', 'fire', 'water', 'air', 'element', 'natural', 'organic'],
+        'crystal': ['crystal', 'gem', 'clarity', 'pure', 'diamond', 'clear', 'transparent', 'prism'],
+        'shadow': ['dark', 'shadow', 'mystery', 'hidden', 'secret', 'night', 'void', 'deep'],
+        'light': ['light', 'bright', 'sun', 'radiant', 'glow', 'shine', 'illuminate', 'dawn'],
+        'storm': ['storm', 'thunder', 'lightning', 'power', 'electric', 'fierce', 'tempest', 'chaos'],
+        'void': ['void', 'empty', 'infinite', 'abyss', 'deep', 'eternal', 'nothingness', 'space'],
+        'quantum': ['quantum', 'science', 'dimension', 'reality', 'time', 'space', 'particle', 'wave'],
+        'aurora': ['aurora', 'northern', 'lights', 'dance', 'flow', 'wave', 'color', 'sky'],
+        'phoenix': ['rebirth', 'transform', 'rise', 'new', 'change', 'phoenix', 'renewal', 'resurrect'],
+        'dragon': ['dragon', 'power', 'ancient', 'wisdom', 'strength', 'fierce', 'fire', 'scale']
+    }
+    
+    scores = {}
+    for vibe, keywords in vibe_keywords.items():
+        score = sum(3 if keyword in phrase_lower else 0 for keyword in keywords)
+        # Add emotional analysis
+        if vibe == 'light' and any(word in phrase_lower for word in ['love', 'joy', 'happy', 'peace']):
+            score += 5
+        if vibe == 'shadow' and any(word in phrase_lower for word in ['fear', 'doubt', 'dark', 'unknown']):
+            score += 5
+        if vibe == 'cosmic' and any(word in phrase_lower for word in ['manifest', 'dream', 'infinite']):
+            score += 4
+        scores[vibe] = score
+    
+    # If no clear match, use phrase characteristics
+    if max(scores.values()) == 0:
+        char_sum = sum(ord(c) for c in phrase_lower if c.isalnum())
+        vibes = list(vibe_keywords.keys())
+        suggested_vibe = vibes[char_sum % len(vibes)]
+    else:
+        suggested_vibe = max(scores, key=lambda x: scores.get(x, 0))
+    
+    confidence = min(100, max(scores.values()) * 15)
+    
+    return {
+        'suggested_vibe': suggested_vibe,
+        'confidence': confidence,
+        'reason': f"Based on phrase energy and intention analysis",
+        'alternative': sorted(scores, key=lambda x: scores.get(x, 0), reverse=True)[1] if len(scores) > 1 else None
+    }
+
+# New API endpoints for spiritual features
+@app.route('/api/lunar_phase')
+def api_lunar_phase():
+    """Get current lunar phase and mystical influence"""
+    lunar_data = get_lunar_phase()
+    return jsonify({
+        'success': True,
+        'lunar': lunar_data,
+        'timestamp': datetime.utcnow().isoformat()
+    })
+
+@app.route('/api/analyze_energy', methods=['POST'])
+def api_analyze_energy():
+    """Analyze energy signature of phrase and vibe"""
+    try:
+        data = request.get_json()
+        phrase = data.get('phrase', '').strip()
+        vibe = data.get('vibe', 'mystical')
+        
+        if not phrase:
+            return jsonify({'success': False, 'error': 'Phrase required'}), 400
+        
+        energy_data = analyze_energy_signature(phrase, vibe)
+        return jsonify({
+            'success': True,
+            'energy': energy_data
+        })
+    except Exception as e:
+        logger.error(f"Energy analysis error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/suggest_vibe', methods=['POST'])
+def api_suggest_vibe():
+    """AI-powered vibe suggestion"""
+    try:
+        data = request.get_json()
+        phrase = data.get('phrase', '').strip()
+        
+        if not phrase:
+            return jsonify({'success': False, 'error': 'Phrase required'}), 400
+        
+        suggestion = suggest_best_vibe(phrase)
+        return jsonify({
+            'success': True,
+            'suggestion': suggestion
+        })
+    except Exception as e:
+        logger.error(f"Vibe suggestion error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/chakras')
+def api_chakras():
+    """Get chakra information"""
+    chakras = ['root', 'sacral', 'solar', 'heart', 'throat', 'third_eye', 'crown']
+    chakra_data = {}
+    for chakra in chakras:
+        info = get_chakra_influence(chakra)
+        chakra_data[chakra] = info
+    
+    return jsonify({
+        'success': True,
+        'chakras': chakra_data
+    })
 
 @app.route('/api/generate', methods=['POST'])
 @rate_limit(30)

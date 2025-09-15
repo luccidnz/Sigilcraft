@@ -47,12 +47,16 @@
                 this.bindElements();
                 this.bindEvents();
                 this.initializeFloatingElements();
+                this.initializeMysticalAnimations();
                 await this.loadVibes();
                 this.setupCharacterCounter();
                 this.addPhraseExamples();
                 this.loadGallery();
                 this.checkProStatus();
                 this.updateProFeatures();
+                await this.loadLunarPhase();
+                this.initializeChakraSelector();
+                this.initializeAIAnalysis();
 
                 console.log('✨ Sigilcraft Nexus initialized successfully!');
             } catch (error) {
@@ -267,6 +271,337 @@
                 `;
                 floatingContainer.appendChild(element);
             }
+        },
+
+        // Initialize mystical animations
+        initializeMysticalAnimations() {
+            // Create floating orbs
+            const orbContainer = document.createElement('div');
+            orbContainer.className = 'mystical-orbs';
+            orbContainer.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                z-index: 1;
+            `;
+            document.body.appendChild(orbContainer);
+
+            // Generate floating orbs
+            for (let i = 0; i < 20; i++) {
+                const orb = document.createElement('div');
+                const size = Math.random() * 30 + 10;
+                const startX = Math.random() * window.innerWidth;
+                const startY = Math.random() * window.innerHeight;
+                
+                orb.style.cssText = `
+                    position: absolute;
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${startX}px;
+                    top: ${startY}px;
+                    background: radial-gradient(circle, rgba(139, 92, 246, 0.8) 0%, rgba(139, 92, 246, 0) 70%);
+                    border-radius: 50%;
+                    animation: floatOrb ${20 + Math.random() * 10}s ease-in-out infinite;
+                    animation-delay: ${Math.random() * 10}s;
+                `;
+                orbContainer.appendChild(orb);
+            }
+
+            // Add pulsating aura to buttons
+            document.querySelectorAll('.btn, .action-btn').forEach(btn => {
+                btn.addEventListener('mouseenter', () => {
+                    btn.style.animation = 'pulseGlow 1s ease-in-out infinite';
+                });
+                btn.addEventListener('mouseleave', () => {
+                    btn.style.animation = '';
+                });
+            });
+
+            // Add CSS animations if not already present
+            if (!document.getElementById('mystical-animations')) {
+                const style = document.createElement('style');
+                style.id = 'mystical-animations';
+                style.textContent = `
+                    @keyframes floatOrb {
+                        0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+                        25% { transform: translate(100px, -100px) scale(1.2); opacity: 0.5; }
+                        50% { transform: translate(-50px, -200px) scale(0.8); opacity: 0.3; }
+                        75% { transform: translate(-100px, 50px) scale(1.1); opacity: 0.4; }
+                    }
+                    @keyframes pulseGlow {
+                        0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.5); }
+                        50% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.8); }
+                    }
+                    @keyframes sacredGeometry {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        },
+
+        // Load lunar phase data
+        async loadLunarPhase() {
+            try {
+                const response = await fetch('/api/lunar_phase');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        this.displayLunarPhase(data.lunar);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load lunar phase:', error);
+            }
+        },
+
+        // Display lunar phase information
+        displayLunarPhase(lunar) {
+            const lunarDisplay = document.createElement('div');
+            lunarDisplay.className = 'lunar-phase-display';
+            lunarDisplay.innerHTML = `
+                <div class="lunar-info">
+                    <span class="lunar-symbol">${lunar.symbol}</span>
+                    <span class="lunar-name">${lunar.phase.replace(/_/g, ' ').toUpperCase()}</span>
+                    <span class="lunar-power">Power: ${lunar.power}x</span>
+                    <div class="lunar-description">${lunar.description}</div>
+                </div>
+            `;
+            lunarDisplay.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: rgba(30, 27, 75, 0.9);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(139, 92, 246, 0.3);
+                border-radius: 12px;
+                padding: 15px;
+                color: #e5e7eb;
+                font-size: 0.9rem;
+                z-index: 50;
+                max-width: 250px;
+                box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+            `;
+            
+            // Remove existing lunar display if present
+            const existing = document.querySelector('.lunar-phase-display');
+            if (existing) existing.remove();
+            
+            document.body.appendChild(lunarDisplay);
+        },
+
+        // Initialize chakra selector
+        initializeChakraSelector() {
+            const chakraContainer = document.createElement('div');
+            chakraContainer.className = 'chakra-selector';
+            chakraContainer.innerHTML = `
+                <h3>Chakra Alignment</h3>
+                <div class="chakra-options">
+                    <button data-chakra="root" title="Root - Grounding">🔴</button>
+                    <button data-chakra="sacral" title="Sacral - Creative">🟠</button>
+                    <button data-chakra="solar" title="Solar - Power">🟡</button>
+                    <button data-chakra="heart" title="Heart - Love" class="selected">💚</button>
+                    <button data-chakra="throat" title="Throat - Expression">🔵</button>
+                    <button data-chakra="third_eye" title="Third Eye - Intuition">🟣</button>
+                    <button data-chakra="crown" title="Crown - Spiritual">👑</button>
+                </div>
+            `;
+            chakraContainer.style.cssText = `
+                position: fixed;
+                top: 200px;
+                right: 20px;
+                background: rgba(30, 27, 75, 0.9);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(139, 92, 246, 0.3);
+                border-radius: 12px;
+                padding: 15px;
+                color: #e5e7eb;
+                z-index: 50;
+                box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+            `;
+
+            // Remove existing chakra selector if present
+            const existing = document.querySelector('.chakra-selector');
+            if (existing) existing.remove();
+            
+            document.body.appendChild(chakraContainer);
+
+            // Add chakra selection event listeners
+            chakraContainer.querySelectorAll('[data-chakra]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    chakraContainer.querySelectorAll('[data-chakra]').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    this.selectedChakra = btn.dataset.chakra;
+                    this.showToast(`Aligned with ${btn.dataset.chakra} chakra`, 'success');
+                });
+            });
+
+            // Add chakra styles
+            if (!document.getElementById('chakra-styles')) {
+                const style = document.createElement('style');
+                style.id = 'chakra-styles';
+                style.textContent = `
+                    .chakra-selector h3 {
+                        margin: 0 0 10px 0;
+                        font-size: 1rem;
+                        color: #a78bfa;
+                    }
+                    .chakra-options {
+                        display: flex;
+                        gap: 8px;
+                    }
+                    .chakra-options button {
+                        width: 30px;
+                        height: 30px;
+                        border: 2px solid rgba(139, 92, 246, 0.3);
+                        background: rgba(139, 92, 246, 0.1);
+                        border-radius: 50%;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                        font-size: 1.2rem;
+                    }
+                    .chakra-options button:hover {
+                        transform: scale(1.2);
+                        border-color: #a78bfa;
+                        box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+                    }
+                    .chakra-options button.selected {
+                        border-color: #fbbf24;
+                        background: rgba(251, 191, 36, 0.2);
+                        box-shadow: 0 0 30px rgba(251, 191, 36, 0.5);
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        },
+
+        // Initialize AI analysis features
+        initializeAIAnalysis() {
+            // Add AI suggestion button next to vibe selector
+            const vibeGroup = this.elements.vibeSelect?.parentElement;
+            if (vibeGroup) {
+                const aiButton = document.createElement('button');
+                aiButton.className = 'ai-suggest-btn';
+                aiButton.innerHTML = '🤖 AI Suggest';
+                aiButton.style.cssText = `
+                    margin-left: 10px;
+                    padding: 8px 16px;
+                    background: linear-gradient(45deg, #8b5cf6, #ec4899);
+                    border: none;
+                    border-radius: 8px;
+                    color: white;
+                    cursor: pointer;
+                    font-weight: 600;
+                    transition: all 0.3s;
+                `;
+                aiButton.addEventListener('click', () => this.suggestVibeWithAI());
+                vibeGroup.appendChild(aiButton);
+            }
+        },
+
+        // AI-powered vibe suggestion
+        async suggestVibeWithAI() {
+            const phrase = this.elements.phraseInput.value.trim();
+            if (!phrase) {
+                this.showToast('Enter a phrase first for AI analysis', 'warning');
+                return;
+            }
+
+            try {
+                this.showToast('🤖 Analyzing your intention...', 'info');
+                const response = await fetch('/api/suggest_vibe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phrase })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.suggestion) {
+                        this.elements.vibeSelect.value = data.suggestion.suggested_vibe;
+                        this.updateVibeDescription();
+                        this.showToast(
+                            `AI suggests: ${data.suggestion.suggested_vibe} (${data.suggestion.confidence}% confidence)`,
+                            'success'
+                        );
+                        
+                        // Also analyze energy
+                        this.analyzeEnergy(phrase, data.suggestion.suggested_vibe);
+                    }
+                }
+            } catch (error) {
+                console.error('AI suggestion error:', error);
+                this.showToast('AI analysis failed', 'error');
+            }
+        },
+
+        // Analyze energy signature
+        async analyzeEnergy(phrase, vibe) {
+            try {
+                const response = await fetch('/api/analyze_energy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phrase, vibe })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.energy) {
+                        this.displayEnergyReading(data.energy);
+                    }
+                }
+            } catch (error) {
+                console.error('Energy analysis error:', error);
+            }
+        },
+
+        // Display energy reading
+        displayEnergyReading(energy) {
+            const energyDisplay = document.createElement('div');
+            energyDisplay.className = 'energy-reading';
+            energyDisplay.innerHTML = `
+                <h3>⚡ Energy Reading</h3>
+                <div class="energy-metrics">
+                    <div>Numerology: ${energy.numerology}</div>
+                    <div>Energy Level: ${energy.energy_level}%</div>
+                    <div>Power Rating: ${energy.power_rating}</div>
+                    <div>Chakra: ${energy.chakra_alignment}</div>
+                    <div>Element: ${energy.elemental_affinity}</div>
+                    <div>Manifestation: ${energy.manifestation_potential}</div>
+                    ${energy.harmonic_resonance ? '<div class="resonance">✨ Harmonic Resonance Active!</div>' : ''}
+                </div>
+            `;
+            energyDisplay.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: rgba(30, 27, 75, 0.95);
+                backdrop-filter: blur(15px);
+                border: 2px solid rgba(251, 191, 36, 0.5);
+                border-radius: 12px;
+                padding: 20px;
+                color: #e5e7eb;
+                z-index: 50;
+                max-width: 300px;
+                box-shadow: 0 0 40px rgba(251, 191, 36, 0.3);
+                animation: slideInRight 0.5s ease-out;
+            `;
+
+            // Remove existing energy display
+            const existing = document.querySelector('.energy-reading');
+            if (existing) existing.remove();
+            
+            document.body.appendChild(energyDisplay);
+
+            // Auto-remove after 10 seconds
+            setTimeout(() => {
+                energyDisplay.style.animation = 'slideOutRight 0.5s ease-out';
+                setTimeout(() => energyDisplay.remove(), 500);
+            }, 10000);
         },
 
         // Load available vibes
@@ -580,7 +915,7 @@
                 this.currentRequest = null;
                 this.lastGenerationTime = Date.now();
             }
-        }
+        },
 
         handleSingleResult(data) {
             const imageElement = this.elements.sigilImage;
@@ -628,7 +963,7 @@
             }
 
             this.showNotification('✨ Sigil manifested successfully!', 'success');
-        }
+        },
 
         handleBatchResult(data) {
             const batchContainer = document.getElementById('batchResults');
@@ -675,8 +1010,11 @@
             }
 
             this.showNotification(`Batch complete: ${successful.length}/${data.results.length} successful`, 'success');
-        }r;
+        },
 
+        async performGeneration(phrase, vibe, advanced, isBatch = false) {
+            try {
+                const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 60000);
 
                 let results = [];
@@ -1114,19 +1452,19 @@
                 return;
             }
 
-            // More flexible key validation - accept various formats
-            if (key.length < 5) {
-                this.showToast('Pro key too short', 'error');
-                return;
-            }
-
-            // Accept demo keys for testing
-            if (key.toLowerCase().includes('demo') || key.toLowerCase().includes('test') || key.length >= 8) {
+            // Accept the specific Pro key "Volt2089" and other valid keys
+            const validKeys = ['Volt2089', 'SIGILCRAFT-PRO-2025', 'MYSTIC-NEXUS-777'];
+            
+            if (validKeys.includes(key) || 
+                key.toLowerCase().includes('demo') || 
+                key.toLowerCase().includes('test') || 
+                (key.length >= 8 && key.includes('-'))) {
                 this.activateProWithKey(key);
+                this.showToast('✨ Pro features unlocked! Welcome to the mystical realm!', 'success');
                 return;
             }
 
-            this.showToast('Invalid Pro key format', 'error');
+            this.showToast('Invalid Pro key. Please check your key and try again.', 'error');
         },
 
         activateProWithKey(key) {
