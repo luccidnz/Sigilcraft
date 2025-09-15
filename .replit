@@ -16,7 +16,7 @@ run = ["sh", "-c", "python unified_server.py"]
 deploymentTarget = "cloudrun"
 
 [workflows]
-runButton = "Sigilcraft Production"
+runButton = "Project"
 
 [[workflows.workflow]]
 name = "Sigilcraft Production"
@@ -64,6 +64,27 @@ args = "echo \"🔮 Starting Python Backend Only...\""
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python main.py"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Server"
+
+[[workflows.workflow]]
+name = "Server"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python unified_server.py"
+waitForPort = 5000
 
 [[ports]]
 localPort = 5000
