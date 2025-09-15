@@ -1540,6 +1540,11 @@
             }, 4000);
         },
 
+        // Alias for showToast to fix undefined function calls
+        showNotification(message, type = 'info') {
+            return this.showToast(message, type);
+        },
+
         // Utility functions
         capitalizeFirst(str) {
             return str.charAt(0).toUpperCase() + str.slice(1);
