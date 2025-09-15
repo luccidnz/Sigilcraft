@@ -12,6 +12,7 @@ import signal
 import time
 import json
 import logging
+import subprocess
 from datetime import datetime
 
 # Configure ultra-performance logging

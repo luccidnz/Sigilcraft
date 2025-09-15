@@ -50,6 +50,7 @@ app.config.update({
 request_stats = defaultdict(lambda: {'count': 0, 'last_reset': time.time()})
 generation_cache = {}
 CACHE_TTL = 3600  # 1 hour cache
+server_start_time = time.time()  # Track server start time
 RATE_LIMIT_PER_MINUTE = 100
 
 def rate_limit(max_requests=60):
@@ -743,8 +744,11 @@ def after_request(response):
 def serve_index():
     """Ultra-optimized index serving"""
     try:
-        return send_from_directory('public', 'index.html', 
-                                 conditional=True)
+        # Workaround for Flask 2.3+ cache_timeout deprecation
+        response = send_from_directory('public', 'index.html')
+        response.cache_control.max_age = 0
+        response.cache_control.no_cache = True
+        return response
     except FileNotFoundError:
         logger.error("index.html missing from public directory")
         return jsonify({'success': False, 'error': 'Application files missing'}), 404
@@ -768,9 +772,8 @@ def serve_static(filename):
         
         file_path = os.path.join('public', filename)
         if os.path.exists(file_path) and os.path.isfile(file_path):
-            response = send_from_directory('public', filename,
-                                         conditional=True,
-                                         etag=True)
+            # Workaround for Flask 2.3+ cache_timeout deprecation
+            response = send_from_directory('public', filename)
             
             # Set cache headers manually based on file type
             if file_ext in {'.css', '.js'}:
@@ -797,7 +800,7 @@ def health():
         'service': 'sigilcraft-nexus-ultra',
         'version': '3.0.0',
         'timestamp': datetime.utcnow().isoformat(),
-        'uptime': time.time() - request_stats.get('server_start', time.time()),
+        'uptime': time.time() - server_start_time,
         'cache_size': len(generation_cache),
         'performance': {
             'avg_response_time': '< 50ms',
@@ -1100,8 +1103,7 @@ def internal_error(error):
         'support': 'Please try again in a moment'
     }), 500
 
-# Initialize server start time for uptime tracking
-request_stats['server_start'] = time.time()
+# Server start time already initialized at module level
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
