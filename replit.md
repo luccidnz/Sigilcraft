@@ -4,6 +4,16 @@ Sigilcraft Nexus is a mystical sigil generation web application that offers both
 
 The application implements a freemium model where free users have limited functionality (3 energy types, 512px PNG output, watermarks, cooldowns) while Pro users unlock premium features (all 12+ energy vibes, 2048px + SVG output, batch generation, no watermarks/cooldowns).
 
+**Recent Major Updates (September 15, 2025):**
+- Fixed critical JavaScript syntax errors that were causing app crashes
+- Enhanced Pro key validation to accept specific keys including "Volt2089"
+- Significantly improved sigil generation algorithm with distinct vibe patterns
+- Added spiritual features: chakra alignment, lunar phase integration, energy readings
+- Implemented AI-powered intention analysis for vibe recommendations
+- Upgraded visual design with glassmorphism, aurora effects, and mystical animations
+- Fixed gallery modal opening issues
+- Enhanced each of the 12 vibes with unique visual patterns and effects
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
