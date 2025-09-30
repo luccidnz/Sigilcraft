@@ -64,6 +64,7 @@ body {
   line-height: 1.6;
   min-height: 100vh;
   overflow-x: hidden;
+  overflow-y: auto;
   position: relative;
 }
 
@@ -230,15 +231,13 @@ body {
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 var(--space-lg);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  position: relative;
 }
 
 /* ===== HEADER ===== */
 .header {
   text-align: center;
-  padding: var(--space-3xl) 0;
+  padding: var(--space-sm) 0;
   position: relative;
 }
 
@@ -313,6 +312,16 @@ body {
   border-radius: var(--divine-radius);
   box-shadow: var(--shadow-cosmic);
   animation: cosmicGlow 3s ease-in-out infinite;
+}
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+  display: block;
+  position: relative;
+  z-index: 10;
+  margin: var(--space-sm) auto;
+  padding: 0 var(--space-lg);
+  max-width: 1200px;
 }
 
 /* ===== GENERATION PANEL ===== */
