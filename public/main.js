@@ -923,9 +923,25 @@
             const metadataElement = this.elements.metadata;
 
             // Display the generated sigil
-            imageElement.src = data.image;
-            imageElement.style.display = 'block';
-            imageElement.classList.add('fade-in');
+            if (imageElement) {
+                imageElement.src = data.image;
+                imageElement.style.display = 'block';
+                imageElement.classList.add('fade-in');
+            }
+
+            // Show the result container - THIS WAS MISSING!
+            if (this.elements.resultContainer) {
+                this.elements.resultContainer.style.display = 'block';
+                this.elements.resultContainer.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            // Update result info
+            if (this.elements.resultPhrase && data.metadata) {
+                this.elements.resultPhrase.textContent = data.metadata.phrase;
+            }
+            if (this.elements.resultVibe && data.metadata) {
+                this.elements.resultVibe.textContent = `${data.metadata.vibe} Energy`;
+            }
 
             // Enable download
             if (downloadBtn) {
@@ -961,6 +977,9 @@
                 `;
                 metadataElement.style.display = 'block';
             }
+
+            // Store current sigil for gallery save
+            this.currentSigil = data;
 
             this.showNotification('✨ Sigil manifested successfully!', 'success');
         },
