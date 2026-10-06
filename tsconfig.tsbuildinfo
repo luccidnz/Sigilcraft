@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/main.tsx","./src/auth/RequireAuth.tsx","./src/auth/auth.ts","./src/components/ProGateModal.tsx","./src/components/SigilPreview.tsx","./src/components/SigilResult.tsx","./src/convex/schema.ts","./src/pages/GalleryPage.tsx","./src/pages/LandingPage.tsx","./src/pages/SigilPage.tsx"],"version":"5.9.3"}
